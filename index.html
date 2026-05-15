@@ -24,6 +24,25 @@
   --font: 'Inter', sans-serif;
   --mono: 'JetBrains Mono', monospace;
 }
+/* LOGIN PAGE */
+#login-screen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;}
+#login-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 40%,rgba(99,102,241,0.08) 0%,transparent 65%);pointer-events:none;}
+.login-box{position:relative;width:100%;max-width:400px;background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:44px 40px;text-align:center;}
+.login-gem{width:52px;height:52px;border-radius:14px;background:var(--a1);display:grid;place-items:center;font-size:24px;margin:0 auto 20px;}
+.login-logo{font-family:var(--mono);font-size:15px;font-weight:500;letter-spacing:3px;margin-bottom:6px;}
+.login-logo em{color:var(--a2);font-style:normal;}
+.login-sub{font-size:12px;color:var(--muted);margin-bottom:32px;font-family:var(--mono);letter-spacing:1px;text-transform:uppercase;}
+.login-label{display:block;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text2);text-align:left;margin-bottom:8px;}
+.login-input{width:100%;padding:12px 16px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:var(--font);font-size:14px;font-weight:500;transition:all .2s;letter-spacing:3px;text-align:center;}
+.login-input:focus{outline:none;border-color:var(--a1);box-shadow:0 0 0 3px rgba(99,102,241,0.12);}
+.login-input::placeholder{letter-spacing:0;color:var(--muted);}
+.login-btn{width:100%;margin-top:16px;padding:13px;background:var(--a1);color:#fff;border:none;border-radius:10px;font-family:var(--font);font-weight:600;font-size:14px;cursor:pointer;transition:all .25s;letter-spacing:.3px;}
+.login-btn:hover{background:var(--a2);transform:translateY(-1px);box-shadow:0 8px 24px rgba(99,102,241,0.3);}
+.login-err{margin-top:14px;font-size:12px;color:var(--red);font-family:var(--mono);opacity:0;transition:opacity .3s;min-height:18px;}
+.login-err.show{opacity:1;}
+.login-footer{margin-top:28px;font-size:10px;color:var(--muted);font-family:var(--mono);letter-spacing:1px;border-top:1px solid var(--border);padding-top:20px;}
+/* DOMAIN THEME TRANSITIONS */
+body{transition:--a1 .4s,--a2 .4s,--a3 .4s;}
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
 body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden;}
@@ -199,6 +218,20 @@ tr:hover td{background:rgba(99,102,241,0.03);}
 </head>
 <body>
 
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-gem">◈</div>
+    <div class="login-logo">ATLAS<em>PRO</em></div>
+    <div class="login-sub">Intelligent Analytics Platform</div>
+    <label class="login-label">Enter Access Password</label>
+    <input type="password" class="login-input" id="pw-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Access Platform →</button>
+    <div class="login-err" id="login-err">Incorrect password. Please try again.</div>
+    <div class="login-footer">ATLAS PRO · Restricted Access · Authorized Users Only</div>
+  </div>
+</div>
+
 <div id="hdr">
   <div class="logo">
     <div class="logo-gem" id="lgem">◈</div>
@@ -261,29 +294,93 @@ tr:hover td{background:rgba(99,102,241,0.03);}
 <input type="file" id="fi" accept=".csv,.xlsx,.xls,.tsv">
 
 <script>
+// ─── LOGIN ────────────────────────────────────────────────
+const PASS='18122000';
+function doLogin(){
+  const v=document.getElementById('pw-input').value;
+  const err=document.getElementById('login-err');
+  if(v===PASS){
+    const ls=document.getElementById('login-screen');
+    ls.style.transition='opacity .5s';ls.style.opacity='0';
+    setTimeout(()=>ls.style.display='none',500);
+  } else {
+    err.classList.add('show');
+    document.getElementById('pw-input').value='';
+    document.getElementById('pw-input').style.borderColor='var(--red)';
+    setTimeout(()=>{err.classList.remove('show');document.getElementById('pw-input').style.borderColor='';},2800);
+  }
+}
+
 // ─── STATE ───────────────────────────────────────────────
 let RAW=[], ALL=[], HDR=[], CHARTS=[], DOMAIN='general', ACTIVE=0, SDIR=1, SCOL=null;
+
+// Domain accent themes
+const THEMES={
+  sales:  {c1:'#22c55e',c2:'#4ade80',c3:'rgba(34,197,94,0.10)'},
+  hr:     {c1:'#3b82f6',c2:'#60a5fa',c3:'rgba(59,130,246,0.10)'},
+  safety: {c1:'#f97316',c2:'#fb923c',c3:'rgba(249,115,22,0.10)'},
+  general:{c1:'#6366f1',c2:'#818cf8',c3:'rgba(99,102,241,0.10)'},
+};
 
 const DOMS = {
   sales:{
     label:'Sales Analytics', icon:'📈',
-    c1:'#f97316',c2:'#fb923c',c3:'rgba(249,115,22,0.10)',
     pages:['Performance Overview','Loss & Risk Analysis','Opportunity Mapping'],
-    kw:['sale','revenue','profit','order','customer','product','quantity','amount','discount','region','price','margin','invoice','channel']
+    kw:['sale','revenue','profit','order','customer','product','quantity','amount','discount','region','price','margin','invoice','channel','total_sale','net_sale','gross','market']
   },
   hr:{
     label:'HR Analytics', icon:'👥',
-    c1:'#a855f7',c2:'#c084fc',c3:'rgba(168,85,247,0.10)',
     pages:['Workforce Overview','Attrition & Retention','Performance & Compensation'],
-    kw:['employee','salary','department','hire','resign','gender','age','position','attendance','leave','performance','headcount','staff','training']
+    kw:['employee','salary','attendance','turnover','department','hire','resign','gender','age','position','leave','performance','headcount','staff','training','payroll','emp_id','emp']
   },
   safety:{
     label:'HSE Intelligence', icon:'🛡',
-    c1:'#f43f5e',c2:'#fb7185',c3:'rgba(244,63,94,0.10)',
     pages:['Safety Command Center','Incident & Violation Analysis','Compliance & Permit Integrity'],
-    kw:['permit','incident','injury','violation','inspection','safety','hse','hazard','severity','lost','zone','area','accident','contractor','risk']
+    kw:['permit','incident','injury','violation','inspection','safety','hse','hazard','severity','lost','zone','area','accident','contractor','risk','ptw','near_miss','lti']
   }
 };
+
+// ─── FUZZY COLUMN MAPPER ─────────────────────────────────
+const FUZZY_MAP={
+  revenue:    ['rev','sale','income','turnover','gross','net_sale','total_sale','amount','receipts','proceed','billing','invoic'],
+  profit:     ['profit','margin','gain','net','earning','ebit','surplus','contribution'],
+  discount:   ['disc','rebate','reduction','deduct'],
+  quantity:   ['qty','quant','unit','vol','piece','pcs','num_order','count'],
+  cost:       ['cost','expense','cogs','expenditure','outlay','spend'],
+  salary:     ['salary','sal','wage','pay','compensation','remun','ctc','basic','gross_pay','net_pay','earning'],
+  absence:    ['absence','absent','leave_day','sick','off_day','absent_day','miss'],
+  training:   ['train','course','develop','learn','certif','upskill','hour'],
+  overtime:   ['overtime','ot_hour','extra_hour'],
+  violations: ['viol','breach','infract','defect','nc','non_conform','finding','observ'],
+  workers:    ['worker','manpower','labor','labour','person','headcount','workforce'],
+  duration:   ['dur','hour','hrs','time','length','period'],
+  score:      ['score','rating','grade','percent','result','inspct'],
+  status:     ['status','state','result','outcome','condition','flag','stage','phase','remark'],
+  region:     ['region','area','zone','city','location','branch','site','territory','district','country'],
+  product:    ['product','item','sku','goods','material','service','description','name','article','commodity'],
+  department: ['dept','department','division','unit','section','group','team','function','cost_center'],
+  contractor: ['contractor','vendor','supplier','subcontract','company','firm','partner'],
+  month:      ['month','mon','period','date','year','quarter','week'],
+  gender:     ['gender','sex'],
+  performance:['perf','appraisal','eval','review','kpi','grade'],
+  risk:       ['risk','hazard','severity','danger','level','priority','classification'],
+  permit_type:['type','kind','category','class','permit_type','work_type','activity'],
+};
+
+function fuzzyCol(key,numOnly=false){
+  const frags=FUZZY_MAP[key]||[key];
+  const search=numOnly?HDR.filter(h=>isNum(h)):HDR;
+  for(const frag of frags){
+    const f=frag.replace(/[^a-z0-9]/g,'');
+    const found=search.find(h=>h.toLowerCase().replace(/[^a-z0-9]/g,'').includes(f));
+    if(found)return found;
+  }
+  // fallback: any HDR containing first word of key
+  const fw=key.split('_')[0];
+  return HDR.find(h=>h.toLowerCase().includes(fw))||null;
+}
+function col(key){return fuzzyCol(key,false);}
+function numCol(key){return fuzzyCol(key,true);}
 
 // ─── FILE HANDLING ────────────────────────────────────────
 const drop=document.getElementById('drop'), fi=document.getElementById('fi');
@@ -346,9 +443,10 @@ function detectDomain(){
 }
 function applyTheme(){
   const d=DOMS[DOMAIN];if(!d)return;
-  document.documentElement.style.setProperty('--a1',d.c1);
-  document.documentElement.style.setProperty('--a2',d.c2);
-  document.documentElement.style.setProperty('--a3',d.c3);
+  const t=THEMES[DOMAIN]||THEMES.general;
+  document.documentElement.style.setProperty('--a1',t.c1);
+  document.documentElement.style.setProperty('--a2',t.c2);
+  document.documentElement.style.setProperty('--a3',t.c3);
   document.getElementById('spill').textContent=d.label;
   document.getElementById('lgem').textContent=d.icon;
 }
@@ -578,12 +676,12 @@ function buildKPIs(pi,data,nc,cc,sc){
 
 function getKPIs(pi,data,nc,cc,sc){
   if(DOMAIN==='sales'){
-    const rv=nc.find(c=>c.toLowerCase().includes('rev'))||nc[0];
-    const pr=nc.find(c=>c.toLowerCase().includes('profit'))||nc[1];
-    const dc=nc.find(c=>c.toLowerCase().includes('disc'));
-    const stc=sc[0]||sc.find(c=>c.toLowerCase().includes('status'));
-    const regc=cc.find(c=>c.toLowerCase().includes('region'));
-    const prodc=cc.find(c=>c.toLowerCase().includes('product'));
+    const rv=col('revenue')||nc[0];
+    const pr=col('profit')||nc[1];
+    const dc=col('discount');
+    const stc=col('status')||sc[0];
+    const regc=col('region')||cc[0];
+    const prodc=col('product')||cc[1];
     const margin=rv&&pr&&sum(data,rv)?Math.round(sum(data,pr)/sum(data,rv)*100):0;
     const ksets=[
       [
@@ -608,13 +706,13 @@ function getKPIs(pi,data,nc,cc,sc){
     return ksets[pi]||ksets[0];
   }
   if(DOMAIN==='hr'){
-    const sal=nc.find(c=>c.toLowerCase().includes('salary'))||nc[0];
-    const abs=nc.find(c=>c.toLowerCase().includes('absence'));
-    const trn=nc.find(c=>c.toLowerCase().includes('train'));
-    const stc=sc.find(c=>c.toLowerCase().includes('status'))||sc[0];
-    const perf=sc.find(c=>c.toLowerCase().includes('perf'));
-    const dept=cc.find(c=>c.toLowerCase().includes('dept'));
-    const gender=cc.find(c=>c.toLowerCase().includes('gender'));
+    const sal=col('salary')||nc[0];
+    const abs=col('absence');
+    const trn=col('training');
+    const stc=col('status')||sc[0];
+    const perf=col('performance')||sc.find(c=>c.toLowerCase().includes('perf'));
+    const dept=col('department')||cc[0];
+    const gender=col('gender')||cc.find(c=>c.toLowerCase().includes('gender'));
     const ksets=[
       [
         {icon:'👥',label:'Total Headcount',fn:d=>d.length,color:'var(--a1)',badge:'All Staff',badge_class:'nt',desc:'Active and non-active employees combined',int:true},
@@ -638,14 +736,14 @@ function getKPIs(pi,data,nc,cc,sc){
     return ksets[pi]||ksets[0];
   }
   if(DOMAIN==='safety'){
-    const viol=nc.find(c=>c.toLowerCase().includes('viol'));
-    const wrkr=nc.find(c=>c.toLowerCase().includes('worker')||c.toLowerCase().includes('count'));
-    const dur=nc.find(c=>c.toLowerCase().includes('dur')||c.toLowerCase().includes('hr'));
-    const score=nc.find(c=>c.toLowerCase().includes('score'));
-    const stc=sc.find(c=>c.toLowerCase().includes('status'))||sc[0];
-    const risk=sc.find(c=>c.toLowerCase().includes('risk'));
-    const area=cc.find(c=>c.toLowerCase().includes('area')||c.toLowerCase().includes('zone'));
-    const ctr=cc.find(c=>c.toLowerCase().includes('contractor'));
+    const viol=col('violations');
+    const wrkr=col('workers');
+    const dur=col('duration');
+    const score=col('score');
+    const stc=col('status')||sc[0];
+    const risk=col('risk')||sc.find(c=>c.toLowerCase().includes('risk'));
+    const area=col('region')||cc.find(c=>c.toLowerCase().includes('area')||c.toLowerCase().includes('zone'));
+    const ctr=col('contractor')||cc.find(c=>c.toLowerCase().includes('contractor'));
     const total=data.length||1;
     const closed=stc?data.filter(r=>String(r[stc]||'').match(/close/i)).length:0;
     const ksets=[
@@ -684,13 +782,13 @@ function getInsight(pi,data,nc,cc,sc){
   if(!n)return'No records match current filters. Clear filters to restore the full view.';
 
   if(DOMAIN==='sales'){
-    const rv=nc.find(c=>c.toLowerCase().includes('rev'))||nc[0];
-    const pr=nc.find(c=>c.toLowerCase().includes('profit'))||nc[1];
-    const dc=nc.find(c=>c.toLowerCase().includes('disc'));
-    const stc=sc[0];
-    const regc=cc.find(c=>c.toLowerCase().includes('region'));
-    const prodc=cc.find(c=>c.toLowerCase().includes('product'));
-    const chc=cc.find(c=>c.toLowerCase().includes('channel'));
+    const rv=col('revenue')||nc[0];
+    const pr=col('profit')||nc[1];
+    const dc=col('discount');
+    const stc=col('status')||sc[0];
+    const regc=col('region')||cc[0];
+    const prodc=col('product')||cc[1];
+    const chc=col('department')||cc.find(c=>c.toLowerCase().includes('channel'));
     const totalRev=rv?sum(data,rv):0,totalProfit=pr?sum(data,pr):0;
     const margin=totalRev?Math.round(totalProfit/totalRev*100):0;
     const returned=stc?data.filter(r=>String(r[stc]||'').match(/return/i)).length:0;
@@ -709,13 +807,13 @@ function getInsight(pi,data,nc,cc,sc){
   }
 
   if(DOMAIN==='hr'){
-    const sal=nc.find(c=>c.toLowerCase().includes('salary'))||nc[0];
-    const abs=nc.find(c=>c.toLowerCase().includes('absence'));
-    const trn=nc.find(c=>c.toLowerCase().includes('train'));
-    const stc=sc.find(c=>c.toLowerCase().includes('status'))||sc[0];
-    const perf=sc.find(c=>c.toLowerCase().includes('perf'));
-    const dept=cc.find(c=>c.toLowerCase().includes('dept'));
-    const gender=cc.find(c=>c.toLowerCase().includes('gender'));
+    const sal=col('salary')||nc[0];
+    const abs=col('absence');
+    const trn=col('training');
+    const stc=col('status')||sc[0];
+    const perf=col('performance')||sc.find(c=>c.toLowerCase().includes('perf'));
+    const dept=col('department')||cc[0];
+    const gender=col('gender')||cc.find(c=>c.toLowerCase().includes('gender'));
     const totalPayroll=sal?sum(data,sal):0;
     const avgSal=sal?Math.round(avg(data,sal)):0;
     const resigned=stc?data.filter(r=>String(r[stc]||'').match(/resign|termin/i)).length:0;
@@ -737,11 +835,11 @@ function getInsight(pi,data,nc,cc,sc){
   }
 
   if(DOMAIN==='safety'){
-    const viol=nc.find(c=>c.toLowerCase().includes('viol'));
-    const stc=sc.find(c=>c.toLowerCase().includes('status'))||sc[0];
-    const risk=sc.find(c=>c.toLowerCase().includes('risk'));
-    const area=cc.find(c=>c.toLowerCase().includes('area')||c.toLowerCase().includes('zone'));
-    const ctr=cc.find(c=>c.toLowerCase().includes('contractor'));
+    const viol=col('violations');
+    const stc=col('status')||sc[0];
+    const risk=col('risk')||sc.find(c=>c.toLowerCase().includes('risk'));
+    const area=col('region')||cc.find(c=>c.toLowerCase().includes('area')||c.toLowerCase().includes('zone'));
+    const ctr=col('contractor')||cc.find(c=>c.toLowerCase().includes('contractor'));
     const open=stc?data.filter(r=>String(r[stc]||'').match(/open|pend/i)).length:0;
     const closed=stc?data.filter(r=>String(r[stc]||'').match(/close/i)).length:0;
     const overdue=stc?data.filter(r=>String(r[stc]||'').match(/overdue/i)).length:0;
@@ -879,14 +977,14 @@ function radarChart(id,labels,datasets){
 
 // ─── SALES CHARTS ─────────────────────────────────────────
 function buildSalesCharts(grid,pi,data,nc,cc,sc){
-  const rv=nc.find(c=>c.toLowerCase().includes('rev'))||nc[0];
-  const pr=nc.find(c=>c.toLowerCase().includes('profit'))||nc[1];
-  const dc=nc.find(c=>c.toLowerCase().includes('disc'));
-  const stc=sc[0];
-  const regc=cc.find(c=>c.toLowerCase().includes('region'));
-  const prodc=cc.find(c=>c.toLowerCase().includes('product'));
-  const chc=cc.find(c=>c.toLowerCase().includes('channel'));
-  const mc=cc.find(c=>c.toLowerCase().includes('month'));
+  const rv=col('revenue')||nc[0];
+  const pr=col('profit')||nc[1];
+  const dc=col('discount');
+  const stc=col('status')||sc[0];
+  const regc=col('region')||cc[0];
+  const prodc=col('product')||cc[1];
+  const chc=cc.find(c=>c.toLowerCase().includes('channel'))||col('department');
+  const mc=col('month')||cc.find(c=>c.toLowerCase().includes('month'));
   const mOrder=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
   if(pi===0){
@@ -924,14 +1022,14 @@ function buildSalesCharts(grid,pi,data,nc,cc,sc){
 
 // ─── HR CHARTS ────────────────────────────────────────────
 function buildHRCharts(grid,pi,data,nc,cc,sc){
-  const sal=nc.find(c=>c.toLowerCase().includes('salary'))||nc[0];
-  const abs=nc.find(c=>c.toLowerCase().includes('absence'));
-  const trn=nc.find(c=>c.toLowerCase().includes('train'));
-  const stc=sc.find(c=>c.toLowerCase().includes('status'))||sc[0];
-  const perf=sc.find(c=>c.toLowerCase().includes('perf'));
-  const dept=cc.find(c=>c.toLowerCase().includes('dept'));
-  const gender=cc.find(c=>c.toLowerCase().includes('gender'));
-  const pos=cc.find(c=>c.toLowerCase().includes('pos'));
+  const sal=col('salary')||nc[0];
+  const abs=col('absence');
+  const trn=col('training');
+  const stc=col('status')||sc[0];
+  const perf=col('performance')||sc.find(c=>c.toLowerCase().includes('perf'));
+  const dept=col('department')||cc[0];
+  const gender=col('gender')||cc.find(c=>c.toLowerCase().includes('gender'));
+  const pos=cc.find(c=>c.toLowerCase().includes('pos')||c.toLowerCase().includes('role')||c.toLowerCase().includes('title'));
 
   if(pi===0){
     if(dept){const e=countBy(data,dept);const id=makeCard(grid,'Headcount by Department','Workforce distribution across organizational units — identifies where your human capital is concentrated','Org Structure','c8',280);barChart(id,e.map(x=>x[0]),e.map(x=>x[1]),'Employees',PAL[0]);}
@@ -974,15 +1072,15 @@ function buildHRCharts(grid,pi,data,nc,cc,sc){
 
 // ─── SAFETY CHARTS ────────────────────────────────────────
 function buildSafetyCharts(grid,pi,data,nc,cc,sc){
-  const viol=nc.find(c=>c.toLowerCase().includes('viol'));
-  const wrkr=nc.find(c=>c.toLowerCase().includes('worker')||c.toLowerCase().includes('count'));
-  const score=nc.find(c=>c.toLowerCase().includes('score'));
-  const stc=sc.find(c=>c.toLowerCase().includes('status'))||sc[0];
-  const risk=sc.find(c=>c.toLowerCase().includes('risk'));
-  const area=cc.find(c=>c.toLowerCase().includes('area')||c.toLowerCase().includes('zone'));
-  const ctr=cc.find(c=>c.toLowerCase().includes('contractor'));
-  const type=cc.find(c=>c.toLowerCase().includes('type'));
-  const mc=cc.find(c=>c.toLowerCase().includes('month'));
+  const viol=col('violations');
+  const wrkr=col('workers');
+  const score=col('score');
+  const stc=col('status')||sc[0];
+  const risk=col('risk')||sc.find(c=>c.toLowerCase().includes('risk'));
+  const area=col('region')||cc.find(c=>c.toLowerCase().includes('area')||c.toLowerCase().includes('zone'));
+  const ctr=col('contractor')||cc.find(c=>c.toLowerCase().includes('contractor'));
+  const type=col('permit_type')||cc.find(c=>c.toLowerCase().includes('type'));
+  const mc=col('month')||cc.find(c=>c.toLowerCase().includes('month'));
   const mOrder=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
   if(pi===0){

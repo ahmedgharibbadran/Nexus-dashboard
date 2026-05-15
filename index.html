@@ -3,1941 +3,1136 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ATLAS PRO — Data Intelligence</title>
+<title>ATLAS PRO — Intelligent Data Analytics</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Cabinet+Grotesk:wght@300;400;500;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-/* ═══════════════════════════════════
-   TOKENS
-═══════════════════════════════════ */
 :root {
-  --bg:        #080b12;
-  --bg2:       #0d1117;
-  --surface:   #111520;
-  --card:      #161b27;
-  --card2:     #1c2235;
-  --border:    rgba(255,255,255,0.06);
-  --border2:   rgba(255,255,255,0.11);
-  --text:      #e8ecf5;
-  --text2:     #9ba3bf;
-  --muted:     #515872;
-
-  /* domain accent — overridden by JS */
-  --a1: #6366f1;
-  --a2: #818cf8;
-  --a3: rgba(99,102,241,0.12);
-
-  /* semantic */
-  --green:  #10b981;
-  --red:    #f43f5e;
-  --amber:  #f59e0b;
-  --blue:   #3b82f6;
-  --purple: #a855f7;
-  --cyan:   #06b6d4;
+  --bg:       #06070d;
+  --bg2:      #0c0e18;
+  --surface:  #10131f;
+  --card:     #141826;
+  --card2:    #1a1f31;
+  --border:   rgba(255,255,255,0.06);
+  --border2:  rgba(255,255,255,0.10);
+  --text:     #eaecf4;
+  --text2:    #8b93b0;
+  --muted:    #4a5168;
+  --a1: #6366f1; --a2: #818cf8; --a3: rgba(99,102,241,0.10);
+  --green:#10b981; --red:#f43f5e; --amber:#f59e0b; --blue:#3b82f6; --cyan:#06b6d4; --purple:#a855f7;
+  --font: 'Inter', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
 }
-
-/* ═══════════════════════════════════
-   RESET & BASE
-═══════════════════════════════════ */
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:'Cabinet Grotesk',sans-serif;
-  min-height:100vh;
-  overflow-x:hidden;
-}
-
-/* animated mesh background */
-body::before{
-  content:'';
-  position:fixed;inset:0;
-  background:
-    radial-gradient(ellipse 70% 50% at 15% 0%,   rgba(99,102,241,0.07)  0%, transparent 55%),
-    radial-gradient(ellipse 50% 40% at 85% 100%, rgba(6,182,212,0.05)   0%, transparent 55%),
-    radial-gradient(ellipse 40% 30% at 50% 50%,  rgba(168,85,247,0.03)  0%, transparent 55%);
-  pointer-events:none;z-index:0;
-}
-/* subtle grid */
-body::after{
-  content:'';
-  position:fixed;inset:0;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
-  background-size:48px 48px;
-  pointer-events:none;z-index:0;
-}
-
-/* ═══════════════════════════════════
-   SCROLLBAR
-═══════════════════════════════════ */
-::-webkit-scrollbar{width:5px;height:5px;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 10% 5%,rgba(99,102,241,0.05) 0%,transparent 60%),radial-gradient(ellipse 40% 30% at 90% 95%,rgba(6,182,212,0.04) 0%,transparent 60%);pointer-events:none;z-index:0;}
+::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:var(--bg2);}
-::-webkit-scrollbar-thumb{background:#252d40;border-radius:3px;}
+::-webkit-scrollbar-thumb{background:var(--card2);border-radius:2px;}
 ::-webkit-scrollbar-thumb:hover{background:var(--a1);}
 
-/* ═══════════════════════════════════
-   HEADER
-═══════════════════════════════════ */
-#header{
-  position:sticky;top:0;z-index:200;
-  height:60px;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 28px;
-  background:rgba(8,11,18,0.88);
-  backdrop-filter:blur(28px);
-  border-bottom:1px solid var(--border);
-}
-.logo{
-  display:flex;align-items:center;gap:10px;
-  font-family:'Clash Display',sans-serif;
-  font-size:18px;font-weight:700;
-  letter-spacing:3px;
-  text-transform:uppercase;
-  color:var(--text);
-}
-.logo-mark{
-  width:32px;height:32px;
-  border-radius:8px;
-  background:linear-gradient(135deg,var(--a1),var(--a2));
-  display:grid;place-items:center;
-  font-size:15px;
-  box-shadow:0 0 16px var(--a3);
-  transition:all .4s;
-}
-.logo span{color:var(--a2);}
+/* HEADER */
+#hdr{position:sticky;top:0;z-index:300;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(6,7,13,0.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
+.logo{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:2px;color:var(--text);}
+.logo-gem{width:28px;height:28px;border-radius:7px;background:var(--a1);display:grid;place-items:center;font-size:13px;transition:background .4s;}
+.logo em{color:var(--a2);font-style:normal;}
+.nav{display:flex;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:3px;}
+.ntab{padding:6px 16px;border-radius:6px;font-size:11px;font-weight:500;letter-spacing:.3px;cursor:pointer;transition:all .2s;color:var(--text2);border:none;background:transparent;font-family:var(--mono);}
+.ntab.on{background:var(--a1);color:#fff;}
+.ntab:hover:not(.on){color:var(--text);background:var(--card);}
+.status-pill{display:flex;align-items:center;gap:6px;padding:5px 13px;border:1px solid var(--border2);border-radius:20px;font-family:var(--mono);font-size:10px;color:var(--a2);background:var(--a3);letter-spacing:.5px;}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
 
-/* NAV TABS */
-.nav-tabs{
-  display:flex;gap:2px;
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:10px;
-  padding:4px;
-}
-.ntab{
-  padding:7px 18px;
-  border-radius:7px;
-  font-size:12px;font-weight:500;
-  letter-spacing:.5px;
-  cursor:pointer;
-  transition:all .2s;
-  color:var(--text2);
-  white-space:nowrap;
-  font-family:'Fira Code',monospace;
-  border:none;background:transparent;
-}
-.ntab.active{
-  background:var(--a1);
-  color:#fff;
-  box-shadow:0 4px 16px rgba(99,102,241,0.35);
-}
-.ntab:hover:not(.active){color:var(--text);background:var(--card);}
+/* APP */
+#app{position:relative;z-index:1;padding:24px;}
 
-/* HEADER RIGHT */
-.hdr-right{
-  display:flex;align-items:center;gap:12px;
-}
-.domain-pill{
-  display:flex;align-items:center;gap:6px;
-  padding:6px 14px;
-  border:1px solid var(--border2);
-  border-radius:20px;
-  font-family:'Fira Code',monospace;
-  font-size:11px;
-  color:var(--a2);
-  background:var(--a3);
-  text-transform:uppercase;letter-spacing:1px;
-  transition:all .4s;
-}
-.pulse{
-  width:6px;height:6px;
-  border-radius:50%;
-  background:var(--green);
-  animation:pulse 2s infinite;
-}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
+/* UPLOAD */
+#upload{min-height:calc(100vh - 56px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:44px;padding:40px 20px;}
+.u-hero{text-align:center;max-width:640px;}
+.u-eyebrow{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--a2);border:1px solid rgba(99,102,241,0.25);background:rgba(99,102,241,0.05);padding:5px 14px;border-radius:20px;margin-bottom:26px;}
+.u-h1{font-size:clamp(36px,5.5vw,68px);font-weight:700;line-height:1.08;letter-spacing:-1.5px;margin-bottom:18px;}
+.u-h1 .g{background:linear-gradient(120deg,var(--a1),var(--cyan) 50%,var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.u-desc{font-size:16px;line-height:1.75;color:var(--text2);margin-bottom:36px;max-width:520px;margin-inline:auto;}
+.drop{width:100%;max-width:580px;border:1.5px dashed rgba(99,102,241,0.28);border-radius:22px;padding:52px 36px;text-align:center;cursor:pointer;transition:all .3s;background:rgba(99,102,241,0.02);position:relative;overflow:hidden;}
+.drop::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(99,102,241,0.05),transparent);transform:translateX(-100%);animation:sheen 3s ease-in-out infinite;}
+@keyframes sheen{to{transform:translateX(100%);}}
+.drop:hover,.drop.over{border-color:var(--a1);background:rgba(99,102,241,0.06);box-shadow:0 0 48px rgba(99,102,241,0.08);}
+.drop-icon{font-size:48px;display:block;margin-bottom:16px;animation:lift 3.5s ease-in-out infinite;}
+@keyframes lift{0%,100%{transform:translateY(0);}50%{transform:translateY(-7px);}}
+.drop-ttl{font-size:22px;font-weight:600;letter-spacing:-.4px;margin-bottom:8px;}
+.drop-sub{font-size:13px;color:var(--text2);margin-bottom:26px;line-height:1.6;}
+.btn-up{display:inline-flex;align-items:center;gap:8px;padding:12px 30px;background:var(--a1);color:#fff;border:none;border-radius:10px;font-family:var(--font);font-weight:600;font-size:13px;cursor:pointer;transition:all .25s;letter-spacing:.2px;box-shadow:0 6px 24px rgba(99,102,241,0.28);}
+.btn-up:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(99,102,241,0.42);}
+.fmts{display:flex;justify-content:center;gap:7px;margin-top:14px;}
+.fmt{padding:3px 9px;border:1px solid var(--border2);border-radius:4px;font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+.samples-label{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;text-align:center;}
+.samples{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+.sbtn{padding:10px 20px;background:var(--card);border:1px solid var(--border2);border-radius:11px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text2);display:flex;align-items:center;gap:7px;transition:all .2s;}
+.sbtn:hover{border-color:var(--a1);color:var(--a2);background:rgba(99,102,241,0.06);transform:translateY(-2px);}
 
-/* ═══════════════════════════════════
-   MAIN WRAPPER
-═══════════════════════════════════ */
-#app{position:relative;z-index:1;padding:28px 28px;}
-
-/* ═══════════════════════════════════
-   UPLOAD SCREEN
-═══════════════════════════════════ */
-#upload-screen{
-  min-height:calc(100vh - 60px);
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  gap:48px;padding:40px 20px;
-}
-.upload-hero{text-align:center;max-width:680px;}
-.upload-eyebrow{
-  display:inline-flex;align-items:center;gap:8px;
-  font-family:'Fira Code',monospace;
-  font-size:11px;letter-spacing:2px;
-  text-transform:uppercase;
-  color:var(--a2);
-  border:1px solid rgba(99,102,241,0.3);
-  background:rgba(99,102,241,0.06);
-  padding:6px 16px;border-radius:20px;
-  margin-bottom:28px;
-}
-.upload-h1{
-  font-family:'Clash Display',sans-serif;
-  font-size:clamp(40px,6vw,76px);
-  font-weight:700;
-  line-height:1.05;
-  letter-spacing:-1px;
-  margin-bottom:20px;
-}
-.upload-h1 .grad{
-  background:linear-gradient(135deg, var(--a1) 0%, var(--cyan) 50%, var(--a2) 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-}
-.upload-desc{
-  font-size:17px;line-height:1.7;
-  color:var(--text2);
-  margin-bottom:40px;
-}
-
-/* DROP ZONE */
-.drop-zone{
-  width:100%;max-width:620px;
-  border:1.5px dashed rgba(99,102,241,0.3);
-  border-radius:24px;
-  padding:56px 40px;
-  text-align:center;
-  cursor:pointer;
-  transition:all .3s;
-  background:rgba(99,102,241,0.03);
-  position:relative;overflow:hidden;
-}
-.drop-zone::before{
-  content:'';
-  position:absolute;inset:0;
-  background:linear-gradient(135deg,transparent 30%,rgba(99,102,241,0.06),transparent 70%);
-  animation:sweep 4s ease-in-out infinite;
-}
-@keyframes sweep{0%{transform:translateX(-150%);}100%{transform:translateX(150%);}}
-.drop-zone:hover,.drop-zone.over{
-  border-color:var(--a1);
-  background:rgba(99,102,241,0.07);
-  box-shadow:0 0 40px rgba(99,102,241,0.1);
-}
-.dz-icon{
-  font-size:52px;display:block;
-  margin-bottom:20px;
-  animation:float 3s ease-in-out infinite;
-}
-@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
-.dz-title{
-  font-family:'Clash Display',sans-serif;
-  font-size:26px;font-weight:600;
-  margin-bottom:8px;
-}
-.dz-sub{font-size:14px;color:var(--text2);margin-bottom:28px;line-height:1.6;}
-.btn-upload{
-  display:inline-flex;align-items:center;gap:10px;
-  padding:14px 34px;
-  background:linear-gradient(135deg,var(--a1),var(--a2));
-  color:#fff;border:none;border-radius:12px;
-  font-family:'Cabinet Grotesk',sans-serif;
-  font-weight:700;font-size:14px;
-  cursor:pointer;transition:all .25s;
-  text-transform:uppercase;letter-spacing:.5px;
-  box-shadow:0 8px 24px rgba(99,102,241,0.3);
-}
-.btn-upload:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(99,102,241,0.45);}
-.fmts{
-  display:flex;justify-content:center;gap:8px;margin-top:16px;
-  font-family:'Fira Code',monospace;
-}
-.fmt{
-  padding:3px 10px;
-  border:1px solid var(--border2);
-  border-radius:4px;font-size:10px;
-  color:var(--muted);text-transform:uppercase;letter-spacing:1px;
-}
-
-/* SAMPLE SECTION */
-.sample-section{text-align:center;width:100%;max-width:700px;}
-.sample-eyebrow{
-  font-family:'Fira Code',monospace;
-  font-size:10px;letter-spacing:2px;
-  text-transform:uppercase;color:var(--muted);
-  margin-bottom:14px;
-}
-.sample-grid{
-  display:flex;gap:10px;justify-content:center;flex-wrap:wrap;
-}
-.sample-btn{
-  padding:11px 22px;
-  background:var(--card);
-  border:1px solid var(--border2);
-  border-radius:12px;
-  font-size:13px;font-weight:500;
-  cursor:pointer;transition:all .2s;
-  color:var(--text2);
-  display:flex;align-items:center;gap:8px;
-}
-.sample-btn:hover{
-  border-color:var(--a1);color:var(--a2);
-  background:rgba(99,102,241,0.07);
-  transform:translateY(-2px);
-}
-
-/* ═══════════════════════════════════
-   LOADING SCREEN
-═══════════════════════════════════ */
-#loading-screen{
-  display:none;
-  min-height:calc(100vh - 60px);
-  flex-direction:column;align-items:center;justify-content:center;gap:28px;
-}
-.loader-wrap{position:relative;width:72px;height:72px;}
-.loader-ring{
-  position:absolute;inset:0;
-  border:2px solid var(--border);
-  border-top-color:var(--a1);
-  border-radius:50%;
-  animation:spin 1s linear infinite;
-}
-.loader-ring2{
-  position:absolute;inset:8px;
-  border:2px solid var(--border);
-  border-bottom-color:var(--cyan);
-  border-radius:50%;
-  animation:spin .7s linear infinite reverse;
-}
+/* LOADING */
+#loading{display:none;min-height:calc(100vh - 56px);flex-direction:column;align-items:center;justify-content:center;gap:24px;}
+.spin-wrap{position:relative;width:60px;height:60px;}
+.ring{position:absolute;inset:0;border:2px solid var(--border);border-radius:50%;}
+.ring1{border-top-color:var(--a1);animation:spin 1s linear infinite;}
+.ring2{inset:8px;border-bottom-color:var(--cyan);animation:spin .7s linear infinite reverse;}
 @keyframes spin{to{transform:rotate(360deg);}}
-.load-label{
-  font-family:'Clash Display',sans-serif;
-  font-size:18px;font-weight:600;
-  letter-spacing:3px;
-  text-transform:uppercase;
-  color:var(--a2);
-}
-.load-steps{display:flex;flex-direction:column;gap:10px;align-items:center;}
-.lstep{
-  font-family:'Fira Code',monospace;
-  font-size:11px;text-transform:uppercase;
-  letter-spacing:1.5px;color:var(--muted);
-  opacity:0;transition:opacity .3s;
-  display:flex;align-items:center;gap:8px;
-}
-.lstep.on{opacity:1;color:var(--text2);}
-.lstep.done{opacity:.4;color:var(--green);}
-.lstep::before{content:'○';font-size:8px;}
-.lstep.on::before{content:'●';color:var(--a1);}
-.lstep.done::before{content:'✓';color:var(--green);}
+.load-label{font-family:var(--mono);font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--a2);}
+.steps{display:flex;flex-direction:column;gap:9px;align-items:center;}
+.step{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);opacity:0;transition:opacity .3s;display:flex;align-items:center;gap:8px;}
+.step.on{opacity:1;color:var(--text2);}
+.step.done{opacity:.45;color:var(--green);}
+.step::before{content:'○';font-size:7px;}
+.step.on::before{content:'●';color:var(--a1);}
+.step.done::before{content:'✓';color:var(--green);}
 
-/* ═══════════════════════════════════
-   DASHBOARD
-═══════════════════════════════════ */
-#dashboard{display:none;}
-
-/* PAGE */
+/* DASHBOARD */
+#dash{display:none;}
 .page{display:none;}
-.page.active{display:block;}
+.page.on{display:block;}
 
-/* DASH TOPBAR */
-.dash-top{
-  display:flex;align-items:flex-start;justify-content:space-between;
-  margin-bottom:20px;flex-wrap:wrap;gap:14px;
-}
-.dash-heading{
-  font-family:'Clash Display',sans-serif;
-  font-size:28px;font-weight:700;
-  letter-spacing:-.5px;
-}
-.dash-heading span{color:var(--a2);}
-.dash-sub{
-  font-family:'Fira Code',monospace;
-  font-size:11px;color:var(--muted);
-  text-transform:uppercase;letter-spacing:1px;
-  margin-top:6px;
-}
-.dash-acts{display:flex;gap:8px;flex-wrap:wrap;}
-.btn-sm{
-  padding:8px 16px;
-  background:transparent;
-  border:1px solid var(--border2);
-  color:var(--text2);
-  border-radius:8px;
-  font-size:12px;font-weight:500;
-  cursor:pointer;transition:all .2s;
-  display:flex;align-items:center;gap:6px;
-  font-family:'Cabinet Grotesk',sans-serif;
-}
-.btn-sm:hover{border-color:var(--a1);color:var(--a2);}
+/* DASH TOP */
+.dtop{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px;}
+.dh{font-size:24px;font-weight:700;letter-spacing:-.5px;}
+.dh span{color:var(--a2);}
+.dsub{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:5px;letter-spacing:1px;text-transform:uppercase;}
+.dacts{display:flex;gap:8px;flex-wrap:wrap;}
+.btn-s{padding:7px 14px;background:transparent;border:1px solid var(--border2);color:var(--text2);border-radius:7px;font-size:11px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:5px;font-family:var(--font);transition:all .2s;}
+.btn-s:hover{border-color:var(--a1);color:var(--a2);}
 
-/* PAGE DESCRIPTION */
-.page-desc{
-  padding:14px 20px;
-  background:linear-gradient(135deg,rgba(99,102,241,0.07),rgba(6,182,212,0.04));
-  border:1px solid rgba(99,102,241,0.15);
-  border-left:3px solid var(--a1);
-  border-radius:0 12px 12px 0;
-  margin-bottom:24px;
-  font-size:13px;line-height:1.7;
-  color:var(--text2);
-}
-.page-desc strong{color:var(--text);}
+/* EXPERT CONTEXT BANNER */
+.ctx-banner{padding:16px 22px;background:linear-gradient(135deg,rgba(99,102,241,0.07),rgba(6,182,212,0.04));border:1px solid rgba(99,102,241,0.15);border-left:3px solid var(--a1);border-radius:0 12px 12px 0;margin-bottom:20px;}
+.ctx-tag{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--a2);margin-bottom:7px;}
+.ctx-body{font-size:13px;line-height:1.75;color:var(--text2);}
+.ctx-body strong{color:var(--text);font-weight:600;}
+.ctx-body .hi{color:var(--a2);}
+.ctx-body .ok{color:var(--green);}
+.ctx-body .warn{color:var(--amber);}
+.ctx-body .bad{color:var(--red);}
 
 /* FILTERS */
-.filter-bar{
-  display:flex;gap:8px;flex-wrap:wrap;align-items:center;
-  padding:14px 18px;
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:14px;
-  margin-bottom:22px;
-}
-.fl{
-  font-family:'Fira Code',monospace;
-  font-size:10px;color:var(--muted);
-  text-transform:uppercase;letter-spacing:1.5px;
-  margin-right:2px;white-space:nowrap;
-}
-.fsel{
-  padding:7px 30px 7px 11px;
-  background:var(--card);
-  border:1px solid var(--border);
-  color:var(--text);
-  border-radius:8px;
-  font-family:'Cabinet Grotesk',sans-serif;
-  font-size:12px;font-weight:500;
-  cursor:pointer;transition:all .2s;
-  appearance:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23515872' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;
-  background-position:right 10px center;
-  min-width:120px;
-}
-.fsel:focus{outline:none;border-color:var(--a1);}
-.fsrch{
-  padding:7px 13px;
-  background:var(--card);
-  border:1px solid var(--border);
-  color:var(--text);
-  border-radius:8px;
-  font-family:'Cabinet Grotesk',sans-serif;
-  font-size:12px;font-weight:500;
-  width:190px;transition:all .2s;
-  margin-left:auto;
-}
-.fsrch:focus{outline:none;border-color:var(--a1);width:230px;}
-.fsrch::placeholder{color:var(--muted);}
-.clr-btn{
-  padding:7px 13px;
-  background:transparent;
-  border:1px solid var(--border);
-  color:var(--muted);
-  border-radius:8px;
-  font-family:'Fira Code',monospace;
-  font-size:10px;text-transform:uppercase;
-  letter-spacing:.5px;cursor:pointer;transition:all .2s;
-}
-.clr-btn:hover{border-color:var(--red);color:var(--red);}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:20px;}
+.fl{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;}
+select{padding:6px 26px 6px 10px;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:7px;font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath fill='%234a5168' d='M4.5 5L0 0h9z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;min-width:130px;}
+select:focus{outline:none;border-color:var(--a1);}
+.srch{padding:6px 12px;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:7px;font-family:var(--font);font-size:12px;width:180px;transition:all .2s;margin-left:auto;}
+.srch:focus{outline:none;border-color:var(--a1);width:220px;}
+.srch::placeholder{color:var(--muted);}
+.clr{padding:6px 12px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:7px;font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:all .2s;}
+.clr:hover{border-color:var(--red);color:var(--red);}
 
-/* KPI GRID */
-.kpi-row{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
-  gap:14px;margin-bottom:22px;
-}
-.kpi{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:20px;
-  position:relative;overflow:hidden;
-  transition:all .3s;
-  cursor:default;
-}
-.kpi::before{
-  content:'';
-  position:absolute;
-  top:0;left:0;right:0;height:2px;
-  background:var(--kc,var(--a1));
-  transform:scaleX(0);transform-origin:left;
-  transition:transform .5s cubic-bezier(.34,1.56,.64,1);
-}
-.kpi:hover::before{transform:scaleX(1);}
-.kpi:hover{
-  border-color:rgba(255,255,255,0.1);
-  transform:translateY(-3px);
-  box-shadow:0 16px 40px rgba(0,0,0,.4);
-}
-.kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-.kpi-ico{
-  width:40px;height:40px;border-radius:10px;
-  display:grid;place-items:center;font-size:20px;
-  background:rgba(255,255,255,0.05);
-}
-.kpi-badge{
-  font-family:'Fira Code',monospace;
-  font-size:10px;padding:3px 9px;
-  border-radius:4px;font-weight:500;
-}
-.up{background:rgba(16,185,129,.15);color:var(--green);}
-.dn{background:rgba(244,63,94,.15);color:var(--red);}
-.nt{background:rgba(81,88,114,.2);color:var(--text2);}
-.kpi-lbl{
-  font-family:'Fira Code',monospace;
-  font-size:10px;text-transform:uppercase;
-  letter-spacing:1.5px;color:var(--muted);
-  margin-bottom:4px;
-}
-.kpi-val{
-  font-family:'Clash Display',sans-serif;
-  font-size:40px;font-weight:700;
-  line-height:1;
-  color:var(--kc,var(--a2));
-}
-.kpi-desc{font-size:12px;color:var(--text2);margin-top:6px;}
-
-/* INSIGHT CARD */
-.insight{
-  display:flex;gap:16px;align-items:flex-start;
-  padding:20px 24px;
-  background:linear-gradient(135deg,rgba(99,102,241,0.07),rgba(6,182,212,0.04));
-  border:1px solid rgba(99,102,241,0.18);
-  border-radius:16px;
-  margin-bottom:22px;
-}
-.ins-ico{font-size:28px;flex-shrink:0;margin-top:2px;}
-.ins-tag{
-  font-family:'Fira Code',monospace;
-  font-size:10px;text-transform:uppercase;
-  letter-spacing:2px;color:var(--a2);margin-bottom:8px;
-}
-.ins-body{font-size:13px;line-height:1.75;color:var(--text2);}
-.ins-body strong{color:var(--text);}
-.ins-body .hi{color:var(--a2);}
-.ins-body .warn{color:var(--amber);}
-.ins-body .bad{color:var(--red);}
-.ins-body .good{color:var(--green);}
+/* KPI ROW */
+.krow{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px;}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;position:relative;overflow:hidden;transition:all .3s;cursor:default;}
+.kpi::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--kc,var(--a1));transform:scaleX(0);transform-origin:left;transition:transform .5s cubic-bezier(.34,1.56,.64,1);}
+.kpi:hover::after{transform:scaleX(1);}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(0,0,0,.35);}
+.kpi-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.kpi-icon{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;font-size:18px;background:rgba(255,255,255,0.05);}
+.kbadge{font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:3px;font-weight:500;}
+.kbadge.up{background:rgba(16,185,129,.14);color:var(--green);}
+.kbadge.dn{background:rgba(244,63,94,.14);color:var(--red);}
+.kbadge.nt{background:rgba(99,102,241,.14);color:var(--a2);}
+.kbadge.warn{background:rgba(245,158,11,.14);color:var(--amber);}
+.klbl{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:4px;}
+.kval{font-size:34px;font-weight:700;line-height:1;color:var(--kc,var(--a2));letter-spacing:-1px;}
+.kdesc{font-size:11px;color:var(--text2);margin-top:5px;}
 
 /* CHARTS GRID */
-.cg{
-  display:grid;
-  grid-template-columns:repeat(12,1fr);
-  gap:16px;
-  margin-bottom:22px;
-}
-.cc{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:18px;
-  padding:22px;
-  transition:all .3s;
-  grid-column:span 6;
-  position:relative;overflow:hidden;
-}
-.cc.w12{grid-column:span 12;}
-.cc.w4{grid-column:span 4;}
-.cc.w8{grid-column:span 8;}
-.cc:hover{
-  border-color:rgba(255,255,255,0.09);
-  box-shadow:0 16px 48px rgba(0,0,0,.4);
-}
-.cc-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;}
-.cc-ttl{
-  font-family:'Clash Display',sans-serif;
-  font-size:15px;font-weight:600;
-  letter-spacing:-.2px;
-}
-.cc-desc{font-size:12px;color:var(--text2);margin-top:3px;line-height:1.5;}
-.cc-tag{
-  font-family:'Fira Code',monospace;
-  font-size:9px;text-transform:uppercase;letter-spacing:.5px;
-  padding:3px 10px;border-radius:4px;
-  background:var(--a3);color:var(--a2);
-  border:1px solid rgba(99,102,241,0.2);
-  flex-shrink:0;
-}
-.cw{position:relative;height:260px;}
-.cw.tall{height:320px;}
-.cw.short{height:200px;}
+.cg{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin-bottom:20px;}
+.cc{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;transition:all .3s;position:relative;overflow:hidden;}
+.cc.c6{grid-column:span 6;}
+.cc.c4{grid-column:span 4;}
+.cc.c8{grid-column:span 8;}
+.cc.c12{grid-column:span 12;}
+.cc:hover{border-color:rgba(255,255,255,0.09);box-shadow:0 12px 40px rgba(0,0,0,.35);}
+.cc-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}
+.cc-ttl{font-size:14px;font-weight:600;letter-spacing:-.2px;}
+.cc-sub{font-size:11px;color:var(--text2);margin-top:3px;line-height:1.5;max-width:340px;}
+.cc-tag{font-family:var(--mono);font-size:8px;text-transform:uppercase;letter-spacing:.5px;padding:3px 9px;border-radius:4px;background:var(--a3);color:var(--a2);border:1px solid rgba(99,102,241,0.18);white-space:nowrap;flex-shrink:0;}
+.cw{position:relative;}
 
-/* RECOMMENDATION CARDS */
-.reco-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-  gap:14px;margin-bottom:22px;
-}
-.reco-card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:18px 20px;
-  border-left:3px solid var(--rc,var(--a1));
-  transition:all .2s;
-}
-.reco-card:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,.3);}
-.reco-ico{font-size:22px;margin-bottom:10px;}
-.reco-ttl{
-  font-family:'Clash Display',sans-serif;
-  font-size:14px;font-weight:600;margin-bottom:6px;
-}
-.reco-body{font-size:12px;color:var(--text2);line-height:1.65;}
+/* RECOMMENDATIONS */
+.reco-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-bottom:20px;}
+.reco{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:17px 19px;border-left:3px solid var(--rc,var(--a1));transition:all .2s;}
+.reco:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.28);}
+.reco-icon{font-size:20px;margin-bottom:9px;}
+.reco-ttl{font-size:13px;font-weight:600;margin-bottom:5px;}
+.reco-body{font-size:11px;color:var(--text2);line-height:1.65;}
 
 /* TABLE */
-.tbl-card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:16px;
-  overflow:hidden;
-  margin-bottom:22px;
-}
-.tbl-top{
-  padding:16px 20px;
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:10px;
-}
-.tbl-ttl{
-  font-family:'Clash Display',sans-serif;
-  font-size:15px;font-weight:600;
-}
-.tbl-meta{
-  font-family:'Fira Code',monospace;
-  font-size:10px;color:var(--muted);
-  text-transform:uppercase;letter-spacing:1px;
-}
-.tw{overflow-x:auto;max-height:380px;overflow-y:auto;}
+.tcard{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px;}
+.thead-bar{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.thead-ttl{font-size:14px;font-weight:600;}
+.thead-meta{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.tw{overflow-x:auto;max-height:360px;overflow-y:auto;}
 table{width:100%;border-collapse:collapse;}
-th{
-  padding:10px 14px;
-  background:var(--surface);
-  text-align:left;
-  font-family:'Fira Code',monospace;
-  font-size:9px;text-transform:uppercase;
-  letter-spacing:1.5px;color:var(--muted);
-  border-bottom:1px solid var(--border);
-  position:sticky;top:0;z-index:2;
-  white-space:nowrap;cursor:pointer;
-  user-select:none;transition:color .2s;
-}
-th:hover{color:var(--a2);}
-th.srt{color:var(--a2);}
-td{
-  padding:10px 14px;
-  font-size:12px;font-weight:500;
-  color:var(--text);
-  border-bottom:1px solid rgba(255,255,255,0.03);
-  white-space:nowrap;max-width:180px;
-  overflow:hidden;text-overflow:ellipsis;
-}
-tr:hover td{background:rgba(99,102,241,0.04);}
-.tn{font-family:'Fira Code',monospace;color:var(--blue);font-size:11px;}
-.tb{
-  display:inline-block;
-  padding:2px 9px;border-radius:4px;
-  font-family:'Fira Code',monospace;
-  font-size:9px;text-transform:uppercase;letter-spacing:.5px;
-}
-.tb-g{background:rgba(16,185,129,.12);color:var(--green);}
-.tb-r{background:rgba(244,63,94,.12);color:var(--red);}
-.tb-a{background:rgba(245,158,11,.12);color:var(--amber);}
-.tb-b{background:rgba(59,130,246,.12);color:var(--blue);}
-.tb-p{background:rgba(168,85,247,.12);color:var(--purple);}
+th{padding:9px 13px;background:var(--surface);text-align:left;font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:2;cursor:pointer;white-space:nowrap;user-select:none;transition:color .2s;}
+th:hover,th.srt{color:var(--a2);}
+td{padding:9px 13px;font-size:12px;color:var(--text);border-bottom:1px solid rgba(255,255,255,0.025);white-space:nowrap;max-width:170px;overflow:hidden;text-overflow:ellipsis;}
+tr:hover td{background:rgba(99,102,241,0.03);}
+.tnum{font-family:var(--mono);color:var(--blue);font-size:11px;}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-family:var(--mono);font-size:8px;text-transform:uppercase;letter-spacing:.5px;}
+.bg{background:rgba(16,185,129,.12);color:var(--green);}
+.br{background:rgba(244,63,94,.12);color:var(--red);}
+.ba{background:rgba(245,158,11,.12);color:var(--amber);}
+.bb{background:rgba(59,130,246,.12);color:var(--blue);}
+.bp{background:rgba(168,85,247,.12);color:var(--purple);}
+
+/* SECTION TITLE */
+.sect{font-size:14px;font-weight:600;letter-spacing:-.2px;margin-bottom:13px;}
 
 /* TOAST */
-.toast{
-  position:fixed;bottom:22px;right:22px;
-  background:var(--card2);
-  border:1px solid var(--border2);
-  border-radius:12px;
-  padding:13px 18px;
-  display:flex;align-items:center;gap:10px;
-  font-size:13px;font-weight:500;
-  transform:translateY(80px);opacity:0;
-  transition:all .4s cubic-bezier(.34,1.56,.64,1);
-  z-index:999;
-  box-shadow:0 16px 48px rgba(0,0,0,.5);
-}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--card2);border:1px solid var(--border2);border-radius:11px;padding:12px 16px;display:flex;align-items:center;gap:9px;font-size:12px;font-weight:500;transform:translateY(70px);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);z-index:999;box-shadow:0 12px 40px rgba(0,0,0,.5);}
 .toast.on{transform:translateY(0);opacity:1;}
-.td{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.td{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
 
 /* RESPONSIVE */
-@media(max-width:1000px){
-  .cc{grid-column:span 12 !important;}
-  .cg{grid-template-columns:1fr;}
-}
-@media(max-width:700px){
-  #app{padding:16px 12px;}
-  #header{padding:0 14px;}
-  .nav-tabs{display:none;}
-  .kpi-row{grid-template-columns:repeat(2,1fr);}
-  .upload-h1{font-size:34px;}
-  .drop-zone{padding:36px 20px;}
-}
-@media(max-width:480px){
-  .kpi-row{grid-template-columns:1fr;}
-}
-
-#file-input{display:none;}
+@media(max-width:1024px){.cc{grid-column:span 12 !important;}.cg{grid-template-columns:1fr;}}
+@media(max-width:640px){#app{padding:12px;}.krow{grid-template-columns:repeat(2,1fr);}.nav{display:none;}}
+@media(max-width:400px){.krow{grid-template-columns:1fr;}}
+#fi{display:none;}
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<div id="header">
+<div id="hdr">
   <div class="logo">
-    <div class="logo-mark" id="logo-mark">◈</div>
-    ATLAS<span>PRO</span>
+    <div class="logo-gem" id="lgem">◈</div>
+    ATLAS<em>PRO</em>
   </div>
-  <div class="nav-tabs" id="nav-tabs" style="display:none;">
-    <!-- filled by JS -->
-  </div>
-  <div class="hdr-right">
-    <div class="domain-pill" id="domain-pill">
-      <div class="pulse"></div>
-      <span id="domain-label">Ready</span>
-    </div>
+  <div class="nav" id="nav" style="display:none;"></div>
+  <div class="status-pill">
+    <div class="dot"></div>
+    <span id="spill">Ready</span>
   </div>
 </div>
 
-<!-- APP -->
 <div id="app">
 
-<!-- ══ UPLOAD SCREEN ══ -->
-<div id="upload-screen">
-  <div class="upload-hero">
-    <div class="upload-eyebrow">⬡ Intelligent Data Analysis Platform</div>
-    <h1 class="upload-h1">
-      Your Data.<br>
-      <span class="grad">Deep Intelligence.</span>
-    </h1>
-    <p class="upload-desc">
-      Upload any dataset — Sales, HR, Safety, Finance, Operations. ATLAS PRO automatically reads the structure, identifies the domain, builds multi-page analytics dashboards, and writes expert-level insights. No setup required.
-    </p>
-    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
-      <span class="dz-icon">◈</span>
-      <div class="dz-title">Drop Your Dataset Here</div>
-      <div class="dz-sub">Any CSV or Excel file from any domain.<br>ATLAS PRO figures out the rest automatically.</div>
-      <button class="btn-upload" onclick="event.stopPropagation();document.getElementById('file-input').click()">
-        ↑ &nbsp; Upload Dataset
-      </button>
-      <div class="fmts" style="margin-top:16px;">
-        <span class="fmt">CSV</span>
-        <span class="fmt">XLSX</span>
-        <span class="fmt">XLS</span>
-        <span class="fmt">TSV</span>
-      </div>
+<div id="upload">
+  <div class="u-hero">
+    <div class="u-eyebrow">◈ Intelligent Analytics Platform</div>
+    <h1 class="u-h1">Data that<br><span class="g">tells the truth.</span></h1>
+    <p class="u-desc">Upload any dataset — Sales, HR, or Safety. ATLAS PRO reads your structure, detects the domain, builds expert dashboards, and writes analysis grounded in your actual numbers.</p>
+    <div class="drop" id="drop" onclick="document.getElementById('fi').click()">
+      <span class="drop-icon">◈</span>
+      <div class="drop-ttl">Drop your dataset here</div>
+      <div class="drop-sub">CSV, Excel, or TSV — any domain.<br>ATLAS PRO handles the rest automatically.</div>
+      <button class="btn-up" onclick="event.stopPropagation();document.getElementById('fi').click()">↑ &nbsp;Upload Dataset</button>
+      <div class="fmts"><span class="fmt">CSV</span><span class="fmt">XLSX</span><span class="fmt">XLS</span><span class="fmt">TSV</span></div>
     </div>
   </div>
-
-  <div class="sample-section">
-    <div class="sample-eyebrow">— or explore with a built-in sample —</div>
-    <div class="sample-grid">
-      <div class="sample-btn" onclick="loadSample('sales')">📈 &nbsp;Sales & Revenue</div>
-      <div class="sample-btn" onclick="loadSample('hr')">👥 &nbsp;Human Resources</div>
-      <div class="sample-btn" onclick="loadSample('safety')">🛡 &nbsp;HSE Safety Permits</div>
-      <div class="sample-btn" onclick="loadSample('finance')">💰 &nbsp;Finance & Budget</div>
+  <div>
+    <div class="samples-label">— or load a built-in sample —</div>
+    <div class="samples">
+      <div class="sbtn" onclick="loadSample('sales')">📈 &nbsp;Sales & Revenue</div>
+      <div class="sbtn" onclick="loadSample('hr')">👥 &nbsp;Human Resources</div>
+      <div class="sbtn" onclick="loadSample('safety')">🛡 &nbsp;HSE Safety Permits</div>
     </div>
   </div>
 </div>
 
-<!-- ══ LOADING SCREEN ══ -->
-<div id="loading-screen" style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:28px;min-height:calc(100vh - 60px);">
-  <div class="loader-wrap">
-    <div class="loader-ring"></div>
-    <div class="loader-ring2"></div>
-  </div>
+<div id="loading" style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:24px;min-height:calc(100vh - 56px);">
+  <div class="spin-wrap"><div class="ring ring1"></div><div class="ring ring2"></div></div>
   <div class="load-label">Analyzing Data</div>
-  <div class="load-steps">
-    <div class="lstep" id="ls1">Reading file structure</div>
-    <div class="lstep" id="ls2">Cleaning & normalizing records</div>
-    <div class="lstep" id="ls3">Detecting domain & column types</div>
-    <div class="lstep" id="ls4">Building intelligent pages</div>
-    <div class="lstep" id="ls5">Writing expert insights</div>
+  <div class="steps">
+    <div class="step" id="s1">Parsing file structure</div>
+    <div class="step" id="s2">Normalizing & cleaning records</div>
+    <div class="step" id="s3">Detecting domain & column types</div>
+    <div class="step" id="s4">Building expert dashboards</div>
+    <div class="step" id="s5">Writing contextual analysis</div>
   </div>
 </div>
 
-<!-- ══ DASHBOARD ══ -->
-<div id="dashboard">
-  <div id="pages-container"></div>
+<div id="dash">
+  <div id="pages"></div>
 </div>
 
-</div><!-- /app -->
+</div>
 
-<!-- TOAST -->
 <div class="toast" id="toast">
-  <div class="td" id="td"></div>
-  <span id="tm">Loaded</span>
+  <div class="td" id="tdot"></div>
+  <span id="tmsg">Done</span>
 </div>
-
-<input type="file" id="file-input" accept=".csv,.xlsx,.xls,.tsv">
+<input type="file" id="fi" accept=".csv,.xlsx,.xls,.tsv">
 
 <script>
-// ═══════════════════════════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════════════════════════
-let RAW=[], ALL=[], HEADERS=[], CHARTS=[];
-let DOMAIN='general', PAGES=[], ACTIVE_PAGE=0;
-let SORT_COL=null, SORT_DIR=1;
+// ─── STATE ───────────────────────────────────────────────
+let RAW=[], ALL=[], HDR=[], CHARTS=[], DOMAIN='general', ACTIVE=0, SDIR=1, SCOL=null;
 
-// Domain configurations
-const DOMAINS = {
+const DOMS = {
   sales:{
-    label:'Sales Analytics',
-    color:'#f97316', color2:'#fbbf24', colorA:'rgba(249,115,22,0.12)',
-    icon:'📈',
-    keywords:['sale','revenue','profit','order','customer','product','quantity','amount','discount','region','price','margin','invoice'],
-    pages:['Performance Overview','Loss & Risk Analysis','Growth & Opportunities'],
+    label:'Sales Analytics', icon:'📈',
+    c1:'#f97316',c2:'#fb923c',c3:'rgba(249,115,22,0.10)',
+    pages:['Performance Overview','Loss & Risk Analysis','Opportunity Mapping'],
+    kw:['sale','revenue','profit','order','customer','product','quantity','amount','discount','region','price','margin','invoice','channel']
   },
   hr:{
-    label:'HR Analytics',
-    color:'#a855f7', color2:'#c084fc', colorA:'rgba(168,85,247,0.12)',
-    icon:'👥',
-    keywords:['employee','salary','department','hire','resign','gender','age','position','attendance','leave','performance','headcount'],
+    label:'HR Analytics', icon:'👥',
+    c1:'#a855f7',c2:'#c084fc',c3:'rgba(168,85,247,0.10)',
     pages:['Workforce Overview','Attrition & Retention','Performance & Compensation'],
+    kw:['employee','salary','department','hire','resign','gender','age','position','attendance','leave','performance','headcount','staff','training']
   },
   safety:{
-    label:'HSE Intelligence',
-    color:'#f43f5e', color2:'#fb7185', colorA:'rgba(244,63,94,0.12)',
-    icon:'🛡',
-    keywords:['permit','incident','injury','violation','inspection','safety','hse','hazard','severity','lost','days','zone','area','accident'],
-    pages:['Safety Overview','Incident Analysis','Compliance & Permits'],
-  },
-  finance:{
-    label:'Financial Analytics',
-    color:'#10b981', color2:'#34d399', colorA:'rgba(16,185,129,0.12)',
-    icon:'💰',
-    keywords:['budget','expense','cost','income','balance','account','debit','credit','payment','invoice','tax','asset','liability'],
-    pages:['Financial Overview','Cost Analysis','Budget Performance'],
-  },
-  general:{
-    label:'Data Analytics',
-    color:'#6366f1', color2:'#818cf8', colorA:'rgba(99,102,241,0.12)',
-    icon:'◈',
-    keywords:[],
-    pages:['Overview','Breakdown Analysis','Trends & Insights'],
-  },
+    label:'HSE Intelligence', icon:'🛡',
+    c1:'#f43f5e',c2:'#fb7185',c3:'rgba(244,63,94,0.10)',
+    pages:['Safety Command Center','Incident & Violation Analysis','Compliance & Permit Integrity'],
+    kw:['permit','incident','injury','violation','inspection','safety','hse','hazard','severity','lost','zone','area','accident','contractor','risk']
+  }
 };
 
-// ═══════════════════════════════════════════════════════════
-//  UPLOAD HANDLERS
-// ═══════════════════════════════════════════════════════════
-const dz = document.getElementById('drop-zone');
-const fi = document.getElementById('file-input');
-dz.addEventListener('dragover', e=>{e.preventDefault();dz.classList.add('over');});
-dz.addEventListener('dragleave', ()=>dz.classList.remove('over'));
-dz.addEventListener('drop', e=>{
-  e.preventDefault();dz.classList.remove('over');
-  if(e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]);
-});
-fi.addEventListener('change', e=>{if(e.target.files[0]) processFile(e.target.files[0]);});
+// ─── FILE HANDLING ────────────────────────────────────────
+const drop=document.getElementById('drop'), fi=document.getElementById('fi');
+drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('over');});
+drop.addEventListener('dragleave',()=>drop.classList.remove('over'));
+drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('over');if(e.dataTransfer.files[0])processFile(e.dataTransfer.files[0]);});
+fi.addEventListener('change',e=>{if(e.target.files[0])processFile(e.target.files[0]);});
 
-function processFile(file) {
+function processFile(f){
   showLoading();
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      let data;
-      const name = file.name.toLowerCase();
-      if(name.endsWith('.csv')||name.endsWith('.tsv')) {
-        data = parseCSV(e.target.result, name.endsWith('.tsv')?'\t':',');
-      } else {
-        const wb = XLSX.read(e.target.result, {type:'array'});
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        data = XLSX.utils.sheet_to_json(ws, {defval:''});
-      }
-      if(!data||data.length===0){toast('No data found in file','red');showUpload();return;}
-      RAW = cleanData(data);
-      HEADERS = Object.keys(RAW[0]);
-      ALL = [...RAW];
-      DOMAIN = detectDomain();
-      applyTheme();
-      setTimeout(()=>buildDashboard(file.name), 2000);
-    } catch(err){
-      toast('Error: '+err.message,'red');showUpload();
-    }
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      let d;
+      const n=f.name.toLowerCase();
+      if(n.endsWith('.csv')||n.endsWith('.tsv')){d=parseCSV(e.target.result,n.endsWith('.tsv')?'\t':',');}
+      else{const wb=XLSX.read(e.target.result,{type:'array'});d=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});}
+      if(!d||!d.length){toast('No data found in file','red');showUpload();return;}
+      RAW=clean(d);HDR=Object.keys(RAW[0]);ALL=[...RAW];
+      DOMAIN=detectDomain();applyTheme();
+      setTimeout(()=>buildDash(f.name),2100);
+    }catch(err){toast('Error: '+err.message,'red');showUpload();}
   };
-  const name = file.name.toLowerCase();
-  if(name.endsWith('.csv')||name.endsWith('.tsv')) reader.readAsText(file);
-  else reader.readAsArrayBuffer(file);
+  const n=f.name.toLowerCase();
+  if(n.endsWith('.csv')||n.endsWith('.tsv'))r.readAsText(f);else r.readAsArrayBuffer(f);
 }
 
-// ═══════════════════════════════════════════════════════════
-//  PARSE & CLEAN
-// ═══════════════════════════════════════════════════════════
-function parseCSV(text, sep=',') {
-  const lines = text.trim().split('\n').filter(l=>l.trim());
-  if(lines.length<2) return [];
-  const hdrs = parseLine(lines[0],sep);
-  return lines.slice(1).map(line=>{
-    const vals = parseLine(line,sep);
-    return Object.fromEntries(hdrs.map((h,i)=>[h.trim(),vals[i]??'']));
-  });
+function parseCSV(txt,sep=','){
+  const lines=txt.trim().split('\n').filter(l=>l.trim());
+  if(lines.length<2)return[];
+  const hdrs=parseLine(lines[0],sep);
+  return lines.slice(1).map(l=>{const v=parseLine(l,sep);return Object.fromEntries(hdrs.map((h,i)=>[h.trim(),v[i]??'']));});
 }
-function parseLine(line,sep) {
-  const res=[]; let cur=''; let inQ=false;
-  for(const c of line){
-    if(c==='"') inQ=!inQ;
-    else if(c===sep&&!inQ){res.push(cur.trim());cur='';}
-    else cur+=c;
-  }
-  res.push(cur.trim());
-  return res;
+function parseLine(l,sep){
+  const res=[];let cur='',inQ=false;
+  for(const c of l){if(c==='"')inQ=!inQ;else if(c===sep&&!inQ){res.push(cur.trim());cur='';}else cur+=c;}
+  res.push(cur.trim());return res;
 }
-function cleanData(data) {
+function clean(data){
   return data.map(row=>{
     const r={};
     Object.keys(row).forEach(k=>{
-      const key=k.trim().replace(/\s+/g,' ');
-      let v=row[k];
-      if(typeof v==='string'){
-        v=v.trim();
-        const n=parseFloat(v.replace(/[,$%]/g,''));
-        if(!isNaN(n)&&v!=='') v=n;
-      }
+      const key=k.trim().replace(/\s+/g,' ');let v=row[k];
+      if(typeof v==='string'){v=v.trim();const n=parseFloat(v.replace(/[,$%]/g,''));if(!isNaN(n)&&v!=='')v=n;}
       r[key]=v;
     });
     return r;
   }).filter(r=>Object.values(r).some(v=>v!==''&&v!=null));
 }
 
-// ═══════════════════════════════════════════════════════════
-//  DOMAIN DETECTION
-// ═══════════════════════════════════════════════════════════
-function detectDomain() {
-  const txt = HEADERS.map(h=>h.toLowerCase()).join(' ') +
-              RAW.slice(0,5).map(r=>Object.values(r).join(' ')).join(' ').toLowerCase();
-  let best='general', bestScore=0;
-  Object.entries(DOMAINS).forEach(([dom,cfg])=>{
-    if(dom==='general') return;
-    const score = cfg.keywords.filter(k=>txt.includes(k)).length;
-    if(score>bestScore){bestScore=score;best=dom;}
+// ─── DOMAIN DETECTION ────────────────────────────────────
+function detectDomain(){
+  const txt=(HDR.map(h=>h.toLowerCase()).join(' ')+RAW.slice(0,5).map(r=>Object.values(r).join(' ')).join(' ')).toLowerCase();
+  let best='general',bestN=0;
+  Object.entries(DOMS).forEach(([dom,cfg])=>{
+    const n=cfg.kw.filter(k=>txt.includes(k)).length;
+    if(n>bestN){bestN=n;best=dom;}
   });
   return best;
 }
-
-function applyTheme() {
-  const d = DOMAINS[DOMAIN];
-  document.documentElement.style.setProperty('--a1', d.color);
-  document.documentElement.style.setProperty('--a2', d.color2);
-  document.documentElement.style.setProperty('--a3', d.colorA);
-  document.getElementById('domain-label').textContent = d.label;
-  document.getElementById('logo-mark').textContent = d.icon;
+function applyTheme(){
+  const d=DOMS[DOMAIN];if(!d)return;
+  document.documentElement.style.setProperty('--a1',d.c1);
+  document.documentElement.style.setProperty('--a2',d.c2);
+  document.documentElement.style.setProperty('--a3',d.c3);
+  document.getElementById('spill').textContent=d.label;
+  document.getElementById('lgem').textContent=d.icon;
 }
 
-// ═══════════════════════════════════════════════════════════
-//  COLUMN CLASSIFICATION
-// ═══════════════════════════════════════════════════════════
-function isNum(col) {
-  const s=RAW.slice(0,30).map(r=>r[col]).filter(v=>v!==''&&v!=null);
-  if(!s.length) return false;
-  return s.filter(v=>typeof v==='number').length/s.length>0.65;
-}
-function isCat(col) {
-  if(isNum(col)) return false;
-  const u=[...new Set(RAW.map(r=>r[col]))].filter(Boolean);
-  return u.length>=2&&u.length<=60;
-}
-function isStatus(col) {
-  return ['status','state','result','outcome','type','category','permit type','permit_type','severity','level','grade']
-    .some(k=>col.toLowerCase().includes(k));
-}
-function isDate(col) {
-  return ['date','time','day','month','year','period','quarter','week']
-    .some(k=>col.toLowerCase().includes(k));
-}
-function numCols(){return HEADERS.filter(h=>isNum(h));}
-function catCols(){return HEADERS.filter(h=>isCat(h));}
-function statusCols(){return HEADERS.filter(h=>isStatus(h));}
+// ─── COLUMN HELPERS ───────────────────────────────────────
+function isNum(col){const s=RAW.slice(0,30).map(r=>r[col]).filter(v=>v!==''&&v!=null);return s.length&&s.filter(v=>typeof v==='number').length/s.length>0.6;}
+function isCat(col){if(isNum(col))return false;const u=[...new Set(RAW.map(r=>r[col]))].filter(Boolean);return u.length>=2&&u.length<=60;}
+function isStatus(col){return ['status','state','result','type','severity','level','grade','risk','gender','performance'].some(k=>col.toLowerCase().includes(k));}
+function numCols(){return HDR.filter(h=>isNum(h));}
+function catCols(){return HDR.filter(h=>isCat(h));}
+function statusCols(){return HDR.filter(h=>isStatus(h));}
 
-// ═══════════════════════════════════════════════════════════
-//  SAMPLE DATA GENERATORS
-// ═══════════════════════════════════════════════════════════
-function loadSample(type) {
-  showLoading();
-  DOMAIN=type;
-  applyTheme();
+// ─── AGGREGATION ─────────────────────────────────────────
+function sum(data,col){return data.reduce((a,r)=>a+(typeof r[col]==='number'?r[col]:0),0);}
+function avg(data,col){const v=data.filter(r=>typeof r[col]==='number');return v.length?sum(v,col)/v.length:0;}
+function groupBy(data,grp,val,limit=8){
+  const g={};data.forEach(r=>{const k=String(r[grp]||'?');g[k]=(g[k]||0)+(typeof r[val]==='number'?r[val]:0);});
+  return Object.entries(g).sort((a,b)=>b[1]-a[1]).slice(0,limit);
+}
+function countBy(data,grp,limit=8){
+  const g={};data.forEach(r=>{const k=String(r[grp]||'?');g[k]=(g[k]||0)+1;});
+  return Object.entries(g).sort((a,b)=>b[1]-a[1]).slice(0,limit);
+}
+function topGroup(data,grp,val){const e=groupBy(data,grp,val,1);return e.length?e[0][0]:'N/A';}
+function topGroupByCount(data,grp){const e=countBy(data,grp,1);return e.length?e[0][0]:'N/A';}
+function fmtN(n){if(!n&&n!==0)return'-';const abs=Math.abs(n);if(abs>=1e6)return(n<0?'-':'')+Math.round(abs/1e4)/100+'M';if(abs>=1e3)return(n<0?'-':'')+Math.round(abs/100)/10+'K';return Math.round(n).toLocaleString();}
+function fmtD(n){return Math.round(n).toLocaleString();}
+
+// ─── SCREEN MANAGEMENT ───────────────────────────────────
+function showLoading(){
+  document.getElementById('upload').style.display='none';
+  const ld=document.getElementById('loading');ld.style.display='flex';
+  const steps=['s1','s2','s3','s4','s5'];
+  steps.forEach(id=>document.getElementById(id).className='step');
+  let i=0;
+  const iv=setInterval(()=>{
+    if(i>0)document.getElementById(steps[i-1]).className='step done';
+    if(i<steps.length)document.getElementById(steps[i]).className='step on';
+    i++;if(i>steps.length)clearInterval(iv);
+  },380);
+}
+function hideLoading(){document.getElementById('loading').style.display='none';}
+function showUpload(){document.getElementById('loading').style.display='none';document.getElementById('upload').style.display='flex';}
+function toast(msg,color='green'){
+  const t=document.getElementById('toast'),d=document.getElementById('tdot'),m=document.getElementById('tmsg');
+  m.textContent=msg;d.style.background=color==='green'?'var(--green)':color==='red'?'var(--red)':'var(--amber)';
+  t.classList.add('on');setTimeout(()=>t.classList.remove('on'),4200);
+}
+function exportCSV(){
+  const h=HDR.join(',');
+  const rows=ALL.map(r=>HDR.map(col=>{const v=r[col];return typeof v==='string'&&v.includes(',')?`"${v}"`:v;}).join(','));
+  const b=new Blob([[h,...rows].join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='atlas_export.csv';a.click();
+}
+function resetAll(){
+  CHARTS.forEach(c=>{try{c.destroy();}catch(e){}});CHARTS=[];
+  document.getElementById('dash').style.display='none';document.getElementById('nav').style.display='none';
+  document.getElementById('upload').style.display='flex';
+  document.getElementById('spill').textContent='Ready';document.getElementById('lgem').textContent='◈';
+  document.documentElement.style.setProperty('--a1','#6366f1');
+  document.documentElement.style.setProperty('--a2','#818cf8');
+  document.documentElement.style.setProperty('--a3','rgba(99,102,241,0.10)');
+  fi.value='';
+}
+
+// ─── SAMPLE DATA ─────────────────────────────────────────
+function loadSample(type){
+  showLoading();DOMAIN=type;applyTheme();
   let data=[];
-
   if(type==='sales'){
-    const products=['Laptop Pro','Steel Chair','Concrete Mix','Safety Helmet','Drill Machine','Generator','Water Pump','Cable Roll','Valve Set','Pipe Joint'];
+    const prods=['Laptop Pro X1','Industrial Drill Set','Safety Helmet Premium','Steel Cable 20m','Generator 5KVA','Concrete Mixer','Water Pump 3HP','Welding Machine','Scaffolding Set','Compressor 50L'];
     const regions=['Cairo','Alexandria','Suez','Aswan','Port Said','Luxor','Asyut','Mansoura'];
     const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const channels=['Direct','Distributor','Online','Tender','Referral'];
-    for(let i=1;i<=200;i++){
-      const qty=Math.floor(Math.random()*100)+1;
-      const price=Math.floor(Math.random()*2000)+100;
-      const disc=Math.random()>0.7?Math.floor(Math.random()*20):0;
-      const rev=qty*price*(1-disc/100);
-      const cost=rev*(0.4+Math.random()*0.2);
-      data.push({
-        'Order ID':`ORD-2024-${String(i).padStart(4,'0')}`,
-        'Product':products[Math.floor(Math.random()*products.length)],
-        'Region':regions[Math.floor(Math.random()*regions.length)],
-        'Channel':channels[Math.floor(Math.random()*channels.length)],
-        'Month':months[Math.floor(Math.random()*months.length)],
-        'Quantity':qty,
-        'Unit Price':price,
-        'Discount %':disc,
-        'Revenue':Math.round(rev),
-        'Cost':Math.round(cost),
-        'Profit':Math.round(rev-cost),
-        'Status':Math.random()>0.15?'Completed':Math.random()>0.5?'Pending':'Returned',
-      });
+    const statuses=['Completed','Pending','Returned','Cancelled'];
+    for(let i=1;i<=220;i++){
+      const q=Math.floor(Math.random()*80)+1,p=Math.floor(Math.random()*1800)+200,disc=Math.random()>.72?Math.floor(Math.random()*22):0;
+      const rev=Math.round(q*p*(1-disc/100)),cost=Math.round(rev*(0.42+Math.random()*.18));
+      const stRoll=Math.random();
+      data.push({'Order ID':`ORD-2024-${String(i).padStart(4,'0')}`,'Product':prods[Math.floor(Math.random()*prods.length)],'Region':regions[Math.floor(Math.random()*regions.length)],'Channel':channels[Math.floor(Math.random()*channels.length)],'Month':months[Math.floor(Math.random()*months.length)],'Quantity':q,'Unit Price (EGP)':p,'Discount %':disc,'Revenue (EGP)':rev,'Cost (EGP)':cost,'Profit (EGP)':rev-cost,'Status':stRoll>.82?'Completed':stRoll>.65?'Pending':stRoll>.55?'Returned':'Cancelled'});
     }
   } else if(type==='hr'){
-    const depts=['Engineering','HSE','Finance','HR','Procurement','IT','Operations','Legal'];
-    const positions=['Manager','Engineer','Analyst','Coordinator','Specialist','Director','Technician','Assistant'];
-    const statuses=['Active','Resigned','Terminated','On Leave'];
-    for(let i=1;i<=150;i++){
-      const sal=Math.floor(Math.random()*15000)+3000;
-      const perf=['Excellent','Good','Average','Below Average'][Math.floor(Math.random()*4)];
-      data.push({
-        'Employee ID':`EMP-${String(i).padStart(4,'0')}`,
-        'Department':depts[Math.floor(Math.random()*depts.length)],
-        'Position':positions[Math.floor(Math.random()*positions.length)],
-        'Gender':Math.random()>0.35?'Male':'Female',
-        'Age':Math.floor(Math.random()*30)+22,
-        'Years of Service':Math.floor(Math.random()*15)+1,
-        'Salary (EGP)':sal,
-        'Performance':perf,
-        'Status':statuses[Math.floor(Math.random()*statuses.length)],
-        'Absences (days)':Math.floor(Math.random()*20),
-        'Training Hours':Math.floor(Math.random()*40),
-      });
+    const depts=['Engineering','HSE','Finance','HR','Procurement','IT','Operations','Legal','Marketing'];
+    const positions=['Senior Manager','Lead Engineer','Financial Analyst','HSE Coordinator','IT Specialist','Department Director','Procurement Officer','Site Supervisor','Operations Analyst'];
+    const statuses=['Active','Resigned','Terminated','On Leave','Suspended'];
+    const perfs=['Exceptional','Meets Expectations','Needs Improvement','Below Standard'];
+    for(let i=1;i<=160;i++){
+      const sal=Math.floor(Math.random()*18000)+4000,yrs=Math.floor(Math.random()*18)+1;
+      const stRoll=Math.random(),perfRoll=Math.floor(Math.random()*4);
+      data.push({'Employee ID':`EMP-${String(i).padStart(4,'0')}`,'Department':depts[Math.floor(Math.random()*depts.length)],'Position':positions[Math.floor(Math.random()*positions.length)],'Gender':Math.random()>.34?'Male':'Female','Age':Math.floor(Math.random()*28)+23,'Years of Service':yrs,'Salary (EGP)':sal,'Performance Rating':perfs[perfRoll],'Employment Status':stRoll>.78?'Active':stRoll>.60?'Resigned':stRoll>.52?'Terminated':stRoll>.46?'On Leave':'Suspended','Absence Days':Math.floor(Math.random()*22),'Training Hours':Math.floor(Math.random()*48),'Overtime Hours':Math.floor(Math.random()*30)});
     }
   } else if(type==='safety'){
-    const permitTypes=['Hot Work','Confined Space','Excavation','Work at Height','Electrical Isolation','Cold Work','Radiography'];
-    const statuses=['Open','Closed','Overdue','Pending Approval','Rejected'];
-    const areas=['Zone A','Zone B','Zone C','Zone D','Main Plant','Utilities','Warehouse','Admin'];
-    const severities=['Low','Medium','High','Critical'];
-    const contractors=['Orascom Construction','Contrack','ENPPI','Petrofac','Arabian Contractors'];
-    for(let i=1;i<=180;i++){
-      data.push({
-        'Permit No':`PT-2024-${String(i).padStart(4,'0')}`,
-        'Permit Type':permitTypes[Math.floor(Math.random()*permitTypes.length)],
-        'Status':statuses[Math.floor(Math.random()*statuses.length)],
-        'Area':areas[Math.floor(Math.random()*areas.length)],
-        'Contractor':contractors[Math.floor(Math.random()*contractors.length)],
-        'Risk Level':severities[Math.floor(Math.random()*severities.length)],
-        'Workers Count':Math.floor(Math.random()*25)+1,
-        'Duration (hrs)':Math.floor(Math.random()*8)+1,
-        'Violations':Math.floor(Math.random()*4),
-        'HSE Officer':['Ahmed Gharib','Omar Salem','Khalid Hassan','Sara Farouk'][Math.floor(Math.random()*4)],
-        'Month':['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Math.floor(Math.random()*12)],
-      });
-    }
-  } else {
-    const categories=['Salaries','Materials','Equipment','Subcontract','Admin','Transport','Maintenance','Utilities'];
-    const depts=['Engineering','HSE','Finance','Operations','Procurement','IT'];
-    const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    for(let i=1;i<=160;i++){
-      const budget=Math.floor(Math.random()*50000)+5000;
-      const actual=budget*(0.7+Math.random()*0.6);
-      data.push({
-        'Transaction ID':`TXN-${String(i).padStart(4,'0')}`,
-        'Category':categories[Math.floor(Math.random()*categories.length)],
-        'Department':depts[Math.floor(Math.random()*depts.length)],
-        'Month':months[Math.floor(Math.random()*months.length)],
-        'Budget (EGP)':Math.round(budget),
-        'Actual (EGP)':Math.round(actual),
-        'Variance':Math.round(budget-actual),
-        'Status':actual<=budget?'Within Budget':'Over Budget',
-        'Approved By':['CFO','Finance Manager','Director'][Math.floor(Math.random()*3)],
-      });
+    const types=['Hot Work Permit','Confined Space Entry','Excavation & Trenching','Work at Height','Electrical Isolation','Cold Work','Radiography Operations','Critical Lift'];
+    const statuses=['Closed','Open','Overdue','Pending Approval','Rejected'];
+    const areas=['Zone A — Production','Zone B — Utilities','Zone C — Storage','Zone D — Admin','Main Plant Floor','Substation Area','Waste Management Zone','Loading Bay'];
+    const risks=['Low','Medium','High','Critical'];
+    const contractors=['Orascom Construction','Contrack Watts','ENPPI Services','Petrofac Egypt','Arabian Contractors','Hassan Allam','Elsewedy Construction'];
+    const officers=['Ahmed Gharib','Omar Salem','Khalid Hassan','Sara Farouk','Mostafa Nour'];
+    for(let i=1;i<=190;i++){
+      const viol=Math.random()>.7?Math.floor(Math.random()*4):0;
+      const stRoll=Math.random();
+      const riskRoll=Math.floor(Math.random()*4);
+      data.push({'Permit No':`PTW-2024-${String(i).padStart(4,'0')}`,'Permit Type':types[Math.floor(Math.random()*types.length)],'Status':stRoll>.55?'Closed':stRoll>.38?'Open':stRoll>.25?'Overdue':stRoll>.15?'Pending Approval':'Rejected','Area':areas[Math.floor(Math.random()*areas.length)],'Contractor':contractors[Math.floor(Math.random()*contractors.length)],'Risk Level':risks[riskRoll],'Workers Count':Math.floor(Math.random()*22)+1,'Duration (hrs)':Math.floor(Math.random()*9)+1,'Violations':viol,'HSE Officer':officers[Math.floor(Math.random()*officers.length)],'Month':['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Math.floor(Math.random()*12)],'Inspection Score':Math.floor(Math.random()*40)+60});
     }
   }
-
-  RAW=cleanData(data);
-  HEADERS=Object.keys(RAW[0]);
-  ALL=[...RAW];
-  setTimeout(()=>buildDashboard(DOMAINS[DOMAIN].label+' Dataset'), 2000);
+  RAW=clean(data);HDR=Object.keys(RAW[0]);ALL=[...RAW];
+  setTimeout(()=>buildDash(DOMS[DOMAIN].label+' Sample Dataset'),2100);
 }
 
-// ═══════════════════════════════════════════════════════════
-//  MAIN DASHBOARD BUILDER
-// ═══════════════════════════════════════════════════════════
-function buildDashboard(fileName) {
+// ─── MAIN DASHBOARD BUILDER ──────────────────────────────
+function buildDash(fileName){
   hideLoading();
-  document.getElementById('upload-screen').style.display='none';
-  document.getElementById('dashboard').style.display='block';
-
-  CHARTS.forEach(c=>{try{c.destroy();}catch(e){}});
-  CHARTS=[];
-
-  const d=DOMAINS[DOMAIN];
-  const container=document.getElementById('pages-container');
-  container.innerHTML='';
-
-  // Build nav
-  const nav=document.getElementById('nav-tabs');
-  nav.style.display='flex';
-  nav.innerHTML='';
+  document.getElementById('upload').style.display='none';
+  document.getElementById('dash').style.display='block';
+  CHARTS.forEach(c=>{try{c.destroy();}catch(e){}});CHARTS=[];
+  const d=DOMS[DOMAIN];
+  const container=document.getElementById('pages');container.innerHTML='';
+  const nav=document.getElementById('nav');nav.style.display='flex';nav.innerHTML='';
   d.pages.forEach((name,i)=>{
-    const btn=document.createElement('button');
-    btn.className='ntab'+(i===0?' active':'');
-    btn.textContent=name;
-    btn.onclick=()=>switchPage(i);
-    nav.appendChild(btn);
+    const btn=document.createElement('button');btn.className='ntab'+(i===0?' on':'');
+    btn.textContent=name;btn.onclick=()=>switchPage(i);nav.appendChild(btn);
+    const pg=document.createElement('div');pg.className='page'+(i===0?' on':'');pg.id='pg'+i;
+    container.appendChild(pg);buildPage(pg,i,fileName);
   });
-
-  // Build 3 pages
-  d.pages.forEach((name,i)=>{
-    const page=document.createElement('div');
-    page.className='page'+(i===0?' active':'');
-    page.id='page-'+i;
-    container.appendChild(page);
-    buildPage(page, i, fileName);
-  });
-
-  ACTIVE_PAGE=0;
-  toast(`✓ ${RAW.length.toLocaleString()} records analyzed — ${d.pages.length} pages generated`,'green');
+  ACTIVE=0;
+  toast(`${RAW.length.toLocaleString()} records analyzed — ${d.pages.length} expert pages ready`,'green');
+}
+function switchPage(i){
+  ACTIVE=i;
+  document.querySelectorAll('.page').forEach((p,j)=>p.classList.toggle('on',j===i));
+  document.querySelectorAll('.ntab').forEach((b,j)=>b.classList.toggle('on',j===i));
 }
 
-function switchPage(idx) {
-  ACTIVE_PAGE=idx;
-  document.querySelectorAll('.page').forEach((p,i)=>p.classList.toggle('active',i===idx));
-  document.querySelectorAll('.ntab').forEach((b,i)=>b.classList.toggle('active',i===idx));
-}
-
-// ═══════════════════════════════════════════════════════════
-//  PAGE BUILDER — per domain + page index
-// ═══════════════════════════════════════════════════════════
-function buildPage(container, pageIdx, fileName) {
-  const nc=numCols(), cc=catCols(), sc=statusCols();
-  const d=DOMAINS[DOMAIN];
-  const filtered=[...RAW];
-
-  // Page descriptions per domain + page
-  const pageDescs = getPageDescs();
-  const pageKPIs = getPageKPIs(filtered, nc, cc, sc);
-  const pageInsight = getInsight(filtered, nc, cc, sc, pageIdx);
-  const pageCharts = getCharts(pageIdx, nc, cc, sc);
-  const pageRecos = getRecos(filtered, nc, cc, sc, pageIdx);
-
-  container.innerHTML = `
-    <!-- TOP BAR -->
-    <div class="dash-top">
-      <div class="dash-info">
-        <div class="dash-heading"><span>${d.pages[pageIdx]}</span> — ${d.label}</div>
-        <div class="dash-sub">${RAW.length.toLocaleString()} records · ${HEADERS.length} columns · Last updated: ${new Date().toLocaleDateString('en-GB')}</div>
-      </div>
-      <div class="dash-acts">
-        <button class="btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
-        <button class="btn-sm" onclick="resetAll()">↺ New Dataset</button>
-      </div>
-    </div>
-
-    <!-- PAGE DESC -->
-    <div class="page-desc">${pageDescs[pageIdx]||''}</div>
-
-    <!-- FILTERS -->
-    <div class="filter-bar" id="fb-${pageIdx}">
-      <span class="fl">Filter:</span>
-      <div id="fselects-${pageIdx}" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
-      <input type="text" class="fsrch" id="fsrch-${pageIdx}" placeholder="🔍 Search records..." oninput="applyFilters(${pageIdx})">
-      <button class="clr-btn" onclick="clearFilters(${pageIdx})">✕ Clear All</button>
-    </div>
-
-    <!-- KPIs -->
-    <div class="kpi-row" id="kpi-${pageIdx}"></div>
-
-    <!-- INSIGHT -->
-    <div class="insight">
-      <div class="ins-ico">${d.icon}</div>
+// ─── PAGE BUILDER ─────────────────────────────────────────
+function buildPage(container,pi,fn){
+  const nc=numCols(),cc=catCols(),sc=statusCols();
+  const d=DOMS[DOMAIN]||{pages:['Overview'],label:'Analytics',icon:'◈'};
+  const data=[...RAW];
+  container.innerHTML=`
+    <div class="dtop">
       <div>
-        <div class="ins-tag">AI Expert Analysis · Page ${pageIdx+1}: ${d.pages[pageIdx]}</div>
-        <div class="ins-body" id="ins-${pageIdx}">${pageInsight}</div>
+        <div class="dh"><span>${d.pages[pi]}</span></div>
+        <div class="dsub">${RAW.length.toLocaleString()} records &middot; ${HDR.length} columns &middot; ${d.label}</div>
+      </div>
+      <div class="dacts">
+        <button class="btn-s" onclick="exportCSV()">↓ Export CSV</button>
+        <button class="btn-s" onclick="resetAll()">↺ New Dataset</button>
       </div>
     </div>
-
-    <!-- CHARTS -->
-    <div class="cg" id="cg-${pageIdx}"></div>
-
-    <!-- RECOMMENDATIONS -->
-    ${pageRecos.length>0?`
-    <div style="margin-bottom:22px;">
-      <div style="font-family:'Clash Display',sans-serif;font-size:15px;font-weight:600;margin-bottom:14px;letter-spacing:-.2px;">
-        Expert Recommendations
-      </div>
-      <div class="reco-grid" id="reco-${pageIdx}"></div>
-    </div>`:''}
-
-    <!-- TABLE (page 0 only) -->
-    ${pageIdx===0?`
-    <div class="tbl-card">
-      <div class="tbl-top">
-        <div class="tbl-ttl">Raw Data — All Records</div>
-        <div class="tbl-meta" id="tbl-meta-${pageIdx}">${RAW.length.toLocaleString()} records</div>
-      </div>
-      <div class="tw"><table>
-        <thead id="thead-${pageIdx}"></thead>
-        <tbody id="tbody-${pageIdx}"></tbody>
-      </table></div>
-    </div>`:''}
+    <div class="ctx-banner">
+      <div class="ctx-tag">Expert Analysis — ${d.pages[pi]}</div>
+      <div class="ctx-body" id="ctx${pi}"></div>
+    </div>
+    <div class="filters" id="filters${pi}">
+      <span class="fl">Filter:</span>
+      <div id="fsel${pi}" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+      <input type="text" class="srch" id="srch${pi}" placeholder="Search records..." oninput="applyFilters(${pi})">
+      <button class="clr" onclick="clearFilters(${pi})">✕ Clear</button>
+    </div>
+    <div class="krow" id="krow${pi}"></div>
+    <div class="cg" id="cg${pi}"></div>
+    <div id="reco${pi}"></div>
+    ${pi===0?`<div class="tcard"><div class="thead-bar"><div class="thead-ttl">Full Dataset — All Records</div><div class="thead-meta" id="tmeta${pi}">${RAW.length.toLocaleString()} records</div></div><div class="tw"><table><thead id="th${pi}"></thead><tbody id="tb${pi}"></tbody></table></div></div>`:''}
   `;
-
-  // Build filters
-  buildFilters(pageIdx, cc);
-  // Build KPIs
-  buildKPIs(pageIdx, pageKPIs);
-  // Build charts
-  buildPageCharts(pageIdx, nc, cc, sc, filtered);
-  // Build recos
-  if(pageRecos.length>0) buildRecos(pageIdx, pageRecos);
-  // Table
-  if(pageIdx===0) buildTable(pageIdx, filtered);
+  buildFilters(pi,cc);
+  renderPage(pi,data,nc,cc,sc);
+  if(pi===0)buildTable(pi,data);
 }
 
-// ═══════════════════════════════════════════════════════════
-//  PAGE DESCRIPTIONS
-// ═══════════════════════════════════════════════════════════
-function getPageDescs() {
-  const d=DOMAINS[DOMAIN];
-  const descs={
-    sales:[
-      `This page provides a <strong>complete performance overview</strong> of your sales data. You will see total revenue, profit margins, and order volumes broken down by region, product, and channel. Use these metrics to understand where your business stands today.`,
-      `This page digs into <strong>loss drivers and risk zones</strong> — returned orders, high-discount segments, underperforming regions, and products with negative margins. Identifying these patterns helps stop the revenue leak before it grows.`,
-      `This page highlights your <strong>growth opportunities</strong> — top products by profit, regions with the highest potential, and channel mix analysis. Use these insights to focus your sales efforts where they generate the most return.`,
-    ],
-    hr:[
-      `This page gives you a <strong>complete workforce snapshot</strong> — headcount, gender balance, department distribution, and salary benchmarks. Understanding your people structure is the foundation of every HR decision.`,
-      `This page analyzes <strong>attrition, absences, and retention risk</strong>. You will see which departments are losing the most talent, where absence rates are high, and which employee segments are at highest churn risk.`,
-      `This page covers <strong>performance ratings and compensation analysis</strong> — who your top performers are, whether pay is aligned with performance, and where training investment is needed.`,
-    ],
-    safety:[
-      `This page provides a <strong>360° safety overview</strong> for your site — total permits issued, open vs. closed status, risk level distribution, and violation counts. This is your daily HSE command center.`,
-      `This page focuses on <strong>incident patterns and risk concentration</strong> — which areas have the most violations, which permit types carry the highest risk, and where corrective action is most urgent.`,
-      `This page tracks <strong>compliance and permit performance</strong> — overdue permits, contractor compliance scores, and monthly permit trends. Maintaining permit discipline is your first line of site safety defense.`,
-    ],
-    finance:[
-      `This page delivers a <strong>high-level financial overview</strong> — total budget, actual spend, variance analysis, and department cost breakdown. This is your financial control tower.`,
-      `This page zooms into <strong>cost drivers and overspend categories</strong> — which departments exceeded their budgets, which cost categories consumed the most resources, and where the biggest variances occurred.`,
-      `This page compares <strong>budget vs. actual performance</strong> month-by-month and category-by-category, helping you identify trends, forecast more accurately, and tighten financial discipline.`,
-    ],
-    general:[
-      `This page gives you a <strong>complete overview</strong> of your dataset — record counts, key metrics, and categorical distribution. Understand your data at a glance before diving deeper.`,
-      `This page provides a <strong>detailed breakdown</strong> of how your data is distributed across categories and dimensions. Spot patterns, outliers, and concentrations quickly.`,
-      `This page focuses on <strong>trends and correlations</strong> within your data — how key metrics evolve over time and how different variables relate to each other.`,
-    ],
-  };
-  return descs[DOMAIN]||descs.general;
+// ─── FILTERS ─────────────────────────────────────────────
+function buildFilters(pi,cc){
+  const fsel=document.getElementById('fsel'+pi);if(!fsel)return;
+  const filterCols=cc.filter(c=>!isStatus(c)).slice(0,3);
+  [...filterCols,...statusCols().slice(0,2)].forEach(col=>{
+    const sel=document.createElement('select');
+    const vals=[...new Set(RAW.map(r=>r[col]))].filter(Boolean).sort();
+    sel.innerHTML=`<option value="">All ${col}</option>`+vals.map(v=>`<option value="${v}">${v}</option>`).join('');
+    sel.onchange=()=>applyFilters(pi);
+    sel.id=`fsel_${pi}_${col.replace(/\s+/g,'_')}`;
+    fsel.appendChild(sel);
+  });
+}
+function applyFilters(pi){
+  const filters={};
+  document.querySelectorAll(`#fsel${pi} select`).forEach(sel=>{
+    const col=sel.id.replace(`fsel_${pi}_`,'').replace(/_/g,' ');
+    if(sel.value)filters[col]=sel.value;
+  });
+  const srch=(document.getElementById('srch'+pi)||{}).value||'';
+  let d=[...RAW];
+  Object.entries(filters).forEach(([col,val])=>{d=d.filter(r=>String(r[col]||'')==val);});
+  if(srch)d=d.filter(r=>Object.values(r).some(v=>String(v).toLowerCase().includes(srch.toLowerCase())));
+  ALL=d;
+  const nc=numCols(),cc=catCols(),sc=statusCols();
+  renderPage(pi,d,nc,cc,sc);
+  if(pi===0)buildTable(pi,d);
+}
+function clearFilters(pi){
+  document.querySelectorAll(`#fsel${pi} select`).forEach(s=>s.value='');
+  const si=document.getElementById('srch'+pi);if(si)si.value='';
+  ALL=[...RAW];
+  const nc=numCols(),cc=catCols(),sc=statusCols();
+  renderPage(pi,ALL,nc,cc,sc);
+  if(pi===0)buildTable(pi,ALL);
 }
 
-// ═══════════════════════════════════════════════════════════
-//  KPI DEFINITIONS PER PAGE
-// ═══════════════════════════════════════════════════════════
-function getPageKPIs(data, nc, cc, sc) {
-  const kpiSets={
-    sales:[
-      [
-        {ico:'💰',lbl:'Total Revenue',fn:d=>sum(d,nc.find(c=>c.toLowerCase().includes('rev'))||nc[0]),color:'var(--green)',badge:'Revenue'},
-        {ico:'📦',lbl:'Total Orders',fn:d=>d.length,color:'var(--a1)',badge:'Orders'},
-        {ico:'📈',lbl:'Total Profit',fn:d=>sum(d,nc.find(c=>c.toLowerCase().includes('profit'))||nc[1]),color:'var(--a2)',badge:'Profit'},
-        {ico:'🎯',lbl:'Avg Order Value',fn:d=>{const r=nc.find(c=>c.toLowerCase().includes('rev'))||nc[0];return r?avg(d,r):0;},color:'var(--cyan)',badge:'AOV'},
-      ],
-      [
-        {ico:'↩️',lbl:'Returned Orders',fn:d=>d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('return')).length,color:'var(--red)',badge:'⚠ Risk'},
-        {ico:'🔻',lbl:'Avg Discount %',fn:d=>{const c=nc.find(x=>x.toLowerCase().includes('disc'));return c?avg(d,c):0;},color:'var(--amber)',badge:'Discount'},
-        {ico:'📉',lbl:'Loss Amount',fn:d=>{const c=nc.find(x=>x.toLowerCase().includes('profit'));return c?Math.abs(d.filter(r=>(r[c]||0)<0).reduce((a,r)=>a+(r[c]||0),0)):0;},color:'var(--red)',badge:'Loss'},
-        {ico:'⚠️',lbl:'Pending Orders',fn:d=>d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('pend')).length,color:'var(--amber)',badge:'Pending'},
-      ],
-      [
-        {ico:'🏆',lbl:'Best Region Revenue',fn:d=>{const rc=cc.find(c=>c.toLowerCase().includes('region'));const vc=nc.find(c=>c.toLowerCase().includes('rev'))||nc[0];if(!rc||!vc)return 0;const g={};d.forEach(r=>{const k=r[rc];g[k]=(g[k]||0)+(r[vc]||0);});return Math.max(...Object.values(g));},color:'var(--green)',badge:'Top'},
-        {ico:'📊',lbl:'Unique Products',fn:d=>{const c=cc.find(x=>x.toLowerCase().includes('product'));return c?new Set(d.map(r=>r[c])).size:0;},color:'var(--a1)',badge:'Products'},
-        {ico:'✅',lbl:'Completed Orders',fn:d=>d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('complet')).length,color:'var(--green)',badge:'Done'},
-        {ico:'💡',lbl:'Profit Margin %',fn:d=>{const rv=nc.find(c=>c.toLowerCase().includes('rev'))||nc[0];const pr=nc.find(c=>c.toLowerCase().includes('profit'))||nc[1];if(!rv||!pr)return 0;const r=sum(d,rv);return r?Math.round(sum(d,pr)/r*100):0;},color:'var(--cyan)',badge:'Margin',suffix:'%'},
-      ],
-    ],
-    hr:[
-      [
-        {ico:'👥',lbl:'Total Headcount',fn:d=>d.length,color:'var(--a1)',badge:'Staff'},
-        {ico:'💰',lbl:'Total Payroll',fn:d=>sum(d,nc.find(c=>c.toLowerCase().includes('salary'))||nc[0]),color:'var(--green)',badge:'Payroll'},
-        {ico:'👩',lbl:'Female Ratio %',fn:d=>{const gc=cc.find(c=>c.toLowerCase().includes('gender'));return gc?Math.round(d.filter(r=>String(r[gc]||'').toLowerCase().includes('female')).length/d.length*100):0;},color:'var(--purple)',badge:'Gender',suffix:'%'},
-        {ico:'📊',lbl:'Departments',fn:d=>{const dc=cc.find(c=>c.toLowerCase().includes('dept'));return dc?new Set(d.map(r=>r[dc])).size:0;},color:'var(--cyan)',badge:'Depts'},
-      ],
-      [
-        {ico:'🚪',lbl:'Resigned / Left',fn:d=>d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('resign')||String(r[sc[0]]||'').toLowerCase().includes('termin')).length,color:'var(--red)',badge:'Attrition'},
-        {ico:'📅',lbl:'Avg Absences',fn:d=>{const ac=nc.find(c=>c.toLowerCase().includes('absence'));return ac?avg(d,ac):0;},color:'var(--amber)',badge:'Absences'},
-        {ico:'✅',lbl:'Active Employees',fn:d=>d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('active')).length,color:'var(--green)',badge:'Active'},
-        {ico:'⚠️',lbl:'On Leave',fn:d=>d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('leave')).length,color:'var(--amber)',badge:'Leave'},
-      ],
-      [
-        {ico:'🏆',lbl:'Excellent Performers',fn:d=>{const pc=sc.find(c=>c.toLowerCase().includes('perf'));return pc?d.filter(r=>String(r[pc]||'').toLowerCase().includes('excell')).length:0;},color:'var(--green)',badge:'Top'},
-        {ico:'💰',lbl:'Avg Salary',fn:d=>avg(d,nc.find(c=>c.toLowerCase().includes('salary'))||nc[0]),color:'var(--a2)',badge:'Avg'},
-        {ico:'📚',lbl:'Avg Training Hrs',fn:d=>{const tc=nc.find(c=>c.toLowerCase().includes('train'));return tc?avg(d,tc):0;},color:'var(--cyan)',badge:'Training'},
-        {ico:'📈',lbl:'Avg Years Service',fn:d=>{const yc=nc.find(c=>c.toLowerCase().includes('year')||c.toLowerCase().includes('service'));return yc?avg(d,yc):0;},color:'var(--blue)',badge:'Tenure'},
-      ],
-    ],
-    safety:[
-      [
-        {ico:'📋',lbl:'Total Permits',fn:d=>d.length,color:'var(--a1)',badge:'All Permits'},
-        {ico:'🔓',lbl:'Open Permits',fn:d=>d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('open')||String(r[sc[0]]||'').toLowerCase().includes('pend')).length,color:'var(--amber)',badge:'Open'},
-        {ico:'✅',lbl:'Closed Permits',fn:d=>d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('close')).length,color:'var(--green)',badge:'Closed'},
-        {ico:'🚨',lbl:'Overdue Permits',fn:d=>d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('overdue')).length,color:'var(--red)',badge:'⚠ Overdue'},
-      ],
-      [
-        {ico:'⚡',lbl:'Total Violations',fn:d=>sum(d,nc.find(c=>c.toLowerCase().includes('viol'))||nc[0]),color:'var(--red)',badge:'Violations'},
-        {ico:'👷',lbl:'Total Workers',fn:d=>sum(d,nc.find(c=>c.toLowerCase().includes('worker'))||nc.find(c=>c.toLowerCase().includes('count'))||nc[0]),color:'var(--a1)',badge:'Workers'},
-        {ico:'🔥',lbl:'High Risk Permits',fn:d=>{const rc=sc.find(c=>c.toLowerCase().includes('risk'));return rc?d.filter(r=>String(r[rc]||'').toLowerCase().includes('high')||String(r[rc]||'').toLowerCase().includes('critical')).length:0;},color:'var(--red)',badge:'High Risk'},
-        {ico:'🕐',lbl:'Avg Duration (hrs)',fn:d=>avg(d,nc.find(c=>c.toLowerCase().includes('duration'))||nc.find(c=>c.toLowerCase().includes('hr'))||nc[0]),color:'var(--cyan)',badge:'Avg Hrs'},
-      ],
-      [
-        {ico:'✅',lbl:'Compliance Rate %',fn:d=>{const closed=d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('close')).length;return d.length?Math.round(closed/d.length*100):0;},color:'var(--green)',badge:'Compliance',suffix:'%'},
-        {ico:'🚨',lbl:'Rejected Permits',fn:d=>d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('reject')).length,color:'var(--red)',badge:'Rejected'},
-        {ico:'🏢',lbl:'Active Contractors',fn:d=>{const cc2=cc.find(c=>c.toLowerCase().includes('contractor'));return cc2?new Set(d.map(r=>r[cc2])).size:0;},color:'var(--a1)',badge:'Contractors'},
-        {ico:'📊',lbl:'Permit Types',fn:d=>{const tc=cc.find(c=>c.toLowerCase().includes('type'));return tc?new Set(d.map(r=>r[tc])).size:0;},color:'var(--cyan)',badge:'Types'},
-      ],
-    ],
-    finance:[
-      [
-        {ico:'💰',lbl:'Total Budget',fn:d=>sum(d,nc.find(c=>c.toLowerCase().includes('budget'))||nc[0]),color:'var(--a1)',badge:'Budget'},
-        {ico:'💸',lbl:'Total Actual Spend',fn:d=>sum(d,nc.find(c=>c.toLowerCase().includes('actual'))||nc[1]),color:'var(--amber)',badge:'Actual'},
-        {ico:'📊',lbl:'Total Variance',fn:d=>sum(d,nc.find(c=>c.toLowerCase().includes('vari'))||nc[2]),color:'var(--green)',badge:'Variance'},
-        {ico:'🏢',lbl:'Departments',fn:d=>{const dc=cc.find(c=>c.toLowerCase().includes('dept'));return dc?new Set(d.map(r=>r[dc])).size:0;},color:'var(--cyan)',badge:'Depts'},
-      ],
-      [
-        {ico:'🔺',lbl:'Over Budget Items',fn:d=>d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('over')).length,color:'var(--red)',badge:'⚠ Overspend'},
-        {ico:'✅',lbl:'Within Budget',fn:d=>d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('within')).length,color:'var(--green)',badge:'OK'},
-        {ico:'💥',lbl:'Max Overspend',fn:d=>{const ac=nc.find(c=>c.toLowerCase().includes('actual'))||nc[1];const bc=nc.find(c=>c.toLowerCase().includes('budget'))||nc[0];if(!ac||!bc)return 0;return Math.max(...d.map(r=>((r[ac]||0)-(r[bc]||0))));},color:'var(--red)',badge:'Worst'},
-        {ico:'📉',lbl:'Avg Variance',fn:d=>avg(d,nc.find(c=>c.toLowerCase().includes('vari'))||nc[2]),color:'var(--amber)',badge:'Avg'},
-      ],
-      [
-        {ico:'📅',lbl:'Months Tracked',fn:d=>{const mc=cc.find(c=>c.toLowerCase().includes('month'));return mc?new Set(d.map(r=>r[mc])).size:0;},color:'var(--a1)',badge:'Months'},
-        {ico:'🏆',lbl:'Best Month (Budget Saved)',fn:d=>{const mc=cc.find(c=>c.toLowerCase().includes('month'));const vc=nc.find(c=>c.toLowerCase().includes('vari'))||nc[2];if(!mc||!vc)return 0;const g={};d.forEach(r=>{const k=r[mc];g[k]=(g[k]||0)+(r[vc]||0);});return Math.max(...Object.values(g));},color:'var(--green)',badge:'Best'},
-        {ico:'📈',lbl:'Budget Utilization %',fn:d=>{const ac=nc.find(c=>c.toLowerCase().includes('actual'))||nc[1];const bc=nc.find(c=>c.toLowerCase().includes('budget'))||nc[0];if(!ac||!bc)return 0;const a=sum(d,ac),b=sum(d,bc);return b?Math.round(a/b*100):0;},color:'var(--cyan)',badge:'Utilization',suffix:'%'},
-        {ico:'💰',lbl:'Avg Monthly Budget',fn:d=>{const bc=nc.find(c=>c.toLowerCase().includes('budget'))||nc[0];return bc?avg(d,bc):0;},color:'var(--a2)',badge:'Avg'},
-      ],
-    ],
-  };
-
-  const sets=kpiSets[DOMAIN]||[
-    [
-      {ico:'📊',lbl:'Total Records',fn:d=>d.length,color:'var(--a1)',badge:'Total'},
-      {ico:'🔢',lbl:'Total '+（nc[0]||'Value'），fn:d=>sum(d,nc[0]),color:'var(--green)',badge:'Sum'},
-      {ico:'📈',lbl:'Avg '+(nc[0]||'Value'),fn:d=>avg(d,nc[0]),color:'var(--a2)',badge:'Avg'},
-      {ico:'🏆',lbl:'Max '+(nc[0]||'Value'),fn:d=>nc[0]?Math.max(...d.map(r=>r[nc[0]]||0)):0,color:'var(--cyan)',badge:'Max'},
-    ],
-    [{ico:'📊',lbl:'Categories',fn:d=>catCols().length,color:'var(--a1)',badge:'Cols'}],
-    [{ico:'📊',lbl:'Records',fn:d=>d.length,color:'var(--a1)',badge:'Total'}],
-  ];
-
-  return (sets[0]||[]).map((k,pageIdx_ignored)=>k);
+// ─── RENDER PAGE (KPIs + Charts + Insight + Recos) ───────
+function renderPage(pi,data,nc,cc,sc){
+  buildKPIs(pi,data,nc,cc,sc);
+  buildInsight(pi,data,nc,cc,sc);
+  buildCharts(pi,data,nc,cc,sc);
+  buildRecos(pi,data,nc,cc,sc);
 }
 
-// ═══════════════════════════════════════════════════════════
-//  AI INSIGHTS PER PAGE
-// ═══════════════════════════════════════════════════════════
-function getInsight(data, nc, cc, sc, pageIdx) {
-  const d=DOMAINS[DOMAIN];
-  const nr=data.length;
+// ─── KPIs ─────────────────────────────────────────────────
+function buildKPIs(pi,data,nc,cc,sc){
+  const row=document.getElementById('krow'+pi);if(!row)return;row.innerHTML='';
+  const kpis=getKPIs(pi,data,nc,cc,sc);
+  kpis.forEach(k=>{
+    const val=k.fn(data);
+    const disp=k.pct?Math.round(val)+'%':k.money?fmtN(val):k.int?fmtD(val):Math.round(val*10)/10;
+    const div=document.createElement('div');div.className='kpi';div.style.setProperty('--kc',k.color||'var(--a2)');
+    div.innerHTML=`<div class="kpi-top"><div class="kpi-icon">${k.icon}</div><span class="kbadge ${k.badge_class||'nt'}">${k.badge}</span></div><div class="klbl">${k.label}</div><div class="kval">${disp}</div><div class="kdesc">${k.desc}</div>`;
+    row.appendChild(div);
+  });
+}
 
+function getKPIs(pi,data,nc,cc,sc){
   if(DOMAIN==='sales'){
-    const rc=nc.find(c=>c.toLowerCase().includes('rev'))||nc[0];
-    const pc=nc.find(c=>c.toLowerCase().includes('profit'))||nc[1];
+    const rv=nc.find(c=>c.toLowerCase().includes('rev'))||nc[0];
+    const pr=nc.find(c=>c.toLowerCase().includes('profit'))||nc[1];
+    const dc=nc.find(c=>c.toLowerCase().includes('disc'));
+    const stc=sc[0]||sc.find(c=>c.toLowerCase().includes('status'));
     const regc=cc.find(c=>c.toLowerCase().includes('region'));
     const prodc=cc.find(c=>c.toLowerCase().includes('product'));
-    const statc=sc[0];
-    const totalRev=rc?fmtN(sum(data,rc)):'-';
-    const totalProfit=pc?fmtN(sum(data,pc)):'-';
-
-    const topRegion=regc?topGroup(data,regc,rc):'N/A';
-    const topProduct=prodc?topGroup(data,prodc,rc):'N/A';
-    const returned=statc?data.filter(r=>String(r[statc]||'').toLowerCase().includes('return')).length:0;
-    const margin=rc&&pc?Math.round(sum(data,pc)/sum(data,rc)*100):0;
-
-    const insights=[
-      `Your dataset contains <strong>${nr} sales transactions</strong> generating a total revenue of <span class="hi">${totalRev}</span> with a gross profit of <span class="good">${totalProfit}</span>. Overall profit margin is <strong>${margin}%</strong>. <strong>${topRegion}</strong> is the top-performing region by revenue, while <strong>${topProduct}</strong> leads by product.`,
-      `<span class="bad">${returned} orders (${Math.round(returned/nr*100)}%)</span> were returned, directly eroding revenue. High-discount transactions are pulling down margins in key segments. Focus on understanding <strong>why returns are happening</strong> — product quality issues or incorrect order matching are the most common root causes in construction supply chains.`,
-      `Your top region and product are driving the majority of revenue. <span class="good">Concentrate budget and sales effort on these proven performers.</span> Expanding the top product into underperforming regions could unlock significant growth. Consider reducing low-margin SKUs and renegotiating terms with high-discount channels.`,
+    const margin=rv&&pr&&sum(data,rv)?Math.round(sum(data,pr)/sum(data,rv)*100):0;
+    const ksets=[
+      [
+        {icon:'💰',label:'Total Revenue',fn:d=>rv?sum(d,rv):d.length,color:'var(--green)',badge:'Revenue',badge_class:'up',desc:'Gross revenue across all transactions',money:true},
+        {icon:'📦',label:'Total Orders',fn:d=>d.length,color:'var(--a1)',badge:'Orders',badge_class:'nt',desc:'Number of transactions processed',int:true},
+        {icon:'📈',label:'Gross Profit',fn:d=>pr?sum(d,pr):0,color:'var(--a2)',badge:'Profit',badge_class:'up',desc:'Revenue minus cost of goods sold',money:true},
+        {icon:'🎯',label:'Profit Margin',fn:d=>{const r=rv?sum(d,rv):1;const p=pr?sum(d,pr):0;return r?p/r*100:0;},color:'var(--cyan)',badge:'Margin %',badge_class:margin>20?'up':margin>10?'nt':'dn',desc:`${margin}% — target above 20% for healthy operations`,pct:true},
+      ],
+      [
+        {icon:'↩️',label:'Returned Orders',fn:d=>stc?d.filter(r=>String(r[stc]||'').match(/return/i)).length:0,color:'var(--red)',badge:'⚠ Risk',badge_class:'dn',desc:'Orders reversed — direct revenue erosion',int:true},
+        {icon:'🔻',label:'Avg Discount Applied',fn:d=>dc?avg(d,dc):0,color:'var(--amber)',badge:'Discount',badge_class:'warn',desc:'Average discount across all orders',pct:true},
+        {icon:'⚠️',label:'Pending Orders',fn:d=>stc?d.filter(r=>String(r[stc]||'').match(/pend/i)).length:0,color:'var(--amber)',badge:'Pending',badge_class:'warn',desc:'Awaiting fulfillment or confirmation',int:true},
+        {icon:'📉',label:'Revenue at Risk',fn:d=>{const lost=d.filter(r=>stc&&String(r[stc]||'').match(/return|cancel/i));return rv?sum(lost,rv):lost.length;},color:'var(--red)',badge:'At Risk',badge_class:'dn',desc:'Revenue from cancelled or returned orders',money:true},
+      ],
+      [
+        {icon:'🏆',label:'Top Region Revenue',fn:d=>{if(!regc||!rv)return 0;const g=groupBy(d,regc,rv,1);return g.length?g[0][1]:0;},color:'var(--green)',badge:'Best Region',badge_class:'up',desc:`Leading region: ${regc?topGroup(data,regc,rv):'N/A'}`,money:true},
+        {icon:'⭐',label:'Best Product Revenue',fn:d=>{if(!prodc||!rv)return 0;const g=groupBy(d,prodc,rv,1);return g.length?g[0][1]:0;},color:'var(--a2)',badge:'Top Product',badge_class:'up',desc:`Star product: ${prodc?topGroup(data,prodc,rv):'N/A'}`,money:true},
+        {icon:'✅',label:'Completed Orders',fn:d=>stc?d.filter(r=>String(r[stc]||'').match(/complet/i)).length:0,color:'var(--green)',badge:'Done',badge_class:'up',desc:'Successfully fulfilled transactions',int:true},
+        {icon:'🌐',label:'Active Regions',fn:d=>regc?new Set(d.map(r=>r[regc])).size:0,color:'var(--cyan)',badge:'Coverage',badge_class:'nt',desc:'Geographic regions with active sales',int:true},
+      ],
     ];
-    return insights[pageIdx]||insights[0];
+    return ksets[pi]||ksets[0];
+  }
+  if(DOMAIN==='hr'){
+    const sal=nc.find(c=>c.toLowerCase().includes('salary'))||nc[0];
+    const abs=nc.find(c=>c.toLowerCase().includes('absence'));
+    const trn=nc.find(c=>c.toLowerCase().includes('train'));
+    const stc=sc.find(c=>c.toLowerCase().includes('status'))||sc[0];
+    const perf=sc.find(c=>c.toLowerCase().includes('perf'));
+    const dept=cc.find(c=>c.toLowerCase().includes('dept'));
+    const gender=cc.find(c=>c.toLowerCase().includes('gender'));
+    const ksets=[
+      [
+        {icon:'👥',label:'Total Headcount',fn:d=>d.length,color:'var(--a1)',badge:'All Staff',badge_class:'nt',desc:'Active and non-active employees combined',int:true},
+        {icon:'💰',label:'Total Monthly Payroll',fn:d=>sal?sum(d,sal):0,color:'var(--green)',badge:'Payroll',badge_class:'up',desc:'Combined salary obligations this period',money:true},
+        {icon:'📊',label:'Average Salary',fn:d=>sal?avg(d,sal):0,color:'var(--a2)',badge:'Avg Salary',badge_class:'nt',desc:'Mean compensation across all employees',money:true},
+        {icon:'🏢',label:'Departments',fn:d=>dept?new Set(d.map(r=>r[dept])).size:0,color:'var(--cyan)',badge:'Dept Count',badge_class:'nt',desc:'Number of organizational units represented',int:true},
+      ],
+      [
+        {icon:'🚪',label:'Resigned / Terminated',fn:d=>stc?d.filter(r=>String(r[stc]||'').match(/resign|termin/i)).length:0,color:'var(--red)',badge:'⚠ Attrition',badge_class:'dn',desc:'Total voluntary and involuntary departures',int:true},
+        {icon:'📅',label:'Average Absence Days',fn:d=>abs?avg(d,abs):0,color:'var(--amber)',badge:'Absences',badge_class:'warn',desc:'Mean absence days per employee — target under 5',int:true},
+        {icon:'✅',label:'Active Employees',fn:d=>stc?d.filter(r=>String(r[stc]||'').match(/active/i)).length:0,color:'var(--green)',badge:'Active',badge_class:'up',desc:'Currently on payroll and operational',int:true},
+        {icon:'📌',label:'Attrition Rate',fn:d=>{const left=stc?d.filter(r=>String(r[stc]||'').match(/resign|termin/i)).length:0;return d.length?left/d.length*100:0;},color:'var(--red)',badge:'Churn %',badge_class:'dn',desc:'Percentage of workforce lost this period',pct:true},
+      ],
+      [
+        {icon:'🏆',label:'Exceptional Performers',fn:d=>perf?d.filter(r=>String(r[perf]||'').match(/except|excell/i)).length:0,color:'var(--green)',badge:'Top Tier',badge_class:'up',desc:'Employees rated exceptional or outstanding',int:true},
+        {icon:'📚',label:'Avg Training Hours',fn:d=>trn?avg(d,trn):0,color:'var(--a2)',badge:'Training',badge_class:'nt',desc:'Mean investment in employee development',int:true},
+        {icon:'👩',label:'Gender Balance — Female',fn:d=>{const f=gender?d.filter(r=>String(r[gender]||'').match(/female|f$/i)).length:0;return d.length?f/d.length*100:0;},color:'var(--purple)',badge:'Female %',badge_class:'nt',desc:`${gender?Math.round(data.filter(r=>String(r[gender]||'').match(/female|f$/i)).length/data.length*100):0}% female — target 30%+ for balance`,pct:true},
+        {icon:'💸',label:'High Earner Threshold',fn:d=>sal?Math.max(...d.map(r=>r[sal]||0)):0,color:'var(--cyan)',badge:'Max Salary',badge_class:'nt',desc:'Highest individual salary in the dataset',money:true},
+      ],
+    ];
+    return ksets[pi]||ksets[0];
+  }
+  if(DOMAIN==='safety'){
+    const viol=nc.find(c=>c.toLowerCase().includes('viol'));
+    const wrkr=nc.find(c=>c.toLowerCase().includes('worker')||c.toLowerCase().includes('count'));
+    const dur=nc.find(c=>c.toLowerCase().includes('dur')||c.toLowerCase().includes('hr'));
+    const score=nc.find(c=>c.toLowerCase().includes('score'));
+    const stc=sc.find(c=>c.toLowerCase().includes('status'))||sc[0];
+    const risk=sc.find(c=>c.toLowerCase().includes('risk'));
+    const area=cc.find(c=>c.toLowerCase().includes('area')||c.toLowerCase().includes('zone'));
+    const ctr=cc.find(c=>c.toLowerCase().includes('contractor'));
+    const total=data.length||1;
+    const closed=stc?data.filter(r=>String(r[stc]||'').match(/close/i)).length:0;
+    const ksets=[
+      [
+        {icon:'📋',label:'Total Permits Issued',fn:d=>d.length,color:'var(--a1)',badge:'All Permits',badge_class:'nt',desc:'Total work permits processed this period',int:true},
+        {icon:'🔓',label:'Open / Pending Permits',fn:d=>stc?d.filter(r=>String(r[stc]||'').match(/open|pend/i)).length:0,color:'var(--amber)',badge:'⚠ Open',badge_class:'warn',desc:'Permits requiring active monitoring',int:true},
+        {icon:'✅',label:'Closed Permits',fn:d=>stc?d.filter(r=>String(r[stc]||'').match(/close/i)).length:0,color:'var(--green)',badge:'Closed',badge_class:'up',desc:`Closure rate: ${Math.round(closed/total*100)}% — target 90%+`,int:true},
+        {icon:'🚨',label:'Overdue Permits',fn:d=>stc?d.filter(r=>String(r[stc]||'').match(/overdue/i)).length:0,color:'var(--red)',badge:'⚠ Overdue',badge_class:'dn',desc:'Permits past validity — immediate regulatory risk',int:true},
+      ],
+      [
+        {icon:'⚡',label:'Total Violations Logged',fn:d=>viol?sum(d,viol):0,color:'var(--red)',badge:'Violations',badge_class:'dn',desc:'Total safety violations recorded across all permits',int:true},
+        {icon:'🔥',label:'High & Critical Risk Permits',fn:d=>risk?d.filter(r=>String(r[risk]||'').match(/high|critical/i)).length:0,color:'var(--red)',badge:'High Risk',badge_class:'dn',desc:'Permits requiring enhanced supervision and controls',int:true},
+        {icon:'👷',label:'Total Workers Exposed',fn:d=>wrkr?sum(d,wrkr):0,color:'var(--amber)',badge:'Workers',badge_class:'warn',desc:'Aggregate worker headcount across all active permits',int:true},
+        {icon:'🕐',label:'Avg Permit Duration',fn:d=>dur?avg(d,dur):0,color:'var(--cyan)',badge:'Avg Hrs',badge_class:'nt',desc:'Mean working hours per permit issued',int:true},
+      ],
+      [
+        {icon:'📊',label:'Site Compliance Rate',fn:d=>{const cl=stc?d.filter(r=>String(r[stc]||'').match(/close/i)).length:0;return d.length?cl/d.length*100:0;},color:'var(--green)',badge:'Compliance %',badge_class:Math.round(closed/total*100)>85?'up':'dn',desc:`${Math.round(closed/total*100)}% — regulatory minimum is 85%`,pct:true},
+        {icon:'🚨',label:'Rejected Permits',fn:d=>stc?d.filter(r=>String(r[stc]||'').match(/reject/i)).length:0,color:'var(--red)',badge:'Rejected',badge_class:'dn',desc:'Permits rejected due to non-compliance at submission',int:true},
+        {icon:'🏗️',label:'Active Contractors',fn:d=>ctr?new Set(d.map(r=>r[ctr])).size:0,color:'var(--a1)',badge:'Contractors',badge_class:'nt',desc:'Distinct contractor entities with active permits',int:true},
+        {icon:'📍',label:'Active Work Areas',fn:d=>area?new Set(d.map(r=>r[area])).size:0,color:'var(--cyan)',badge:'Zones',badge_class:'nt',desc:'Site zones currently holding active permits',int:true},
+      ],
+    ];
+    return ksets[pi]||ksets[0];
+  }
+  return [{icon:'📊',label:'Total Records',fn:d=>d.length,color:'var(--a1)',badge:'Total',badge_class:'nt',desc:'Number of records in the dataset',int:true}];
+}
+
+// ─── INSIGHT / EXPERT ANALYSIS ────────────────────────────
+function buildInsight(pi,data,nc,cc,sc){
+  const el=document.getElementById('ctx'+pi);if(!el)return;
+  el.innerHTML=getInsight(pi,data,nc,cc,sc);
+}
+
+function getInsight(pi,data,nc,cc,sc){
+  const n=data.length;
+  if(!n)return'No records match current filters. Clear filters to restore the full view.';
+
+  if(DOMAIN==='sales'){
+    const rv=nc.find(c=>c.toLowerCase().includes('rev'))||nc[0];
+    const pr=nc.find(c=>c.toLowerCase().includes('profit'))||nc[1];
+    const dc=nc.find(c=>c.toLowerCase().includes('disc'));
+    const stc=sc[0];
+    const regc=cc.find(c=>c.toLowerCase().includes('region'));
+    const prodc=cc.find(c=>c.toLowerCase().includes('product'));
+    const chc=cc.find(c=>c.toLowerCase().includes('channel'));
+    const totalRev=rv?sum(data,rv):0,totalProfit=pr?sum(data,pr):0;
+    const margin=totalRev?Math.round(totalProfit/totalRev*100):0;
+    const returned=stc?data.filter(r=>String(r[stc]||'').match(/return/i)).length:0;
+    const pending=stc?data.filter(r=>String(r[stc]||'').match(/pend/i)).length:0;
+    const topReg=regc?topGroup(data,regc,rv):'N/A';
+    const topProd=prodc?topGroup(data,prodc,rv):'N/A';
+    const topChan=chc?topGroup(data,chc,rv):'N/A';
+    const avgDisc=dc?Math.round(avg(data,dc)):0;
+    const recoByRegion=regc&&rv?groupBy(data,regc,rv,3).map(([r,v])=>`<strong>${r}</strong> (${fmtN(v)})`).join(', '):'N/A';
+    const insights=[
+      `The dataset covers <strong>${n.toLocaleString()} orders</strong> generating <span class="hi">${fmtN(totalRev)}</span> in total revenue. Net profit stands at <span class="${margin>20?'ok':margin>10?'hi':'bad'}">${fmtN(totalProfit)} (${margin}% margin)</span> — ${margin>20?'healthy performance, but keep monitoring cost creep':margin>10?'margins are acceptable, though below the 20% threshold that signals strong operational efficiency':'margins are critically low. This is a structural issue — either pricing is wrong, costs are unchecked, or discounting is out of control.'}. The top three revenue regions are ${recoByRegion}. <strong>${topProd}</strong> is the leading product. Primary revenue channel: <strong>${topChan}</strong>.`,
+      `<span class="bad">${returned} orders (${Math.round(returned/n*100)}%) were returned or cancelled</span> — representing direct revenue written off and a signal of product-market fit or fulfillment problems. <strong>${pending} orders remain pending</strong>, creating cash flow exposure until resolved. Average discount applied is <span class="${avgDisc>15?'bad':'warn'}">${avgDisc}%</span> — ${avgDisc>15?'excessive discounting is compressing margins and training customers to wait for deals. This must be addressed through pricing discipline and approval thresholds.':'moderate discount levels, but review whether discounts are driving volume or just protecting relationships'}. Identify which regions and products have the highest return rates — they require root cause analysis before further investment.`,
+      `Growth concentration risk: if <strong>${topReg}</strong> and <strong>${topProd}</strong> account for over 50% of revenue, the business is structurally fragile. Diversifying across 2–3 additional strong regions and expanding the top product's distribution into underperforming markets are the highest-leverage moves. <span class="ok">Focus Q-on-Q targets on the top 3 products in the bottom 3 regions</span> — the potential there is both quantifiable and immediately actionable. The ${topChan} channel delivers the most revenue — consider whether double-down investment here yields disproportionate returns or whether channel diversification reduces concentration risk.`,
+    ];
+    return insights[pi]||insights[0];
   }
 
   if(DOMAIN==='hr'){
-    const sc_col=nc.find(c=>c.toLowerCase().includes('salary'))||nc[0];
-    const totalPayroll=sc_col?fmtN(sum(data,sc_col)):'-';
-    const avgSal=sc_col?fmtN(avg(data,sc_col)):'-';
-    const resigned=sc[0]?data.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('resign')||String(r[sc[0]]||'').toLowerCase().includes('termin')).length:0;
-    const attrRate=Math.round(resigned/nr*100);
-    const topDept=cc.find(c=>c.toLowerCase().includes('dept'))?topGroupByCount(data,cc.find(c=>c.toLowerCase().includes('dept'))):'N/A';
-
+    const sal=nc.find(c=>c.toLowerCase().includes('salary'))||nc[0];
+    const abs=nc.find(c=>c.toLowerCase().includes('absence'));
+    const trn=nc.find(c=>c.toLowerCase().includes('train'));
+    const stc=sc.find(c=>c.toLowerCase().includes('status'))||sc[0];
+    const perf=sc.find(c=>c.toLowerCase().includes('perf'));
+    const dept=cc.find(c=>c.toLowerCase().includes('dept'));
+    const gender=cc.find(c=>c.toLowerCase().includes('gender'));
+    const totalPayroll=sal?sum(data,sal):0;
+    const avgSal=sal?Math.round(avg(data,sal)):0;
+    const resigned=stc?data.filter(r=>String(r[stc]||'').match(/resign|termin/i)).length:0;
+    const attrRate=Math.round(resigned/n*100);
+    const active=stc?data.filter(r=>String(r[stc]||'').match(/active/i)).length:0;
+    const onLeave=stc?data.filter(r=>String(r[stc]||'').match(/leave/i)).length:0;
+    const topDept=dept?topGroupByCount(data,dept):'N/A';
+    const avgAbs=abs?Math.round(avg(data,abs)):0;
+    const avgTrn=trn?Math.round(avg(data,trn)):0;
+    const topPerf=perf?data.filter(r=>String(r[perf]||'').match(/except|excell/i)).length:0;
+    const femCount=gender?data.filter(r=>String(r[gender]||'').match(/female|f$/i)).length:0;
+    const femPct=Math.round(femCount/n*100);
     const insights=[
-      `Your workforce consists of <strong>${nr} employees</strong> across all departments, with a total payroll of <span class="hi">${totalPayroll}</span> and an average salary of <strong>${avgSal}</strong>. <strong>${topDept}</strong> is your largest department. Understanding the workforce structure is your foundation for strategic HR planning.`,
-      `<span class="bad">${resigned} employees (${attrRate}% attrition rate)</span> have resigned or been terminated. This is a significant cost — each departure costs roughly 50-200% of annual salary in replacement and training. Identify which departments have the highest attrition and act on retention strategies — compensation review, workload balance, and career development paths.`,
-      `Performance and compensation alignment is critical. <span class="good">Top performers should be identified and rewarded</span> before they become flight risks. Employees with high absence rates and below-average performance scores need structured development plans. Training investment hours should be tracked as a leading indicator of future performance.`,
+      `Your workforce consists of <strong>${n.toLocaleString()} employees</strong> with a total payroll of <span class="hi">${fmtN(totalPayroll)}</span> and an average salary of <strong>${fmtN(avgSal)}</strong>. <strong>${active} employees are active</strong> and <span class="${onLeave>n*0.1?'warn':'hi'}">${onLeave} are on leave</span>. The largest department is <strong>${topDept}</strong>. Gender representation stands at <span class="${femPct<25?'bad':femPct<35?'warn':'ok'}">${femPct}% female</span> — ${femPct<30?'below the 30% minimum benchmark for organizational diversity. Immediate hiring strategy adjustment is recommended':'within acceptable range, though 40%+ is the target for high-performing inclusive organizations'}.`,
+      `<span class="bad">Attrition rate is ${attrRate}%</span> — ${attrRate>15?'critically high. At this rate, you will replace more than 15% of your workforce this year. Each departure costs 50–150% of annual salary in recruitment, onboarding, and lost productivity. This is a financial emergency, not just an HR concern.':attrRate>8?'elevated above the healthy 5–8% range. Targeted retention programs, compensation reviews, and stay interviews in high-attrition departments are urgently needed.':'manageable, but should not be left unmonitored.'}. Average absence rate is <span class="${avgAbs>8?'bad':avgAbs>5?'warn':'ok'}">${avgAbs} days per employee</span> — ${avgAbs>8?'significantly above the 5-day benchmark. Excessive absence correlates with low engagement, poor management, or toxic team environments.':'within expected range.'}`,
+      `<strong>${topPerf} employees (${Math.round(topPerf/n*100)}%)</strong> are rated exceptional — ${topPerf/n>0.15?'a strong performance culture indicator.':'below 15%, which typically signals either misalignment between role expectations and individual capabilities, or a performance management process that is not functioning effectively.'}. Average training investment is <span class="${avgTrn<20?'bad':'ok'}">${avgTrn} hours per employee</span> — ${avgTrn<20?'below the 20-hour annual minimum that correlates with employee retention and growth.':'solid foundation for skill development.'}. <span class="ok">High performers with low salaries relative to their peers are your top flight risks</span> — identify them now and act before they accept external offers.`,
     ];
-    return insights[pageIdx]||insights[0];
+    return insights[pi]||insights[0];
   }
 
   if(DOMAIN==='safety'){
-    const statc=sc[0];
-    const open=statc?data.filter(r=>String(r[statc]||'').toLowerCase().includes('open')||String(r[statc]||'').toLowerCase().includes('pend')).length:0;
-    const overdue=statc?data.filter(r=>String(r[statc]||'').toLowerCase().includes('overdue')).length:0;
-    const violations=nc.find(c=>c.toLowerCase().includes('viol'))?Math.round(sum(data,nc.find(c=>c.toLowerCase().includes('viol')))):'-';
-    const compliance=statc?Math.round(data.filter(r=>String(r[statc]||'').toLowerCase().includes('close')).length/nr*100):'-';
-    const topArea=cc.find(c=>c.toLowerCase().includes('area')||c.toLowerCase().includes('zone'))?topGroupByCount(data,cc.find(c=>c.toLowerCase().includes('area')||c.toLowerCase().includes('zone'))):'N/A';
-
+    const viol=nc.find(c=>c.toLowerCase().includes('viol'));
+    const stc=sc.find(c=>c.toLowerCase().includes('status'))||sc[0];
+    const risk=sc.find(c=>c.toLowerCase().includes('risk'));
+    const area=cc.find(c=>c.toLowerCase().includes('area')||c.toLowerCase().includes('zone'));
+    const ctr=cc.find(c=>c.toLowerCase().includes('contractor'));
+    const open=stc?data.filter(r=>String(r[stc]||'').match(/open|pend/i)).length:0;
+    const closed=stc?data.filter(r=>String(r[stc]||'').match(/close/i)).length:0;
+    const overdue=stc?data.filter(r=>String(r[stc]||'').match(/overdue/i)).length:0;
+    const rejected=stc?data.filter(r=>String(r[stc]||'').match(/reject/i)).length:0;
+    const highRisk=risk?data.filter(r=>String(r[risk]||'').match(/high|critical/i)).length:0;
+    const totalViol=viol?Math.round(sum(data,viol)):0;
+    const compliance=n?Math.round(closed/n*100):0;
+    const topArea=area?topGroupByCount(data,area):'N/A';
+    const topCtr=ctr?topGroupByCount(data,ctr):'N/A';
     const insights=[
-      `Your site currently has <strong>${nr} safety permits</strong> on record. <span class="warn">${open} permits are open or pending</span> and require active monitoring. Permit closure rate stands at <span class="good">${compliance}%</span>. <strong>${topArea}</strong> has the highest permit activity — ensure daily HSE walkdowns are conducted in this area.`,
-      `<span class="bad">${overdue} permits are overdue</span> — this is a direct compliance violation and must be addressed immediately. Total recorded violations: <strong>${violations}</strong>. High-risk and critical permits should never exceed their validity period. Review all overdue permits with site HSE officers today and implement a permit tracking register if not already in place.`,
-      `Compliance rate of <strong>${compliance}%</strong> ${Number(compliance)>=85?'is acceptable but should target 95%+':'is below acceptable threshold — immediate corrective action required'}. Ensure all contractors have valid permit-to-work certificates. Monthly compliance trending is your best early warning system — a declining trend over 3 months signals a systemic HSE breakdown.`,
+      `The site holds <strong>${n.toLocaleString()} active work permits</strong>. Permit closure rate is <span class="${compliance>90?'ok':compliance>80?'warn':'bad'}">${compliance}%</span> — ${compliance>90?'excellent. Maintain daily permit audits to sustain this standard.':compliance>80?'acceptable but below the 90% regulatory benchmark. Increase HSE officer follow-up frequency.':'below the 80% minimum threshold. This is a reportable compliance failure that exposes the organization to regulatory shutdown.'}. Currently <span class="warn">${open} permits are open or pending</span> and <span class="bad">${overdue} are overdue</span>. ${overdue>0?`Overdue permits must be escalated immediately to the HSE Manager — each overdue day constitutes a regulatory violation.`:''} <strong>${topArea}</strong> is the highest-activity zone and requires priority HSE deployment.`,
+      `<span class="bad">${totalViol} safety violations</span> have been recorded — ${totalViol>20?'an unacceptably high count that indicates a systemic breakdown in safety culture, not isolated incidents. Root cause analysis and mandatory toolbox talks are required across all zones.':totalViol>8?'above acceptable levels. Pattern analysis is essential — repeated violation types indicate training gaps that must be closed immediately.':'low, but should trend toward zero. Celebrate with the team and maintain the standard.'}. <strong>${highRisk} high/critical risk permits</strong> are active — each one requires a dedicated HSE officer on-site at all times. <span class="bad">${rejected} permits were rejected</span> at submission, indicating contractors are arriving to site without adequate preparation — this must be addressed through pre-permit contractor briefings.`,
+      `<strong>Compliance integrity:</strong> the ${compliance}% closure rate ${compliance>=90?'meets regulatory standards':'must reach 90%+ within 30 days to avoid regulatory intervention'}. The most active contractor is <strong>${topCtr}</strong> — review their permit-to-violation ratio against other contractors to assess relative safety performance. <span class="ok">Implement a monthly contractor safety scorecard</span> — publicly rank contractors by compliance rate, violation count, and closure speed. This competitive transparency dramatically improves contractor behavior without requiring enforcement action. Monthly trend tracking is your most valuable leading indicator — a declining compliance trend over 3 consecutive months always precedes an incident.`,
     ];
-    return insights[pageIdx]||insights[0];
+    return insights[pi]||insights[0];
   }
-
-  if(DOMAIN==='finance'){
-    const bc=nc.find(c=>c.toLowerCase().includes('budget'))||nc[0];
-    const ac=nc.find(c=>c.toLowerCase().includes('actual'))||nc[1];
-    const totalBudget=bc?fmtN(sum(data,bc)):'-';
-    const totalActual=ac?fmtN(sum(data,ac)):'-';
-    const overItems=sc[0]?data.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('over')).length:0;
-    const utilRate=bc&&ac?Math.round(sum(data,ac)/sum(data,bc)*100):'-';
-
-    const insights=[
-      `Financial overview: <strong>${nr} transactions</strong> with a total approved budget of <span class="hi">${totalBudget}</span> against actual spend of <strong>${totalActual}</strong>. Budget utilization rate is <span class="${Number(utilRate)>100?'bad':'good'}">${utilRate}%</span>. ${Number(utilRate)>100?'<span class="bad">You are over budget — immediate cost control measures required.</span>':'<span class="good">Spending is within approved limits.</span>'}`,
-      `<span class="bad">${overItems} line items are over budget</span>, representing direct financial risk. Overspending categories need to be reviewed with department heads this week. The largest cost drivers are consuming a disproportionate share of total budget — renegotiate rates, defer non-critical spend, or seek budget revision approval.`,
-      `Month-by-month comparison reveals spending patterns and forecast accuracy. <span class="good">Months where actuals closely track budget indicate strong financial discipline.</span> Use variance trend data to improve next cycle's budget accuracy. Categories with consistently high variance should be restructured with more granular cost codes.`,
-    ];
-    return insights[pageIdx]||insights[0];
-  }
-
-  // general
-  const topCat=cc[0]?topGroupByCount(data,cc[0]):'N/A';
-  const totalVal=nc[0]?fmtN(sum(data,nc[0])):'-';
-  return [
-    `Dataset contains <strong>${nr} records</strong> across <strong>${HEADERS.length} columns</strong>. Total ${nc[0]||'value'}: <span class="hi">${totalVal}</span>. The most frequent <strong>${cc[0]||'category'}</strong> is <span class="good">${topCat}</span>. Use the filters above to slice the data and explore specific segments.`,
-    `Categorical breakdown reveals how your data is distributed across key dimensions. Identify the dominant categories and determine whether that concentration reflects a real-world bias or a data collection gap.`,
-    `Trend analysis shows how key metrics evolve across your dataset. Look for inflection points — sudden spikes or drops often signal important business events that deserve investigation.`,
-  ][pageIdx]||'';
+  return `Dataset contains <strong>${n.toLocaleString()} records</strong> across <strong>${HDR.length} columns</strong>. Use the filters to explore specific segments.`;
 }
 
-// ═══════════════════════════════════════════════════════════
-//  CHART BUILDERS
-// ═══════════════════════════════════════════════════════════
-const PAL=['#6366f1','#06b6d4','#10b981','#f97316','#a855f7','#f43f5e','#f59e0b','#3b82f6','#14b8a6','#ec4899'];
+// ─── CHART BUILDER ────────────────────────────────────────
+const PAL=['#6366f1','#06b6d4','#10b981','#f97316','#a855f7','#f43f5e','#f59e0b','#3b82f6','#14b8a6','#ec4899','#84cc16','#f97316'];
+const PAL2=['rgba(99,102,241,0.15)','rgba(6,182,212,0.15)','rgba(16,185,129,0.15)','rgba(249,115,22,0.15)','rgba(168,85,247,0.15)','rgba(244,63,94,0.15)'];
 
-function buildPageCharts(pageIdx, nc, cc, sc, data) {
-  const grid=document.getElementById('cg-'+pageIdx);
-  if(!grid) return;
+function buildCharts(pi,data,nc,cc,sc){
+  const grid=document.getElementById('cg'+pi);if(!grid)return;
   grid.innerHTML='';
-
-  const d=DOMAINS[DOMAIN];
-
-  if(DOMAIN==='sales') buildSalesCharts(grid,pageIdx,data,nc,cc,sc);
-  else if(DOMAIN==='hr') buildHRCharts(grid,pageIdx,data,nc,cc,sc);
-  else if(DOMAIN==='safety') buildSafetyCharts(grid,pageIdx,data,nc,cc,sc);
-  else if(DOMAIN==='finance') buildFinanceCharts(grid,pageIdx,data,nc,cc,sc);
-  else buildGeneralCharts(grid,pageIdx,data,nc,cc,sc);
+  if(DOMAIN==='sales')buildSalesCharts(grid,pi,data,nc,cc,sc);
+  else if(DOMAIN==='hr')buildHRCharts(grid,pi,data,nc,cc,sc);
+  else if(DOMAIN==='safety')buildSafetyCharts(grid,pi,data,nc,cc,sc);
 }
 
-function buildSalesCharts(grid,pi,data,nc,cc,sc) {
-  const rc=nc.find(c=>c.toLowerCase().includes('rev'))||nc[0];
-  const pc=nc.find(c=>c.toLowerCase().includes('profit'))||nc[1];
-  const regc=cc.find(c=>c.toLowerCase().includes('region'));
-  const prodc=cc.find(c=>c.toLowerCase().includes('product'));
-  const chc=cc.find(c=>c.toLowerCase().includes('channel'));
-  const mc=cc.find(c=>c.toLowerCase().includes('month'));
-  const statc=sc[0];
-
-  if(pi===0){
-    if(regc&&rc) addChart(grid,'Revenue by Region','Highest revenue-generating regions ranked by total sales volume','bar',groupBy(data,regc,rc),'w6',false,'Revenue');
-    if(prodc&&rc) addChart(grid,'Top Products by Revenue','Best-performing products contributing most to total revenue','bar',groupBy(data,prodc,rc),'w6',false,'Products');
-    if(statc) addChart(grid,'Order Status Breakdown','Distribution of completed, pending, and returned orders','doughnut',countBy(data,statc),'w4','','Status');
-    if(chc&&rc) addChart(grid,'Revenue by Sales Channel','Which channels drive the most revenue — direct, distributor, online, or tender','bar',groupBy(data,chc,rc),'w8',false,'Channels');
-  } else if(pi===1){
-    if(statc) addChart(grid,'Returns & Losses by Status','Volume of returned and problematic orders','doughnut',countBy(data,statc),'w4','','Returns');
-    if(regc&&pc) addChart(grid,'Profit by Region','Which regions are genuinely profitable vs. high-revenue but low-margin','bar',groupBy(data,regc,pc),'w8',false,'Profit');
-    if(prodc&&pc) addChart(grid,'Product Profit Analysis','Identify low-margin or loss-making products that need repricing or removal','bar',groupBy(data,prodc,pc),'w12',false,'Margin');
-  } else {
-    if(mc&&rc) addChart(grid,'Monthly Revenue Trend','Revenue progression month-by-month — spot seasonal peaks and troughs','line',groupBy(data,mc,rc),'w12',false,'Trend');
-    if(regc&&pc&&rc) addChart(grid,'Revenue vs. Profit by Region','Compare revenue size against profit efficiency by region','bar',groupBy(data,regc,rc),'w6',false,'Rev vs Profit');
-    if(chc&&pc) addChart(grid,'Channel Profitability','Which channel delivers the best profit per transaction','bar',groupBy(data,chc,pc),'w6',false,'Channel Profit');
-  }
+function makeCard(grid,title,subtitle,tag,cls='c6',height=280){
+  const cc2=document.createElement('div');cc2.className='cc '+cls;
+  const cid='ch'+Math.random().toString(36).slice(2,8);
+  cc2.innerHTML=`<div class="cc-head"><div><div class="cc-ttl">${title}</div><div class="cc-sub">${subtitle}</div></div><div class="cc-tag">${tag}</div></div><div class="cw" style="height:${height}px;"><canvas id="${cid}" role="img" aria-label="${title}"></canvas></div>`;
+  grid.appendChild(cc2);
+  return cid;
 }
 
-function buildHRCharts(grid,pi,data,nc,cc,sc) {
-  const dc=cc.find(c=>c.toLowerCase().includes('dept'));
-  const gc=cc.find(c=>c.toLowerCase().includes('gender'));
-  const pc2=cc.find(c=>c.toLowerCase().includes('perf'));
-  const sc_col=nc.find(c=>c.toLowerCase().includes('salary'));
-  const ac=nc.find(c=>c.toLowerCase().includes('absence'));
-  const statc=sc[0];
-
-  if(pi===0){
-    if(dc) addChart(grid,'Headcount by Department','How your workforce is distributed across departments','bar',countBy(data,dc),'w8',false,'Headcount');
-    if(gc) addChart(grid,'Gender Distribution','Male vs. female ratio across the entire organization','doughnut',countBy(data,gc),'w4','','Gender');
-    if(dc&&sc_col) addChart(grid,'Total Payroll by Department','Department-level payroll cost comparison','bar',groupBy(data,dc,sc_col),'w12',false,'Payroll');
-  } else if(pi===1){
-    if(statc) addChart(grid,'Employment Status Breakdown','Active, resigned, terminated, and on-leave distribution','doughnut',countBy(data,statc),'w4','','Status');
-    if(dc&&ac) addChart(grid,'Absence Days by Department','Which departments have the highest absenteeism — a key retention risk signal','bar',groupBy(data,dc,ac),'w8',false,'Absences');
-    if(dc) addChart(grid,'Attrition by Department','Count of resigned/terminated employees per department','bar',countBy(data.filter(r=>String(r[statc]||'').toLowerCase().includes('resign')||String(r[statc]||'').toLowerCase().includes('termin')),dc),'w12',false,'Attrition');
-  } else {
-    if(pc2) addChart(grid,'Performance Rating Distribution','How performance ratings are spread across the workforce','doughnut',countBy(data,pc2),'w4','','Performance');
-    if(dc&&sc_col) addChart(grid,'Average Salary by Department','Compensation benchmarking across departments','bar',groupByAvg(data,dc,sc_col),'w8',false,'Avg Salary');
-    if(pc2&&sc_col) addChart(grid,'Salary vs. Performance Rating','Are your best performers compensated appropriately?','bar',groupByAvg(data,pc2,sc_col),'w12',false,'Pay vs Perf');
-  }
-}
-
-function buildSafetyCharts(grid,pi,data,nc,cc,sc) {
-  const tc=cc.find(c=>c.toLowerCase().includes('type'));
-  const ac=cc.find(c=>c.toLowerCase().includes('area')||c.toLowerCase().includes('zone'));
-  const rc=cc.find(c=>c.toLowerCase().includes('risk'));
-  const cc2=cc.find(c=>c.toLowerCase().includes('contractor'));
-  const mc=cc.find(c=>c.toLowerCase().includes('month'));
-  const statc=sc[0];
-  const vc=nc.find(c=>c.toLowerCase().includes('viol'));
-
-  if(pi===0){
-    if(statc) addChart(grid,'Permit Status Overview','Open, closed, overdue, and pending permits at a glance','doughnut',countByColor(data,statc),'w4','','Status');
-    if(tc) addChart(grid,'Permits by Type','Which permit types are issued most — Hot Work, Confined Space, etc.','bar',countBy(data,tc),'w8',false,'Types');
-    if(ac&&mc) addChart(grid,'Monthly Permit Volume by Area','Permit activity trends month-by-month per zone — spot when work peaks','bar',countBy(data,ac),'w12',false,'Area Trend');
-  } else if(pi===1){
-    if(ac&&vc) addChart(grid,'Violations by Area / Zone','Which zones accumulate the most safety violations — requires immediate attention','bar',groupBy(data,ac,vc),'w8',false,'Violations');
-    if(rc) addChart(grid,'Risk Level Distribution','Breakdown of permits by risk classification — Low, Medium, High, Critical','doughnut',countBy(data,rc),'w4','','Risk');
-    if(tc&&vc) addChart(grid,'Violations by Permit Type','Which permit types are associated with the most violations','bar',groupBy(data,tc,vc),'w12',true,'Violations');
-  } else {
-    if(mc) addChart(grid,'Monthly Permit Trend','Track permit volume over time to identify compliance seasonality','line',countBy(data,mc),'w12',false,'Trend');
-    if(cc2) addChart(grid,'Permits by Contractor','Contractor workload distribution on site','bar',countBy(data,cc2),'w6',false,'Contractors');
-    if(statc&&cc2) addChart(grid,'Overdue by Contractor','Which contractors have the most overdue permits — compliance ranking','bar',countBy(data.filter(r=>String(r[statc]||'').toLowerCase().includes('overdue')),cc2),'w6',false,'Overdue');
-  }
-}
-
-function buildFinanceCharts(grid,pi,data,nc,cc,sc) {
-  const bc=nc.find(c=>c.toLowerCase().includes('budget'))||nc[0];
-  const ac2=nc.find(c=>c.toLowerCase().includes('actual'))||nc[1];
-  const vc=nc.find(c=>c.toLowerCase().includes('vari'))||nc[2];
-  const catc=cc.find(c=>c.toLowerCase().includes('categ'));
-  const dc=cc.find(c=>c.toLowerCase().includes('dept'));
-  const mc=cc.find(c=>c.toLowerCase().includes('month'));
-  const statc=sc[0];
-
-  if(pi===0){
-    if(dc&&bc) addChart(grid,'Budget by Department','How approved budget is allocated across departments','bar',groupBy(data,dc,bc),'w8',false,'Budget');
-    if(statc) addChart(grid,'Over vs. Within Budget','Share of transactions that exceeded their approved budget','doughnut',countBy(data,statc),'w4','','Status');
-    if(catc&&bc) addChart(grid,'Budget by Category','Which cost categories consume the most budget','bar',groupBy(data,catc,bc),'w12',true,'Categories');
-  } else if(pi===1){
-    if(catc&&vc) addChart(grid,'Variance by Category','Where the biggest gaps between budget and actual occur','bar',groupBy(data,catc,vc),'w8',false,'Variance');
-    if(dc&&vc) addChart(grid,'Variance by Department','Department-level budget discipline — who is overspending','bar',groupBy(data,dc,vc),'w4',false,'Dept Variance');
-    if(catc&&ac2) addChart(grid,'Actual Spend by Category','Real money spent per cost category — ranked highest to lowest','bar',groupBy(data,catc,ac2),'w12',false,'Actual Spend');
-  } else {
-    if(mc&&bc&&ac2) addChart(grid,'Budget vs. Actual — Monthly','Month-by-month comparison of planned vs. actual spend','bar',groupBy(data,mc,bc),'w12',false,'Monthly');
-    if(dc&&bc) addChart(grid,'Department Budget Allocation','Final budget distribution across departments for the period','bar',groupBy(data,dc,bc),'w6',false,'Allocation');
-    if(mc&&vc) addChart(grid,'Variance Trend Over Time','Is budget discipline improving or deteriorating month over month?','line',groupBy(data,mc,vc),'w6',false,'Trend');
-  }
-}
-
-function buildGeneralCharts(grid,pi,data,nc,cc,sc) {
-  if(pi===0){
-    if(cc[0]&&nc[0]) addChart(grid,`${nc[0]} by ${cc[0]}`,'Primary metric breakdown by main category','bar',groupBy(data,cc[0],nc[0]),'w8',false,'Primary');
-    if(sc[0]) addChart(grid,`${sc[0]} Distribution`,'Category distribution overview','doughnut',countBy(data,sc[0]),'w4','','Status');
-    if(cc[1]&&nc[0]) addChart(grid,`${nc[0]} by ${cc[1]}`,'Secondary breakdown for deeper analysis','bar',groupBy(data,cc[1],nc[0]),'w12',true,'Secondary');
-  } else if(pi===1){
-    if(cc[0]) addChart(grid,`${cc[0]} Count Distribution`,'How records are distributed across categories','bar',countBy(data,cc[0]),'w6',false,'Distribution');
-    if(nc[1]&&cc[0]) addChart(grid,`${nc[1]||nc[0]} by ${cc[0]}`,'Secondary metric analysis','bar',groupBy(data,cc[0],nc[1]||nc[0]),'w6',false,'Breakdown');
-  } else {
-    if(nc[0]) addChart(grid,`${nc[0]} Trend`,'Value progression across the dataset','line',Array.from({length:Math.min(data.length,60)},(_,i)=>({k:i+1,v:data[i][nc[0]]||0})).reduce((a,x)=>{a.labels.push(x.k);a.values.push(x.v);return a;},{labels:[],values:[]}),'w12',false,'Trend raw');
-  }
-}
-
-// ═══════════════════════════════════════════════════════════
-//  GENERIC CHART ADDER
-// ═══════════════════════════════════════════════════════════
-function addChart(grid, title, desc, type, groupedData, width, horizontal, tag) {
-  let labels=[], values=[];
-  if(Array.isArray(groupedData)){
-    labels=groupedData.map(x=>x.k||x.label||x[0]);
-    values=groupedData.map(x=>x.v||x.value||x[1]);
-  } else if(groupedData&&groupedData.labels){
-    labels=groupedData.labels; values=groupedData.values;
-  } else {
-    return;
-  }
-  if(!labels.length) return;
-
-  const id='c'+Math.random().toString(36).slice(2);
-  const card=document.createElement('div');
-  card.className='cc '+(width||'w6');
-  const isDnt=type==='doughnut'||type==='pie';
-  card.innerHTML=`
-    <div class="cc-head">
-      <div>
-        <div class="cc-ttl">${title}</div>
-        <div class="cc-desc">${desc}</div>
-      </div>
-      ${tag?`<div class="cc-tag">${tag}</div>`:''}
-    </div>
-    <div class="cw${isDnt?' short':''}"><canvas id="${id}"></canvas></div>`;
-  grid.appendChild(card);
-
-  const ctx=document.getElementById(id).getContext('2d');
-  const getColor=(i,a=1)=>{
-    const c=PAL[i%PAL.length];
-    return a<1?c+(Math.round(a*255).toString(16).padStart(2,'0')):c;
-  };
-
-  const datasets=[{
-    label:title,
-    data:values,
-    backgroundColor:isDnt?labels.map((_,i)=>getColor(i,.8)):getColor(0,.8),
-    borderColor:isDnt?labels.map((_,i)=>getColor(i)):getColor(0),
-    borderWidth:isDnt?3:1.5,
-    borderRadius:isDnt?0:6,
-    borderSkipped:false,
-    tension:.4,
-    fill:type==='line',
-    pointRadius:type==='line'?3:0,
-    pointBackgroundColor:getColor(0),
-    ...(isDnt?{borderColor:'#161b27'}:{}),
-  }];
-
+function barChart(id,labels,values,label,color,horizontal=false){
+  const ctx=document.getElementById(id);if(!ctx)return;
   const chart=new Chart(ctx,{
-    type:type==='doughnut'?'doughnut':type,
-    data:{labels,datasets},
+    type:'bar',
+    data:{labels,datasets:[{label,data:values,backgroundColor:color||PAL[0],borderRadius:4,borderSkipped:false}]},
     options:{
-      responsive:true,maintainAspectRatio:false,
       indexAxis:horizontal?'y':'x',
-      plugins:{
-        legend:{
-          display:isDnt,
-          position:'right',
-          labels:{color:'#9ba3bf',font:{size:10,family:'Fira Code'},padding:8,boxWidth:8,boxHeight:8}
-        },
-        tooltip:{
-          backgroundColor:'#1c2235',
-          borderColor:'rgba(99,102,241,0.25)',
-          borderWidth:1,
-          titleColor:'#e8ecf5',
-          bodyColor:'#9ba3bf',
-          padding:12,titleFont:{family:'Clash Display',size:13},
-          callbacks:{
-            label:ctx=>{
-              const v=ctx.parsed?.y??ctx.parsed?.r??ctx.raw;
-              return typeof v==='number'?' '+fmtN(v):' '+(v||'');
-            }
-          }
-        }
-      },
-      scales:isDnt?{}:{
-        x:{
-          ticks:{color:'#515872',font:{size:10,family:'Fira Code'},maxRotation:30,maxTicksLimit:12},
-          grid:{color:'rgba(255,255,255,0.035)'},
-          border:{color:'rgba(255,255,255,0.06)'},
-        },
-        y:{
-          ticks:{color:'#515872',font:{size:10,family:'Fira Code'},callback:v=>fmtN(v)},
-          grid:{color:'rgba(255,255,255,0.035)'},
-          border:{color:'rgba(255,255,255,0.06)'},
-        }
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>' '+fmtN(v.raw)}}},
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#4a5168',font:{size:10},maxRotation:horizontal?0:35,autoSkip:true,maxTicksLimit:8}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#4a5168',font:{size:10},callback:v=>fmtN(v)}},
       }
     }
   });
   CHARTS.push(chart);
 }
 
-// ═══════════════════════════════════════════════════════════
-//  RECOMMENDATIONS
-// ═══════════════════════════════════════════════════════════
-function getRecos(data,nc,cc,sc,pageIdx) {
-  const recoMap={
-    sales:[
-      [
-        {ico:'🎯',ttl:'Double Down on Top Region',body:'Allocate 30-40% more of your sales budget to the highest-performing region. Data shows this is where conversion rates and order values are strongest.',color:'var(--green)'},
-        {ico:'🔁',ttl:'Fix the Return Problem First',body:'Returned orders represent direct revenue loss. Implement pre-shipment quality checks and improve order specification accuracy to cut return rates by half.',color:'var(--red)'},
-        {ico:'💡',ttl:'Renegotiate High-Discount Channels',body:'Channels with average discounts above 15% are eroding your margin. Set maximum discount thresholds and require management approval for exceptions.',color:'var(--amber)'},
-      ],
-      [
-        {ico:'🚫',ttl:'Discontinue Loss-Making Products',body:'Products with negative or near-zero profit margin are consuming resources without generating returns. Review and phase out the bottom 20% by profitability.',color:'var(--red)'},
-        {ico:'📊',ttl:'Improve Demand Forecasting',body:'High return rates often signal a forecasting problem. Implementing better demand signals will reduce over-ordering and mismatch between supply and actual demand.',color:'var(--blue)'},
-      ],
-      [
-        {ico:'🌍',ttl:'Expand Top Product to New Regions',body:'Your best-selling product is concentrated in a few regions. A targeted expansion campaign to underperforming regions could add 15-25% to total revenue.',color:'var(--green)'},
-        {ico:'📈',ttl:'Build a Monthly Sales Cadence',body:'Month-by-month data shows seasonal patterns. Use these patterns to pre-position inventory, plan promotions, and align sales team targets with expected demand cycles.',color:'var(--a1)'},
-      ],
-    ],
-    hr:[
-      [
-        {ico:'📊',ttl:'Conduct Annual Compensation Review',body:'Ensure salaries are competitive with market benchmarks. Underpaying high performers is the #1 driver of voluntary attrition in engineering organizations.',color:'var(--green)'},
-        {ico:'⚖️',ttl:'Address Gender Imbalance',body:'Low female representation in technical departments limits organizational diversity and innovation. Set measurable hiring targets for underrepresented groups.',color:'var(--purple)'},
-      ],
-      [
-        {ico:'🚪',ttl:'Implement Exit Interview Program',body:'You cannot fix attrition without understanding its cause. Structured exit interviews reveal the real reasons people leave — and most of them are preventable.',color:'var(--red)'},
-        {ico:'📅',ttl:'Address High-Absence Departments',body:'Departments with above-average absence rates have an engagement or workload problem. Manager conversations and workload reviews should happen this quarter.',color:'var(--amber)'},
-      ],
-      [
-        {ico:'🏆',ttl:'Reward Your Top Performers Now',body:'High performers who are not recognized within 12 months of outstanding results have a 60% probability of actively seeking other opportunities.',color:'var(--green)'},
-        {ico:'📚',ttl:'Increase Training Investment',body:'Low training hours correlate with lower performance scores in your data. A structured development program will improve both retention and output quality.',color:'var(--blue)'},
-      ],
-    ],
-    safety:[
-      [
-        {ico:'🚨',ttl:'Clear All Overdue Permits Today',body:'Overdue permits represent active regulatory violations. Assign a dedicated HSE officer to close every overdue permit within 24 hours and investigate why they lapsed.',color:'var(--red)'},
-        {ico:'📋',ttl:'Implement Daily Permit Dashboard',body:'A real-time permit status board visible to all site supervisors creates accountability and prevents permits from falling through the cracks.',color:'var(--amber)'},
-      ],
-      [
-        {ico:'🔍',ttl:'Conduct Root Cause Analysis on High-Violation Zones',body:'Zones with repeat violations need a structured RCA process — not just corrective actions. The same hazard returning means the root cause was never eliminated.',color:'var(--red)'},
-        {ico:'👷',ttl:'Increase Supervision on High-Risk Permit Types',body:'Hot Work and Confined Space permits carry the highest fatality risk. Ensure a qualified HSE officer is physically present for every high-risk permit execution.',color:'var(--amber)'},
-      ],
-      [
-        {ico:'📊',ttl:'Score Contractor Compliance Monthly',body:'Rank contractors by permit compliance rate and share the scores openly on site. Accountability through visibility dramatically improves contractor HSE behavior.',color:'var(--blue)'},
-        {ico:'✅',ttl:'Target 95%+ Permit Closure Rate',body:'World-class HSE programs maintain permit closure rates above 95%. Set this as a KPI for all HSE officers and report progress weekly to site management.',color:'var(--green)'},
-      ],
-    ],
-    finance:[
-      [
-        {ico:'💰',ttl:'Tighten Budget Approval Process',body:'Over-budget items signal either poor planning or insufficient control. Implement a two-signature approval for any spend exceeding 110% of approved budget.',color:'var(--amber)'},
-        {ico:'📊',ttl:'Monthly Budget Review Meetings',body:'Departments with high variance need monthly budget review sessions with the CFO. Early visibility prevents small overruns from becoming large problems.',color:'var(--blue)'},
-      ],
-      [
-        {ico:'🔻',ttl:'Negotiate Key Cost Categories',body:'Your top spending categories represent the highest leverage for cost reduction. Even a 5% reduction in the top category can free significant budget for reinvestment.',color:'var(--red)'},
-        {ico:'📈',ttl:'Improve Budget Accuracy',body:'High variance categories need more granular cost coding. Break broad categories into specific line items to improve forecast accuracy in the next budget cycle.',color:'var(--amber)'},
-      ],
-      [
-        {ico:'📅',ttl:'Build a Rolling 3-Month Forecast',body:'Replace annual-only budgeting with a rolling quarterly forecast. This gives you the flexibility to reallocate budget as priorities shift throughout the year.',color:'var(--green)'},
-        {ico:'✅',ttl:'Reward Budget Discipline',body:'Departments that consistently stay within budget while delivering results should be recognized. This creates a culture of financial responsibility across the organization.',color:'var(--blue)'},
-      ],
-    ],
-  };
-
-  return (recoMap[DOMAIN]&&recoMap[DOMAIN][pageIdx])||[];
-}
-
-function buildRecos(pageIdx, recos) {
-  const grid=document.getElementById('reco-'+pageIdx);
-  if(!grid) return;
-  recos.forEach(r=>{
-    const card=document.createElement('div');
-    card.className='reco-card';
-    card.style.setProperty('--rc',r.color||'var(--a1)');
-    card.innerHTML=`<div class="reco-ico">${r.ico}</div><div class="reco-ttl">${r.ttl}</div><div class="reco-body">${r.body}</div>`;
-    grid.appendChild(card);
-  });
-}
-
-// ═══════════════════════════════════════════════════════════
-//  FILTERS
-// ═══════════════════════════════════════════════════════════
-function buildFilters(pageIdx, cc) {
-  const container=document.getElementById('fselects-'+pageIdx);
-  if(!container) return;
-  container.innerHTML='';
-  cc.slice(0,5).forEach(col=>{
-    const vals=[...new Set(RAW.map(r=>r[col]))].filter(Boolean).sort();
-    if(vals.length<2||vals.length>50) return;
-    const sel=document.createElement('select');
-    sel.className='fsel';
-    sel.dataset.col=col;
-    sel.dataset.page=pageIdx;
-    sel.innerHTML=`<option value="">All ${col}</option>`+vals.map(v=>`<option value="${v}">${v}</option>`).join('');
-    sel.onchange=()=>applyFilters(pageIdx);
-    container.appendChild(sel);
-  });
-}
-
-function applyFilters(pageIdx) {
-  const selects=document.querySelectorAll(`[data-page="${pageIdx}"]`);
-  const search=(document.getElementById('fsrch-'+pageIdx)||{}).value?.toLowerCase()||'';
-  ALL=RAW.filter(row=>{
-    for(const sel of selects){
-      if(sel.value&&String(row[sel.dataset.col])!==sel.value) return false;
-    }
-    if(search) return HEADERS.some(h=>String(row[h]).toLowerCase().includes(search));
-    return true;
-  });
-  const nc=numCols(),cc=catCols(),sc=statusCols();
-  buildPageCharts(pageIdx,nc,cc,sc,ALL);
-  if(pageIdx===0) buildTable(pageIdx,ALL);
-  document.getElementById('tbl-meta-'+pageIdx)&&(document.getElementById('tbl-meta-'+pageIdx).textContent=ALL.length.toLocaleString()+' records');
-}
-
-function clearFilters(pageIdx) {
-  document.querySelectorAll(`[data-page="${pageIdx}"]`).forEach(s=>s.value='');
-  const si=document.getElementById('fsrch-'+pageIdx);
-  if(si) si.value='';
-  ALL=[...RAW];
-  const nc=numCols(),cc=catCols(),sc=statusCols();
-  buildPageCharts(pageIdx,nc,cc,sc,ALL);
-  if(pageIdx===0) buildTable(pageIdx,ALL);
-}
-
-// ═══════════════════════════════════════════════════════════
-//  KPI BUILDER
-// ═══════════════════════════════════════════════════════════
-function buildKPIs(pageIdx, kpiDefs) {
-  const grid=document.getElementById('kpi-'+pageIdx);
-  if(!grid) return;
-  grid.innerHTML='';
-  const data=ALL.length?ALL:RAW;
-  const validDefs=kpiDefs.filter(k=>k);
-  validDefs.slice(0,6).forEach(k=>{
-    try{
-      let val=k.fn(data);
-      if(typeof val==='number') val=fmtN(val)+(k.suffix||'');
-      grid.innerHTML+=`<div class="kpi" style="--kc:${k.color||'var(--a1)'}">
-        <div class="kpi-top">
-          <div class="kpi-ico">${k.ico}</div>
-          ${k.badge?`<div class="kpi-badge nt">${k.badge}</div>`:''}
-        </div>
-        <div class="kpi-lbl">${k.lbl}</div>
-        <div class="kpi-val">${val}</div>
-        <div class="kpi-desc">${k.desc||''}</div>
-      </div>`;
-    }catch(e){}
-  });
-}
-
-// ═══════════════════════════════════════════════════════════
-//  TABLE
-// ═══════════════════════════════════════════════════════════
-function buildTable(pageIdx, data) {
-  const thead=document.getElementById('thead-'+pageIdx);
-  const tbody=document.getElementById('tbody-'+pageIdx);
-  if(!thead||!tbody) return;
-
-  const numSet=new Set(HEADERS.filter(h=>isNum(h)));
-  const statSet=new Set(HEADERS.filter(h=>isStatus(h)));
-
-  thead.innerHTML='<tr>'+HEADERS.map(h=>
-    `<th onclick="sortTable('${h}',${pageIdx})" class="${SORT_COL===h?'srt':''}">${h}${SORT_COL===h?(SORT_DIR>0?' ↑':' ↓'):''}</th>`
-  ).join('')+'</tr>';
-
-  tbody.innerHTML=data.slice(0,300).map(row=>
-    '<tr>'+HEADERS.map(h=>{
-      const v=row[h]??'';
-      if(numSet.has(h)&&typeof v==='number') return `<td class="tn">${fmtN(v)}</td>`;
-      if(statSet.has(h)){
-        const sl=String(v).toLowerCase();
-        let cls='tb-b';
-        if(sl.includes('close')||sl.includes('complet')||sl.includes('pass')||sl.includes('active')||sl.includes('within')) cls='tb-g';
-        else if(sl.includes('overdue')||sl.includes('fail')||sl.includes('return')||sl.includes('termin')||sl.includes('over ')) cls='tb-r';
-        else if(sl.includes('pend')||sl.includes('open')||sl.includes('progress')) cls='tb-a';
-        else if(sl.includes('reject')) cls='tb-p';
-        return `<td><span class="tb ${cls}">${v}</span></td>`;
+function multiBarChart(id,labels,datasets){
+  const ctx=document.getElementById(id);if(!ctx)return;
+  const chart=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:datasets.map((ds,i)=>({...ds,backgroundColor:PAL[i],borderRadius:3,borderSkipped:false}))},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:'#8b93b0',font:{size:11},boxWidth:10,boxHeight:10,padding:16}}},
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#4a5168',font:{size:10},maxRotation:35,autoSkip:true,maxTicksLimit:8}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#4a5168',font:{size:10},callback:v=>fmtN(v)}},
       }
-      return `<td title="${v}">${v}</td>`;
-    }).join('')+'</tr>'
-  ).join('');
-
-  const meta=document.getElementById('tbl-meta-'+pageIdx);
-  if(meta) meta.textContent=data.length.toLocaleString()+' records';
-}
-
-function sortTable(col, pageIdx) {
-  if(SORT_COL===col) SORT_DIR*=-1;
-  else{SORT_COL=col;SORT_DIR=1;}
-  ALL.sort((a,b)=>{
-    const va=a[col],vb=b[col];
-    if(typeof va==='number'&&typeof vb==='number') return (va-vb)*SORT_DIR;
-    return String(va||'').localeCompare(String(vb||''))*SORT_DIR;
+    }
   });
-  buildTable(pageIdx,ALL);
+  CHARTS.push(chart);
 }
 
-// ═══════════════════════════════════════════════════════════
-//  HELPERS
-// ═══════════════════════════════════════════════════════════
-function sum(data,col){if(!col) return 0;return data.reduce((a,r)=>a+(typeof r[col]==='number'?r[col]:0),0);}
-function avg(data,col){if(!col||!data.length) return 0;const s=sum(data,col);return s/data.length;}
-function groupBy(data,groupCol,valCol,limit=12){
-  if(!groupCol||!valCol) return [];
-  const g={};
-  data.forEach(r=>{const k=r[groupCol]||'N/A';g[k]=(g[k]||0)+(typeof r[valCol]==='number'?r[valCol]:0);});
-  return Object.entries(g).sort((a,b)=>b[1]-a[1]).slice(0,limit).map(([k,v])=>({k,v:Math.round(v)}));
-}
-function groupByAvg(data,groupCol,valCol,limit=12){
-  if(!groupCol||!valCol) return [];
-  const g={},cnt={};
-  data.forEach(r=>{const k=r[groupCol]||'N/A';g[k]=(g[k]||0)+(typeof r[valCol]==='number'?r[valCol]:0);cnt[k]=(cnt[k]||0)+1;});
-  return Object.entries(g).sort((a,b)=>b[1]-a[1]).slice(0,limit).map(([k,v])=>({k,v:Math.round(v/cnt[k])}));
-}
-function countBy(data,col,limit=12){
-  if(!col) return [];
-  const g={};
-  data.forEach(r=>{const k=r[col]||'N/A';g[k]=(g[k]||0)+1;});
-  return Object.entries(g).sort((a,b)=>b[1]-a[1]).slice(0,limit).map(([k,v])=>({k,v}));
-}
-function countByColor(data,col){return countBy(data,col);}
-function topGroup(data,groupCol,valCol){
-  const g=groupBy(data,groupCol,valCol);
-  return g.length?g[0].k:'N/A';
-}
-function topGroupByCount(data,col){
-  const g=countBy(data,col);
-  return g.length?g[0].k:'N/A';
-}
-function fmtN(n){
-  if(n===undefined||n===null||isNaN(n)) return '0';
-  if(Math.abs(n)>=1e9) return (n/1e9).toFixed(1)+'B';
-  if(Math.abs(n)>=1e6) return (n/1e6).toFixed(1)+'M';
-  if(Math.abs(n)>=1e3) return (n/1e3).toFixed(1)+'K';
-  return parseFloat(n.toFixed(1)).toLocaleString();
+function donutChart(id,labels,values){
+  const ctx=document.getElementById(id);if(!ctx)return;
+  const chart=new Chart(ctx,{
+    type:'doughnut',
+    data:{labels,datasets:[{data:values,backgroundColor:PAL.slice(0,values.length),borderWidth:2,borderColor:'#141826'}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,cutout:'62%',
+      plugins:{legend:{position:'right',labels:{color:'#8b93b0',font:{size:11},boxWidth:10,boxHeight:10,padding:14}}},
+    }
+  });
+  CHARTS.push(chart);
 }
 
-// ═══════════════════════════════════════════════════════════
-//  EXPORT
-// ═══════════════════════════════════════════════════════════
-function exportCSV(){
-  const data=ALL.length?ALL:RAW;
-  const rows=[HEADERS.join(',')];
-  data.forEach(r=>rows.push(HEADERS.map(h=>{const v=r[h]??'';return typeof v==='string'&&v.includes(',')? `"${v}"`:v;}).join(',')));
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));
-  a.download='atlas-pro-export.csv';a.click();
-  toast('CSV exported successfully','green');
+function lineChart(id,labels,datasets){
+  const ctx=document.getElementById(id);if(!ctx)return;
+  const chart=new Chart(ctx,{
+    type:'line',
+    data:{labels,datasets:datasets.map((ds,i)=>({...ds,borderColor:PAL[i],backgroundColor:PAL2[i],fill:true,tension:.35,pointRadius:3,pointBackgroundColor:PAL[i]}))},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:'#8b93b0',font:{size:11},boxWidth:10,boxHeight:10,padding:16}}},
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#4a5168',font:{size:10}}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#4a5168',font:{size:10},callback:v=>fmtN(v)}},
+      }
+    }
+  });
+  CHARTS.push(chart);
 }
 
-// ═══════════════════════════════════════════════════════════
-//  UI HELPERS
-// ═══════════════════════════════════════════════════════════
-function showLoading(){
-  document.getElementById('upload-screen').style.display='none';
-  const ls=document.getElementById('loading-screen');
-  ls.style.display='flex';
-  const steps=['ls1','ls2','ls3','ls4','ls5'];
-  steps.forEach((id,i)=>{
-    document.getElementById(id).className='lstep';
-    setTimeout(()=>{
-      steps.slice(0,i).forEach(sid=>document.getElementById(sid).className='lstep done');
-      document.getElementById(id).className='lstep on';
-    },i*380);
+function stackedBarChart(id,labels,datasets){
+  const ctx=document.getElementById(id);if(!ctx)return;
+  const chart=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:datasets.map((ds,i)=>({...ds,backgroundColor:PAL[i],borderRadius:0,borderSkipped:false}))},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:'#8b93b0',font:{size:11},boxWidth:10,boxHeight:10,padding:16}}},
+      scales:{
+        x:{stacked:true,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#4a5168',font:{size:10},maxRotation:35,autoSkip:true,maxTicksLimit:8}},
+        y:{stacked:true,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#4a5168',font:{size:10},callback:v=>fmtN(v)}},
+      }
+    }
+  });
+  CHARTS.push(chart);
+}
+
+function radarChart(id,labels,datasets){
+  const ctx=document.getElementById(id);if(!ctx)return;
+  const chart=new Chart(ctx,{
+    type:'radar',
+    data:{labels,datasets:datasets.map((ds,i)=>({...ds,borderColor:PAL[i],backgroundColor:PAL2[i],pointBackgroundColor:PAL[i],pointRadius:3}))},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:'#8b93b0',font:{size:11},boxWidth:10,boxHeight:10,padding:16}}},
+      scales:{r:{grid:{color:'rgba(255,255,255,0.06)'},pointLabels:{color:'#4a5168',font:{size:10}},ticks:{color:'#4a5168',font:{size:9},backdropColor:'transparent'}}},
+    }
+  });
+  CHARTS.push(chart);
+}
+
+// ─── SALES CHARTS ─────────────────────────────────────────
+function buildSalesCharts(grid,pi,data,nc,cc,sc){
+  const rv=nc.find(c=>c.toLowerCase().includes('rev'))||nc[0];
+  const pr=nc.find(c=>c.toLowerCase().includes('profit'))||nc[1];
+  const dc=nc.find(c=>c.toLowerCase().includes('disc'));
+  const stc=sc[0];
+  const regc=cc.find(c=>c.toLowerCase().includes('region'));
+  const prodc=cc.find(c=>c.toLowerCase().includes('product'));
+  const chc=cc.find(c=>c.toLowerCase().includes('channel'));
+  const mc=cc.find(c=>c.toLowerCase().includes('month'));
+  const mOrder=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  if(pi===0){
+    if(regc&&rv){const e=groupBy(data,regc,rv);const id=makeCard(grid,'Revenue by Region','Ranked by total sales volume — identifies your highest-value geographic markets','Geographic Performance','c6',270);barChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),'Revenue',PAL[0]);}
+    if(prodc&&rv){const e=groupBy(data,prodc,rv,8);const id=makeCard(grid,'Top Products by Revenue','Products driving the most revenue — your commercial backbone','Product Ranking','c6',270);barChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),'Revenue',PAL[1],true);}
+    if(stc){const e=countBy(data,stc);const id=makeCard(grid,'Order Status Distribution','Proportion of completed, pending, returned, and cancelled orders','Order Health','c4',260);donutChart(id,e.map(x=>x[0]),e.map(x=>x[1]));}
+    if(chc&&rv&&pr){
+      const labels=[...new Set(data.map(r=>r[chc]))].filter(Boolean).slice(0,7);
+      const rvData=labels.map(l=>Math.round(sum(data.filter(r=>r[chc]===l),rv)));
+      const prData=labels.map(l=>Math.round(sum(data.filter(r=>r[chc]===l),pr)));
+      const id=makeCard(grid,'Revenue vs. Profit by Channel','Which channels generate revenue but sacrifice margin — identify the real winners','Channel Economics','c8',270);
+      multiBarChart(id,labels,[{label:'Revenue',data:rvData},{label:'Profit',data:prData}]);
+    }
+  } else if(pi===1){
+    if(stc){const statuses=[...new Set(data.map(r=>r[stc]))].filter(Boolean);const e=statuses.map(s=>[s,data.filter(r=>r[stc]===s).length]);const id=makeCard(grid,'Order Status Breakdown — Loss Signals','Returned and cancelled orders represent direct revenue destruction','Loss Category View','c4',260);donutChart(id,e.map(x=>x[0]),e.map(x=>x[1]));}
+    if(regc&&pr){const e=groupBy(data,regc,pr);const cols=e.map(x=>x[1]>=0?'#10b981':'#f43f5e');const id=makeCard(grid,'Profit by Region — Winners and Losers','Regions with negative profit bars are actively destroying value despite generating revenue','Regional Profitability','c8',270);barChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),'Profit',cols);}
+    if(prodc&&pr){const e=groupBy(data,prodc,pr,10);const cols=e.map(x=>x[1]>=0?'#6366f1':'#f43f5e');const id=makeCard(grid,'Product Profitability — Full Spectrum','Loss-making products (red bars) must be repriced, renegotiated, or discontinued','Product Margin Analysis','c12',300);barChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),'Profit',cols,true);}
+  } else {
+    if(mc&&rv){
+      const sorted=mOrder.filter(m=>data.some(r=>r[mc]===m));
+      const rvData=sorted.map(m=>Math.round(sum(data.filter(r=>r[mc]===m),rv)));
+      const prData=pr?sorted.map(m=>Math.round(sum(data.filter(r=>r[mc]===m),pr))):[];
+      const id=makeCard(grid,'Monthly Revenue & Profit Trend','Track how revenue and profit evolve month by month — seasonal peaks and inflection points','Time Series','c12',300);
+      lineChart(id,sorted,[{label:'Revenue',data:rvData},...(pr?[{label:'Profit',data:prData}]:[])]);
+    }
+    if(regc&&rv&&mc){
+      const topRegions=groupBy(data,regc,rv,4).map(x=>x[0]);
+      const sorted=mOrder.filter(m=>data.some(r=>r[mc]===m));
+      const id=makeCard(grid,'Regional Revenue Over Time','How your top 4 regions perform month by month — convergence signals market maturation','Regional Trends','c8',280);
+      multiBarChart(id,sorted,topRegions.map(reg=>({label:reg,data:sorted.map(m=>Math.round(sum(data.filter(r=>r[regc]===reg&&r[mc]===m),rv)))})));
+    }
+    if(chc&&rv){const e=countBy(data,chc);const id=makeCard(grid,'Order Volume by Channel','Transaction count per channel — volume leaders vs. value leaders often diverge','Channel Volume','c4',280);donutChart(id,e.map(x=>x[0]),e.map(x=>x[1]));}
+  }
+}
+
+// ─── HR CHARTS ────────────────────────────────────────────
+function buildHRCharts(grid,pi,data,nc,cc,sc){
+  const sal=nc.find(c=>c.toLowerCase().includes('salary'))||nc[0];
+  const abs=nc.find(c=>c.toLowerCase().includes('absence'));
+  const trn=nc.find(c=>c.toLowerCase().includes('train'));
+  const stc=sc.find(c=>c.toLowerCase().includes('status'))||sc[0];
+  const perf=sc.find(c=>c.toLowerCase().includes('perf'));
+  const dept=cc.find(c=>c.toLowerCase().includes('dept'));
+  const gender=cc.find(c=>c.toLowerCase().includes('gender'));
+  const pos=cc.find(c=>c.toLowerCase().includes('pos'));
+
+  if(pi===0){
+    if(dept){const e=countBy(data,dept);const id=makeCard(grid,'Headcount by Department','Workforce distribution across organizational units — identifies where your human capital is concentrated','Org Structure','c8',280);barChart(id,e.map(x=>x[0]),e.map(x=>x[1]),'Employees',PAL[0]);}
+    if(gender){const e=countBy(data,gender);const id=makeCard(grid,'Gender Distribution','Male to female ratio — diversity metric requiring at minimum 30% female representation','Diversity Metric','c4',260);donutChart(id,e.map(x=>x[0]),e.map(x=>x[1]));}
+    if(dept&&sal){const e=groupBy(data,dept,sal);const id=makeCard(grid,'Total Payroll by Department','Salary cost distribution — identifies the most resource-intensive organizational units','Payroll Analysis','c8',280);barChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),'Total Payroll (EGP)',PAL[2]);}
+    if(pos){const e=countBy(data,pos,7);const id=makeCard(grid,'Headcount by Position Level','Role distribution — high ratio of senior positions vs junior signals payroll top-heaviness','Seniority Mix','c4',280);donutChart(id,e.map(x=>x[0]),e.map(x=>x[1]));}
+  } else if(pi===1){
+    if(stc){const e=countBy(data,stc);const id=makeCard(grid,'Employment Status Distribution','Active, resigned, terminated, on leave — the attrition picture at a glance','Attrition Overview','c4',260);donutChart(id,e.map(x=>x[0]),e.map(x=>x[1]));}
+    if(dept&&stc){
+      const depts=[...new Set(data.map(r=>r[dept]))].filter(Boolean).slice(0,7);
+      const left=depts.map(d=>data.filter(r=>r[dept]===d&&String(r[stc]||'').match(/resign|termin/i)).length);
+      const active=depts.map(d=>data.filter(r=>r[dept]===d&&String(r[stc]||'').match(/active/i)).length);
+      const id=makeCard(grid,'Attrition vs. Active Headcount by Department','Departments where departures approach or exceed active count are structurally compromised','Department Attrition','c8',280);
+      multiBarChart(id,depts,[{label:'Active',data:active},{label:'Resigned / Terminated',data:left}]);
+    }
+    if(dept&&abs){const e=groupBy(data,dept,abs);const id=makeCard(grid,'Absence Days by Department','Departments with high absence rates signal management, engagement, or workload issues requiring investigation','Absence Hotspots','c6',270);barChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1]/Math.max(1,countBy(data,dept).find(d=>d[0]===x[0])?.[1]||1))),'Avg Absence Days',PAL[3]);}
+    if(sal&&stc){
+      const statuses=[...new Set(data.map(r=>r[stc]))].filter(Boolean).slice(0,5);
+      const avgs=statuses.map(s=>Math.round(avg(data.filter(r=>r[stc]===s),sal)));
+      const id=makeCard(grid,'Average Salary by Employment Status','Comparison reveals whether compensation differences are driving departure decisions','Salary vs Status','c6',270);
+      barChart(id,statuses,avgs,'Avg Salary',PAL[4]);
+    }
+  } else {
+    if(perf){const e=countBy(data,perf);const id=makeCard(grid,'Performance Rating Distribution','Proportion of exceptional, meets expectations, and underperforming employees','Performance Bell Curve','c4',260);donutChart(id,e.map(x=>x[0]),e.map(x=>x[1]));}
+    if(dept&&perf){
+      const depts=[...new Set(data.map(r=>r[dept]))].filter(Boolean).slice(0,7);
+      const perfLevels=[...new Set(data.map(r=>r[perf]))].filter(Boolean).slice(0,4);
+      const id=makeCard(grid,'Performance Distribution by Department','Which departments have the highest exceptional rates vs. below-standard concentrations','Dept Performance Matrix','c8',280);
+      stackedBarChart(id,depts,perfLevels.map(p=>({label:p,data:depts.map(d=>data.filter(r=>r[dept]===d&&r[perf]===p).length)})));
+    }
+    if(dept&&trn&&sal){
+      const depts=[...new Set(data.map(r=>r[dept]))].filter(Boolean).slice(0,6);
+      const trnData=depts.map(d=>Math.round(avg(data.filter(r=>r[dept]===d),trn)));
+      const salData=depts.map(d=>Math.round(avg(data.filter(r=>r[dept]===d),sal)/1000));
+      const id=makeCard(grid,'Training Investment vs. Average Salary by Department','Departments with high salary but low training investment face the highest retention risk','Investment Alignment','c12',290);
+      multiBarChart(id,depts,[{label:'Avg Training Hrs',data:trnData},{label:'Avg Salary (K EGP)',data:salData}]);
+    }
+  }
+}
+
+// ─── SAFETY CHARTS ────────────────────────────────────────
+function buildSafetyCharts(grid,pi,data,nc,cc,sc){
+  const viol=nc.find(c=>c.toLowerCase().includes('viol'));
+  const wrkr=nc.find(c=>c.toLowerCase().includes('worker')||c.toLowerCase().includes('count'));
+  const score=nc.find(c=>c.toLowerCase().includes('score'));
+  const stc=sc.find(c=>c.toLowerCase().includes('status'))||sc[0];
+  const risk=sc.find(c=>c.toLowerCase().includes('risk'));
+  const area=cc.find(c=>c.toLowerCase().includes('area')||c.toLowerCase().includes('zone'));
+  const ctr=cc.find(c=>c.toLowerCase().includes('contractor'));
+  const type=cc.find(c=>c.toLowerCase().includes('type'));
+  const mc=cc.find(c=>c.toLowerCase().includes('month'));
+  const mOrder=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  if(pi===0){
+    if(stc){const e=countBy(data,stc);const id=makeCard(grid,'Permit Status Overview','Distribution of closed, open, overdue, pending, and rejected permits — your real-time site safety health','Live Safety Dashboard','c4',260);donutChart(id,e.map(x=>x[0]),e.map(x=>x[1]));}
+    if(area){const e=countBy(data,area);const id=makeCard(grid,'Permit Volume by Work Zone','Zones with the highest permit density require the most intensive HSE officer presence','Zone Activity Map','c8',270);barChart(id,e.map(x=>x[0]),e.map(x=>x[1]),'Permits',PAL[0],true);}
+    if(type){const e=countBy(data,type);const id=makeCard(grid,'Permits by Work Type','Which high-risk activities dominate your site — Hot Work and Confined Space require maximum control','Activity Type Breakdown','c6',270);barChart(id,e.map(x=>x[0]),e.map(x=>x[1]),'Count',PAL[2],true);}
+    if(risk){const e=countBy(data,risk);const id=makeCard(grid,'Risk Level Distribution','Proportion of low, medium, high, and critical risk permits — a leading indicator of incident probability','Risk Profile','c6',260);donutChart(id,e.map(x=>x[0]),e.map(x=>x[1]));}
+  } else if(pi===1){
+    if(area&&viol){const e=groupBy(data,area,viol);const id=makeCard(grid,'Violations by Work Zone','Zones accumulating the most violations — these are your incident precursors requiring immediate corrective action','Violation Concentration','c8',280);barChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),'Violations',PAL[5],true);}
+    if(type&&viol){const e=groupBy(data,type,viol);const id=makeCard(grid,'Violations by Permit Type','Permit types generating the most violations need enhanced pre-work briefing and on-site supervision','Permit Risk Index','c4',280);barChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),'Violations',PAL[3]);}
+    if(ctr&&viol&&stc){
+      const ctrs=[...new Set(data.map(r=>r[ctr]))].filter(Boolean).slice(0,7);
+      const violData=ctrs.map(c=>Math.round(sum(data.filter(r=>r[ctr]===c),viol)));
+      const closeData=ctrs.map(c=>data.filter(r=>r[ctr]===c&&String(r[stc]||'').match(/close/i)).length);
+      const id=makeCard(grid,'Contractor Safety Performance','Violation count vs. permit closure by contractor — ranks contractor safety behavior objectively','Contractor Scorecard','c12',290);
+      multiBarChart(id,ctrs,[{label:'Violations',data:violData},{label:'Closed Permits',data:closeData}]);
+    }
+  } else {
+    if(mc&&stc){
+      const sorted=mOrder.filter(m=>data.some(r=>r[mc]===m));
+      const closedM=sorted.map(m=>data.filter(r=>r[mc]===m&&String(r[stc]||'').match(/close/i)).length);
+      const overdueM=sorted.map(m=>data.filter(r=>r[mc]===m&&String(r[stc]||'').match(/overdue/i)).length);
+      const openM=sorted.map(m=>data.filter(r=>r[mc]===m&&String(r[stc]||'').match(/open|pend/i)).length);
+      const id=makeCard(grid,'Monthly Permit Status Trend','Track compliance improvement or deterioration month by month — early warning before incidents occur','Compliance Trend','c12',300);
+      lineChart(id,sorted,[{label:'Closed',data:closedM},{label:'Open/Pending',data:openM},{label:'Overdue',data:overdueM}]);
+    }
+    if(ctr&&stc){
+      const ctrs=[...new Set(data.map(r=>r[ctr]))].filter(Boolean).slice(0,6);
+      const total=ctrs.map(c=>data.filter(r=>r[ctr]===c).length);
+      const closed=ctrs.map(c=>data.filter(r=>r[ctr]===c&&String(r[stc]||'').match(/close/i)).length);
+      const rates=ctrs.map((c,i)=>total[i]?Math.round(closed[i]/total[i]*100):0);
+      const id=makeCard(grid,'Contractor Closure Rate Ranking','Percentage of permits successfully closed per contractor — defines accountability rank order','Compliance Ranking','c6',280);
+      barChart(id,ctrs,rates,'Closure Rate %',PAL[2],true);
+    }
+    if(type&&risk&&stc){
+      const types=[...new Set(data.map(r=>r[type]))].filter(Boolean).slice(0,6);
+      const highRiskCount=types.map(t=>data.filter(r=>r[type]===t&&String(r[risk]||'').match(/high|critical/i)).length);
+      const id=makeCard(grid,'High & Critical Risk Permits by Type','Work types with the most critical risk permits — prioritize these for mandatory dual-officer supervision','Risk by Work Type','c6',280);
+      barChart(id,types,highRiskCount,'High/Critical Permits',PAL[5],true);
+    }
+  }
+}
+
+// ─── RECOMMENDATIONS ─────────────────────────────────────
+function buildRecos(pi,data,nc,cc,sc){
+  const el=document.getElementById('reco'+pi);if(!el)return;el.innerHTML='';
+  const recos=getRecos(pi,data,nc,cc,sc);
+  if(!recos.length)return;
+  const title=document.createElement('div');title.className='sect';title.textContent='Expert Recommendations';el.appendChild(title);
+  const grid=document.createElement('div');grid.className='reco-grid';el.appendChild(grid);
+  recos.forEach(r=>{
+    const div=document.createElement('div');div.className='reco';div.style.setProperty('--rc',r.color||'var(--a1)');
+    div.innerHTML=`<div class="reco-icon">${r.icon}</div><div class="reco-ttl">${r.title}</div><div class="reco-body">${r.body}</div>`;
+    grid.appendChild(div);
   });
 }
-function hideLoading(){document.getElementById('loading-screen').style.display='none';}
-function showUpload(){
-  document.getElementById('loading-screen').style.display='none';
-  document.getElementById('upload-screen').style.display='flex';
-}
-function resetAll(){
-  CHARTS.forEach(c=>{try{c.destroy();}catch(e){}});
-  CHARTS=[];RAW=[];ALL=[];HEADERS=[];
-  DOMAIN='general';ACTIVE_PAGE=0;
-  document.getElementById('dashboard').style.display='none';
-  document.getElementById('nav-tabs').style.display='none';
-  document.getElementById('pages-container').innerHTML='';
-  document.getElementById('upload-screen').style.display='flex';
-  document.getElementById('domain-label').textContent='Ready';
-  document.getElementById('logo-mark').textContent='◈';
-  document.documentElement.style.setProperty('--a1','#6366f1');
-  document.documentElement.style.setProperty('--a2','#818cf8');
-  document.documentElement.style.setProperty('--a3','rgba(99,102,241,0.12)');
-  document.getElementById('file-input').value='';
-}
-function toast(msg,type='green'){
-  const colors={green:'#10b981',red:'#f43f5e',amber:'#f59e0b',blue:'#3b82f6'};
-  const t=document.getElementById('toast');
-  document.getElementById('td').style.background=colors[type]||colors.green;
-  t.style.borderColor=(colors[type]||colors.green)+'33';
-  document.getElementById('tm').textContent=msg;
-  t.classList.add('on');
-  setTimeout(()=>t.classList.remove('on'),3800);
+
+function getRecos(pi,data,nc,cc,sc){
+  if(DOMAIN==='sales'){
+    const recoSets=[
+      [
+        {icon:'🎯',title:'Focus on Your Top 3 Revenue Drivers',body:'Identify the three products and regions generating 60%+ of revenue. Allocate 70% of your sales team\'s time and marketing budget to these combinations. This alone outperforms most diversification strategies.',color:'var(--green)'},
+        {icon:'📊',title:'Implement Channel-Level P&L Tracking',body:'Revenue by channel means nothing without margin context. Track profit per transaction per channel. If your highest-volume channel has the lowest margin, you may be growing yourself into a loss.',color:'var(--a1)'},
+        {icon:'⚡',title:'Set a Hard Discount Approval Threshold',body:'Any discount above 10% should require manager sign-off. Any discount above 20% requires director approval. Unlimited discounting trains customers to expect it and permanently erodes your pricing power.',color:'var(--amber)'},
+      ],
+      [
+        {icon:'🔍',title:'Conduct a Returns Root Cause Analysis',body:'Group returns by product, region, and channel. A pattern will emerge — wrong product delivered, quality failure, or customer expectation mismatch. Fix the root cause, not the symptom.',color:'var(--red)'},
+        {icon:'💡',title:'Identify Your Loss-Making Products',body:'Any product with a negative profit contribution should be immediately flagged for pricing review. Either the cost structure must change or the product should be discontinued.',color:'var(--red)'},
+        {icon:'📋',title:'Build a Weekly Sales Recovery Report',body:'Track pending orders weekly. Any order pending more than 14 days should trigger a customer outreach protocol. Stale pending orders convert to cancellations without proactive follow-up.',color:'var(--amber)'},
+      ],
+      [
+        {icon:'🚀',title:'Expand Top Products into Weak Regions',body:'Map your best-performing products against your weakest regions. The potential revenue from this cross-expansion is quantifiable and should form your Q-on-Q growth target.',color:'var(--green)'},
+        {icon:'🤝',title:'Strengthen Your Highest-Margin Channel',body:'The channel with the best profit margin deserves preferential treatment — faster fulfillment, dedicated account management, and exclusive product access. Margin is what funds growth.',color:'var(--cyan)'},
+        {icon:'📈',title:'Set Region-Level Monthly Targets',body:'Aggregate targets mask underperformance. Break revenue and profit targets down to region level and report monthly. This creates accountability and early visibility into problems.',color:'var(--a2)'},
+      ],
+    ];
+    return recoSets[pi]||[];
+  }
+  if(DOMAIN==='hr'){
+    const recoSets=[
+      [
+        {icon:'🔍',title:'Audit Gender Representation by Department',body:'An organization-wide female ratio may mask severe imbalances in specific departments. Engineering at 5% female and HR at 80% female average to 42% but represent two separate diversity failures.',color:'var(--purple)'},
+        {icon:'💰',title:'Benchmark Salaries Against Market Rates',body:'Conduct a quarterly salary benchmark. Employees 15%+ below market rate in their role category are active flight risks. Correction is 10x cheaper than replacement.',color:'var(--green)'},
+        {icon:'🏢',title:'Identify Overloaded Departments',body:'High headcount concentrations without proportional leadership indicate span-of-control problems. More than 10 direct reports per manager consistently correlates with higher burnout and attrition.',color:'var(--a1)'},
+      ],
+      [
+        {icon:'🚨',title:'Launch Targeted Retention Programs',body:'In your highest-attrition departments, conduct structured stay interviews this month. Ask specifically: what would make you stay, what nearly made you leave, and what is broken in your daily work.',color:'var(--red)'},
+        {icon:'📅',title:'Investigate High Absence Departments',body:'Departments with above-average absence rates require a management review, not just an HR note. Absence is a symptom — the disease is usually poor management, excessive workload, or a toxic peer environment.',color:'var(--amber)'},
+        {icon:'📋',title:'Implement a 30-60-90 Day Exit Interview Protocol',body:'Interview every departing employee at 30 days, 60 days, and 90 days post-departure. Day-90 interviews are significantly more honest. The patterns you find are your retention roadmap.',color:'var(--amber)'},
+      ],
+      [
+        {icon:'🏆',title:'Protect Your Exceptional Performers',body:'Your top performers are being recruited by competitors right now. Schedule retention conversations with every exceptional-rated employee this quarter. A salary review is far cheaper than a knowledge gap.',color:'var(--green)'},
+        {icon:'📚',title:'Close the Training Investment Gap',body:'Departments with below-average training hours should receive mandatory development plans. Link training completion to performance ratings. Employees who see investment in their growth stay longer.',color:'var(--cyan)'},
+        {icon:'📊',title:'Align Compensation with Performance Ratings',body:'Employees rated exceptional but compensated at average-range will leave. Build a compensation band that makes performance-to-pay correlation explicit and visible to employees.',color:'var(--a2)'},
+      ],
+    ];
+    return recoSets[pi]||[];
+  }
+  if(DOMAIN==='safety'){
+    const recoSets=[
+      [
+        {icon:'🚨',title:'Escalate All Overdue Permits Immediately',body:'Every overdue permit is a regulatory violation that, in many jurisdictions, can result in work stoppages. The HSE Manager must be personally notified of every overdue permit within 24 hours of its expiry.',color:'var(--red)'},
+        {icon:'📋',title:'Deploy Daily Zone Walkdowns',body:'The highest-activity work zones require at least one documented HSE walkdown per shift. The walkdown findings must be logged — not just conducted. What is not documented does not legally exist.',color:'var(--amber)'},
+        {icon:'📊',title:'Build a Real-Time Permit Dashboard',body:'A paper-based permit register will always lag reality. Digitize permit tracking with automatic expiry alerts at 24 hours and 4 hours before deadline. Overdue permits should be impossible to miss.',color:'var(--a1)'},
+      ],
+      [
+        {icon:'🔍',title:'Conduct Violation Pattern Analysis',body:'Group violations by type, area, and contractor. If the same violation type appears more than three times, it is a training failure, not an individual failure. Mandatory toolbox talks are required.',color:'var(--red)'},
+        {icon:'🏗️',title:'Rank Contractors by Safety Performance',body:'Create a monthly safety scorecard ranking all active contractors by violations, closure rates, and inspection scores. Share this ranking publicly among contractors. Competition drives compliance.',color:'var(--amber)'},
+        {icon:'⚠️',title:'Implement Pre-Work Safety Briefing Protocol',body:'High and critical risk permits must include a mandatory documented pre-work safety briefing with all workers on site. No briefing record — no work authorization. This eliminates a major violation category.',color:'var(--red)'},
+      ],
+      [
+        {icon:'📈',title:'Set Monthly Compliance Improvement Targets',body:'If current closure rate is 72%, the next month\'s target is 78%, then 84%, then 90%. Public tracking with department accountability creates the urgency that policy alone cannot.',color:'var(--green)'},
+        {icon:'✅',title:'Introduce Contractor Blacklist Criteria',body:'Define objective criteria for contractor blacklisting: 3+ overdue permits in a month, any critical violation, or inspection score below 65. The existence of the criterion changes contractor behavior.',color:'var(--cyan)'},
+        {icon:'📚',title:'Implement Mandatory HSE Induction for New Permits',body:'Every first-time permit for a new contractor or new area should require a documented site induction. Most incidents occur within the first 3 days of a new work activity — this window is preventable.',color:'var(--a2)'},
+      ],
+    ];
+    return recoSets[pi]||[];
+  }
+  return [];
 }
 
-// Fix syntax error - replace ） with )
+// ─── TABLE ────────────────────────────────────────────────
+function buildTable(pi,data){
+  const thead=document.getElementById('th'+pi);
+  const tbody=document.getElementById('tb'+pi);
+  const meta=document.getElementById('tmeta'+pi);
+  if(!thead||!tbody)return;
+  if(meta)meta.textContent=data.length.toLocaleString()+' records';
+  const showCols=HDR.slice(0,12);
+  thead.innerHTML='<tr>'+showCols.map((h,i)=>`<th onclick="sortTable(${pi},${i},'${h}')" class="${SCOL===h?'srt':''}">${h}${SCOL===h?(SDIR===1?' ↑':' ↓'):''}</th>`).join('')+'</tr>';
+  const visible=data.slice(0,200);
+  tbody.innerHTML=visible.map(row=>'<tr>'+showCols.map(h=>{
+    const v=row[h];
+    if(typeof v==='number')return`<td class="tnum">${v.toLocaleString()}</td>`;
+    const s=String(v||'');
+    const lc=s.toLowerCase();
+    let badge='';
+    if(lc.match(/complet|close|active|done|pass|excellent|exceptional|within/i))badge='bg';
+    else if(lc.match(/return|cancel|overdue|terminat|reject|critical|bad/i))badge='br';
+    else if(lc.match(/pend|leave|medium|needs|average/i))badge='ba';
+    else if(lc.match(/open|high|progress/i))badge='bb';
+    if(badge)return`<td><span class="badge ${badge}">${s}</span></td>`;
+    return`<td title="${s}">${s}</td>`;
+  }).join('')+'</tr>').join('');
+}
+function sortTable(pi,idx,col){
+  if(SCOL===col)SDIR*=-1;else{SCOL=col;SDIR=1;}
+  ALL.sort((a,b)=>{const va=a[col],vb=b[col];if(typeof va==='number'&&typeof vb==='number')return(va-vb)*SDIR;return String(va||'').localeCompare(String(vb||''))*SDIR;});
+  buildTable(pi,ALL);
+}
 </script>
 </body>
 </html>

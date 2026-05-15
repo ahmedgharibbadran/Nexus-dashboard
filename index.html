@@ -1,823 +1,841 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SENTINEL — HSE Safety Intelligence</title>
+<title>ATLAS PRO — Data Intelligence</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Cabinet+Grotesk:wght@300;400;500;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
 <style>
+/* ═══════════════════════════════════
+   TOKENS
+═══════════════════════════════════ */
 :root {
-  --bg: #0d0f14;
-  --surface: #13161e;
-  --card: #191d28;
-  --card2: #1e2330;
-  --border: rgba(255,255,255,0.07);
-  --border2: rgba(255,255,255,0.12);
-  --safe: #22c55e;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --info: #3b82f6;
-  --accent: #f97316;
-  --text: #eef0f5;
-  --muted: #636880;
-  --muted2: #8b90a8;
+  --bg:        #080b12;
+  --bg2:       #0d1117;
+  --surface:   #111520;
+  --card:      #161b27;
+  --card2:     #1c2235;
+  --border:    rgba(255,255,255,0.06);
+  --border2:   rgba(255,255,255,0.11);
+  --text:      #e8ecf5;
+  --text2:     #9ba3bf;
+  --muted:     #515872;
+
+  /* domain accent — overridden by JS */
+  --a1: #6366f1;
+  --a2: #818cf8;
+  --a3: rgba(99,102,241,0.12);
+
+  /* semantic */
+  --green:  #10b981;
+  --red:    #f43f5e;
+  --amber:  #f59e0b;
+  --blue:   #3b82f6;
+  --purple: #a855f7;
+  --cyan:   #06b6d4;
 }
+
+/* ═══════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════ */
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
 body{
   background:var(--bg);
   color:var(--text);
-  font-family:'IBM Plex Sans',sans-serif;
+  font-family:'Cabinet Grotesk',sans-serif;
   min-height:100vh;
   overflow-x:hidden;
 }
 
-/* BG PATTERN */
+/* animated mesh background */
 body::before{
-content:’’;
-position:fixed;
-inset:0;
-background:
-radial-gradient(ellipse 80% 50% at 20% 10%, rgba(249,115,22,0.04) 0%, transparent 60%),
-radial-gradient(ellipse 60% 40% at 80% 80%, rgba(59,130,246,0.04) 0%, transparent 60%);
-pointer-events:none;
-z-index:0;
+  content:'';
+  position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 70% 50% at 15% 0%,   rgba(99,102,241,0.07)  0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 85% 100%, rgba(6,182,212,0.05)   0%, transparent 55%),
+    radial-gradient(ellipse 40% 30% at 50% 50%,  rgba(168,85,247,0.03)  0%, transparent 55%);
+  pointer-events:none;z-index:0;
+}
+/* subtle grid */
+body::after{
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+  background-size:48px 48px;
+  pointer-events:none;z-index:0;
 }
 
-/* HEADER */
-header{
-position:sticky;top:0;z-index:100;
-display:flex;align-items:center;justify-content:space-between;
-padding:0 32px;height:64px;
-background:rgba(13,15,20,0.92);
-backdrop-filter:blur(24px);
-border-bottom:1px solid var(–border);
+/* ═══════════════════════════════════
+   SCROLLBAR
+═══════════════════════════════════ */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:#252d40;border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--a1);}
+
+/* ═══════════════════════════════════
+   HEADER
+═══════════════════════════════════ */
+#header{
+  position:sticky;top:0;z-index:200;
+  height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;
+  background:rgba(8,11,18,0.88);
+  backdrop-filter:blur(28px);
+  border-bottom:1px solid var(--border);
 }
 .logo{
-display:flex;align-items:center;gap:12px;
-font-family:‘Syne’,sans-serif;
-font-size:20px;font-weight:800;
-letter-spacing:3px;color:var(–text);
-text-transform:uppercase;
+  display:flex;align-items:center;gap:10px;
+  font-family:'Clash Display',sans-serif;
+  font-size:18px;font-weight:700;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  color:var(--text);
 }
-.logo-icon{
-width:36px;height:36px;
-background:var(–accent);
-border-radius:8px;
-display:grid;place-items:center;
-font-size:18px;
+.logo-mark{
+  width:32px;height:32px;
+  border-radius:8px;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  display:grid;place-items:center;
+  font-size:15px;
+  box-shadow:0 0 16px var(--a3);
+  transition:all .4s;
 }
-.header-center{
-display:flex;gap:8px;
-font-family:‘IBM Plex Mono’,monospace;
-font-size:11px;
+.logo span{color:var(--a2);}
+
+/* NAV TABS */
+.nav-tabs{
+  display:flex;gap:2px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:4px;
 }
-.hbadge{
-padding:5px 12px;
-border:1px solid var(–border2);
-border-radius:4px;
-color:var(–muted2);
-text-transform:uppercase;
-letter-spacing:1px;
-cursor:pointer;
-transition:all .2s;
+.ntab{
+  padding:7px 18px;
+  border-radius:7px;
+  font-size:12px;font-weight:500;
+  letter-spacing:.5px;
+  cursor:pointer;
+  transition:all .2s;
+  color:var(--text2);
+  white-space:nowrap;
+  font-family:'Fira Code',monospace;
+  border:none;background:transparent;
 }
-.hbadge.active,.hbadge:hover{
-border-color:var(–accent);
-color:var(–accent);
-background:rgba(249,115,22,0.08);
+.ntab.active{
+  background:var(--a1);
+  color:#fff;
+  box-shadow:0 4px 16px rgba(99,102,241,0.35);
 }
-.header-right{
-display:flex;align-items:center;gap:16px;
+.ntab:hover:not(.active){color:var(--text);background:var(--card);}
+
+/* HEADER RIGHT */
+.hdr-right{
+  display:flex;align-items:center;gap:12px;
 }
-.live-dot{
-display:flex;align-items:center;gap:6px;
-font-family:‘IBM Plex Mono’,monospace;
-font-size:11px;color:var(–safe);
-text-transform:uppercase;letter-spacing:1px;
+.domain-pill{
+  display:flex;align-items:center;gap:6px;
+  padding:6px 14px;
+  border:1px solid var(--border2);
+  border-radius:20px;
+  font-family:'Fira Code',monospace;
+  font-size:11px;
+  color:var(--a2);
+  background:var(--a3);
+  text-transform:uppercase;letter-spacing:1px;
+  transition:all .4s;
 }
-.dot{
-width:7px;height:7px;
-background:var(–safe);
-border-radius:50%;
-animation:pulse 2s infinite;
+.pulse{
+  width:6px;height:6px;
+  border-radius:50%;
+  background:var(--green);
+  animation:pulse 2s infinite;
 }
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
 
-/* MAIN */
-main{
-position:relative;z-index:1;
-padding:28px 32px;
-max-width:1600px;margin:0 auto;
+/* ═══════════════════════════════════
+   MAIN WRAPPER
+═══════════════════════════════════ */
+#app{position:relative;z-index:1;padding:28px 28px;}
+
+/* ═══════════════════════════════════
+   UPLOAD SCREEN
+═══════════════════════════════════ */
+#upload-screen{
+  min-height:calc(100vh - 60px);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:48px;padding:40px 20px;
+}
+.upload-hero{text-align:center;max-width:680px;}
+.upload-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'Fira Code',monospace;
+  font-size:11px;letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--a2);
+  border:1px solid rgba(99,102,241,0.3);
+  background:rgba(99,102,241,0.06);
+  padding:6px 16px;border-radius:20px;
+  margin-bottom:28px;
+}
+.upload-h1{
+  font-family:'Clash Display',sans-serif;
+  font-size:clamp(40px,6vw,76px);
+  font-weight:700;
+  line-height:1.05;
+  letter-spacing:-1px;
+  margin-bottom:20px;
+}
+.upload-h1 .grad{
+  background:linear-gradient(135deg, var(--a1) 0%, var(--cyan) 50%, var(--a2) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.upload-desc{
+  font-size:17px;line-height:1.7;
+  color:var(--text2);
+  margin-bottom:40px;
 }
 
-/* UPLOAD SCREEN */
-#upload-screen{
-min-height:calc(100vh - 64px);
-display:flex;align-items:center;justify-content:center;
-flex-direction:column;gap:40px;
+/* DROP ZONE */
+.drop-zone{
+  width:100%;max-width:620px;
+  border:1.5px dashed rgba(99,102,241,0.3);
+  border-radius:24px;
+  padding:56px 40px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .3s;
+  background:rgba(99,102,241,0.03);
+  position:relative;overflow:hidden;
 }
-.upload-hero{
-text-align:center;
+.drop-zone::before{
+  content:'';
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,transparent 30%,rgba(99,102,241,0.06),transparent 70%);
+  animation:sweep 4s ease-in-out infinite;
 }
-.upload-tag{
-display:inline-block;
-font-family:‘IBM Plex Mono’,monospace;
-font-size:11px;color:var(–accent);
-text-transform:uppercase;letter-spacing:2px;
-border:1px solid rgba(249,115,22,0.3);
-padding:6px 16px;border-radius:4px;
-margin-bottom:24px;
-background:rgba(249,115,22,0.05);
+@keyframes sweep{0%{transform:translateX(-150%);}100%{transform:translateX(150%);}}
+.drop-zone:hover,.drop-zone.over{
+  border-color:var(--a1);
+  background:rgba(99,102,241,0.07);
+  box-shadow:0 0 40px rgba(99,102,241,0.1);
 }
-.upload-title{
-font-family:‘Syne’,sans-serif;
-font-size:clamp(36px,5vw,64px);
-font-weight:800;
-line-height:1.1;
-margin-bottom:16px;
+.dz-icon{
+  font-size:52px;display:block;
+  margin-bottom:20px;
+  animation:float 3s ease-in-out infinite;
 }
-.upload-title span{
-display:block;
-background:linear-gradient(135deg,var(–accent),#fbbf24);
--webkit-background-clip:text;
--webkit-text-fill-color:transparent;
-background-clip:text;
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.dz-title{
+  font-family:'Clash Display',sans-serif;
+  font-size:26px;font-weight:600;
+  margin-bottom:8px;
 }
-.upload-sub{
-color:var(–muted2);
-font-size:16px;line-height:1.7;
-max-width:520px;margin:0 auto 40px;
+.dz-sub{font-size:14px;color:var(--text2);margin-bottom:28px;line-height:1.6;}
+.btn-upload{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:14px 34px;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  color:#fff;border:none;border-radius:12px;
+  font-family:'Cabinet Grotesk',sans-serif;
+  font-weight:700;font-size:14px;
+  cursor:pointer;transition:all .25s;
+  text-transform:uppercase;letter-spacing:.5px;
+  box-shadow:0 8px 24px rgba(99,102,241,0.3);
 }
-.upload-zone{
-border:2px dashed rgba(249,115,22,0.25);
-border-radius:20px;
-padding:60px 80px;
-cursor:pointer;
-transition:all .3s;
-background:rgba(249,115,22,0.02);
-position:relative;overflow:hidden;
-}
-.upload-zone:hover,.upload-zone.over{
-border-color:var(–accent);
-background:rgba(249,115,22,0.06);
-}
-.upload-zone::before{
-content:’’;
-position:absolute;inset:-2px;
-background:linear-gradient(135deg,transparent 40%,rgba(249,115,22,0.1),transparent 60%);
-animation:shimmer 3s infinite;
-}
-@keyframes shimmer{0%{transform:translateX(-100%);}100%{transform:translateX(100%);}}
-.uz-icon{font-size:48px;margin-bottom:16px;display:block;}
-.uz-text{
-font-family:‘Syne’,sans-serif;
-font-size:22px;font-weight:700;
-margin-bottom:8px;
-}
-.uz-sub{font-size:14px;color:var(–muted2);margin-bottom:24px;}
-.btn-primary{
-display:inline-flex;align-items:center;gap:10px;
-padding:14px 32px;
-background:var(–accent);
-color:#0d0f14;
-border:none;border-radius:10px;
-font-family:‘IBM Plex Sans’,sans-serif;
-font-weight:600;font-size:14px;
-cursor:pointer;transition:all .2s;
-text-transform:uppercase;letter-spacing:.5px;
-}
-.btn-primary:hover{
-background:#fb923c;
-transform:translateY(-2px);
-box-shadow:0 12px 32px rgba(249,115,22,0.35);
-}
-.formats{
-display:flex;justify-content:center;gap:8px;margin-top:16px;
+.btn-upload:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(99,102,241,0.45);}
+.fmts{
+  display:flex;justify-content:center;gap:8px;margin-top:16px;
+  font-family:'Fira Code',monospace;
 }
 .fmt{
-padding:4px 10px;
-border:1px solid var(–border);
-border-radius:4px;
-font-family:‘IBM Plex Mono’,monospace;
-font-size:10px;color:var(–muted);
-text-transform:uppercase;letter-spacing:1px;
+  padding:3px 10px;
+  border:1px solid var(--border2);
+  border-radius:4px;font-size:10px;
+  color:var(--muted);text-transform:uppercase;letter-spacing:1px;
 }
 
-/* SAMPLE CARDS */
-.sample-section{
-width:100%;max-width:700px;text-align:center;
+/* SAMPLE SECTION */
+.sample-section{text-align:center;width:100%;max-width:700px;}
+.sample-eyebrow{
+  font-family:'Fira Code',monospace;
+  font-size:10px;letter-spacing:2px;
+  text-transform:uppercase;color:var(--muted);
+  margin-bottom:14px;
 }
-.sample-label{
-font-family:‘IBM Plex Mono’,monospace;
-font-size:11px;color:var(–muted);
-text-transform:uppercase;letter-spacing:1.5px;
-margin-bottom:16px;
+.sample-grid{
+  display:flex;gap:10px;justify-content:center;flex-wrap:wrap;
 }
-.sample-cards{
-display:flex;gap:12px;justify-content:center;flex-wrap:wrap;
+.sample-btn{
+  padding:11px 22px;
+  background:var(--card);
+  border:1px solid var(--border2);
+  border-radius:12px;
+  font-size:13px;font-weight:500;
+  cursor:pointer;transition:all .2s;
+  color:var(--text2);
+  display:flex;align-items:center;gap:8px;
 }
-.sample-card{
-padding:12px 20px;
-background:var(–card);
-border:1px solid var(–border);
-border-radius:10px;
-cursor:pointer;
-transition:all .2s;
-font-size:13px;
-display:flex;align-items:center;gap:8px;
-}
-.sample-card:hover{
-border-color:var(–accent);
-color:var(–accent);
-background:rgba(249,115,22,0.05);
+.sample-btn:hover{
+  border-color:var(--a1);color:var(--a2);
+  background:rgba(99,102,241,0.07);
+  transform:translateY(-2px);
 }
 
-/* LOADING */
+/* ═══════════════════════════════════
+   LOADING SCREEN
+═══════════════════════════════════ */
 #loading-screen{
-display:none;
-min-height:calc(100vh - 64px);
-flex-direction:column;align-items:center;justify-content:center;
-gap:24px;
+  display:none;
+  min-height:calc(100vh - 60px);
+  flex-direction:column;align-items:center;justify-content:center;gap:28px;
 }
-.loader{
-width:60px;height:60px;
-border:3px solid var(–border);
-border-top-color:var(–accent);
-border-radius:50%;
-animation:spin 1s linear infinite;
+.loader-wrap{position:relative;width:72px;height:72px;}
+.loader-ring{
+  position:absolute;inset:0;
+  border:2px solid var(--border);
+  border-top-color:var(--a1);
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+.loader-ring2{
+  position:absolute;inset:8px;
+  border:2px solid var(--border);
+  border-bottom-color:var(--cyan);
+  border-radius:50%;
+  animation:spin .7s linear infinite reverse;
 }
 @keyframes spin{to{transform:rotate(360deg);}}
-.load-title{
-font-family:‘Syne’,sans-serif;
-font-size:20px;font-weight:700;
-color:var(–accent);letter-spacing:2px;
+.load-label{
+  font-family:'Clash Display',sans-serif;
+  font-size:18px;font-weight:600;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  color:var(--a2);
 }
-.load-steps{
-display:flex;flex-direction:column;gap:8px;align-items:center;
+.load-steps{display:flex;flex-direction:column;gap:10px;align-items:center;}
+.lstep{
+  font-family:'Fira Code',monospace;
+  font-size:11px;text-transform:uppercase;
+  letter-spacing:1.5px;color:var(--muted);
+  opacity:0;transition:opacity .3s;
+  display:flex;align-items:center;gap:8px;
 }
-.load-step{
-font-family:‘IBM Plex Mono’,monospace;
-font-size:12px;color:var(–muted);
-opacity:0;transition:opacity .4s;
-text-transform:uppercase;letter-spacing:1px;
-}
-.load-step.active{opacity:1;color:var(–muted2);}
+.lstep.on{opacity:1;color:var(--text2);}
+.lstep.done{opacity:.4;color:var(--green);}
+.lstep::before{content:'○';font-size:8px;}
+.lstep.on::before{content:'●';color:var(--a1);}
+.lstep.done::before{content:'✓';color:var(--green);}
 
-/* DASHBOARD */
+/* ═══════════════════════════════════
+   DASHBOARD
+═══════════════════════════════════ */
 #dashboard{display:none;}
 
-/* TOP BAR */
-.dash-topbar{
-display:flex;align-items:center;justify-content:space-between;
-margin-bottom:24px;flex-wrap:wrap;gap:12px;
-}
-.dash-info{}
-.dash-title{
-font-family:‘Syne’,sans-serif;
-font-size:24px;font-weight:800;
-letter-spacing:1px;
-}
-.dash-title span{color:var(–accent);}
-.dash-meta{
-font-family:‘IBM Plex Mono’,monospace;
-font-size:11px;color:var(–muted);
-text-transform:uppercase;letter-spacing:1px;
-margin-top:4px;
-}
-.dash-actions{display:flex;gap:8px;}
-.btn-sec{
-padding:9px 18px;
-background:transparent;
-border:1px solid var(–border2);
-color:var(–muted2);
-border-radius:8px;
-font-family:‘IBM Plex Sans’,sans-serif;
-font-size:12px;cursor:pointer;
-transition:all .2s;
-display:flex;align-items:center;gap:6px;
-}
-.btn-sec:hover{border-color:var(–accent);color:var(–accent);}
+/* PAGE */
+.page{display:none;}
+.page.active{display:block;}
 
-/* FILTERS BAR */
-.filters-bar{
-display:flex;gap:10px;flex-wrap:wrap;
-padding:16px 20px;
-background:var(–surface);
-border:1px solid var(–border);
-border-radius:14px;
-margin-bottom:24px;
-align-items:center;
+/* DASH TOPBAR */
+.dash-top{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:20px;flex-wrap:wrap;gap:14px;
 }
-.filter-label{
-font-family:‘IBM Plex Mono’,monospace;
-font-size:10px;color:var(–muted);
-text-transform:uppercase;letter-spacing:1.5px;
-margin-right:4px;
-white-space:nowrap;
+.dash-heading{
+  font-family:'Clash Display',sans-serif;
+  font-size:28px;font-weight:700;
+  letter-spacing:-.5px;
 }
-.fselect{
-padding:8px 32px 8px 12px;
-background:var(–card);
-border:1px solid var(–border);
-color:var(–text);
-border-radius:8px;
-font-family:‘IBM Plex Sans’,sans-serif;
-font-size:12px;cursor:pointer;
-transition:all .2s;
-appearance:none;
-background-image:url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ width=‘10’ height=‘10’ viewBox=‘0 0 10 10’%3E%3Cpath fill=’%23636880’ d=‘M5 7L0 2h10z’/%3E%3C/svg%3E”);
-background-repeat:no-repeat;
-background-position:right 10px center;
-min-width:120px;
+.dash-heading span{color:var(--a2);}
+.dash-sub{
+  font-family:'Fira Code',monospace;
+  font-size:11px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1px;
+  margin-top:6px;
 }
-.fselect:focus{outline:none;border-color:var(–accent);}
-.fsearch{
-padding:8px 14px;
-background:var(–card);
-border:1px solid var(–border);
-color:var(–text);
-border-radius:8px;
-font-family:‘IBM Plex Sans’,sans-serif;
-font-size:12px;
-width:200px;transition:all .2s;
-margin-left:auto;
+.dash-acts{display:flex;gap:8px;flex-wrap:wrap;}
+.btn-sm{
+  padding:8px 16px;
+  background:transparent;
+  border:1px solid var(--border2);
+  color:var(--text2);
+  border-radius:8px;
+  font-size:12px;font-weight:500;
+  cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;gap:6px;
+  font-family:'Cabinet Grotesk',sans-serif;
 }
-.fsearch:focus{outline:none;border-color:var(–accent);width:240px;}
-.fsearch::placeholder{color:var(–muted);}
-.clear-btn{
-padding:8px 14px;
-background:transparent;
-border:1px solid var(–border);
-color:var(–muted);
-border-radius:8px;
-font-family:‘IBM Plex Mono’,monospace;
-font-size:11px;cursor:pointer;
-transition:all .2s;white-space:nowrap;
-text-transform:uppercase;letter-spacing:.5px;
+.btn-sm:hover{border-color:var(--a1);color:var(--a2);}
+
+/* PAGE DESCRIPTION */
+.page-desc{
+  padding:14px 20px;
+  background:linear-gradient(135deg,rgba(99,102,241,0.07),rgba(6,182,212,0.04));
+  border:1px solid rgba(99,102,241,0.15);
+  border-left:3px solid var(--a1);
+  border-radius:0 12px 12px 0;
+  margin-bottom:24px;
+  font-size:13px;line-height:1.7;
+  color:var(--text2);
 }
-.clear-btn:hover{border-color:var(–danger);color:var(–danger);}
+.page-desc strong{color:var(--text);}
+
+/* FILTERS */
+.filter-bar{
+  display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+  padding:14px 18px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+  margin-bottom:22px;
+}
+.fl{
+  font-family:'Fira Code',monospace;
+  font-size:10px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1.5px;
+  margin-right:2px;white-space:nowrap;
+}
+.fsel{
+  padding:7px 30px 7px 11px;
+  background:var(--card);
+  border:1px solid var(--border);
+  color:var(--text);
+  border-radius:8px;
+  font-family:'Cabinet Grotesk',sans-serif;
+  font-size:12px;font-weight:500;
+  cursor:pointer;transition:all .2s;
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23515872' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 10px center;
+  min-width:120px;
+}
+.fsel:focus{outline:none;border-color:var(--a1);}
+.fsrch{
+  padding:7px 13px;
+  background:var(--card);
+  border:1px solid var(--border);
+  color:var(--text);
+  border-radius:8px;
+  font-family:'Cabinet Grotesk',sans-serif;
+  font-size:12px;font-weight:500;
+  width:190px;transition:all .2s;
+  margin-left:auto;
+}
+.fsrch:focus{outline:none;border-color:var(--a1);width:230px;}
+.fsrch::placeholder{color:var(--muted);}
+.clr-btn{
+  padding:7px 13px;
+  background:transparent;
+  border:1px solid var(--border);
+  color:var(--muted);
+  border-radius:8px;
+  font-family:'Fira Code',monospace;
+  font-size:10px;text-transform:uppercase;
+  letter-spacing:.5px;cursor:pointer;transition:all .2s;
+}
+.clr-btn:hover{border-color:var(--red);color:var(--red);}
 
 /* KPI GRID */
-.kpi-grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-gap:16px;
-margin-bottom:24px;
+.kpi-row{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:14px;margin-bottom:22px;
 }
-.kpi-card{
-background:var(–card);
-border:1px solid var(–border);
-border-radius:16px;
-padding:20px 22px;
-position:relative;overflow:hidden;
-transition:all .3s;cursor:default;
+.kpi{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:20px;
+  position:relative;overflow:hidden;
+  transition:all .3s;
+  cursor:default;
 }
-.kpi-card::after{
-content:’’;
-position:absolute;
-bottom:0;left:0;right:0;height:3px;
-background:var(–kpi-color,var(–accent));
-transform:scaleX(0);transform-origin:left;
-transition:transform .4s;
+.kpi::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;height:2px;
+  background:var(--kc,var(--a1));
+  transform:scaleX(0);transform-origin:left;
+  transition:transform .5s cubic-bezier(.34,1.56,.64,1);
 }
-.kpi-card:hover::after{transform:scaleX(1);}
-.kpi-card:hover{
-border-color:rgba(255,255,255,0.12);
-transform:translateY(-3px);
-box-shadow:0 16px 48px rgba(0,0,0,0.4);
+.kpi:hover::before{transform:scaleX(1);}
+.kpi:hover{
+  border-color:rgba(255,255,255,0.1);
+  transform:translateY(-3px);
+  box-shadow:0 16px 40px rgba(0,0,0,.4);
 }
-.kpi-top{
-display:flex;align-items:center;justify-content:space-between;
-margin-bottom:12px;
+.kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.kpi-ico{
+  width:40px;height:40px;border-radius:10px;
+  display:grid;place-items:center;font-size:20px;
+  background:rgba(255,255,255,0.05);
 }
-.kpi-icon{
-width:38px;height:38px;
-border-radius:10px;
-display:grid;place-items:center;
-font-size:18px;
-background:rgba(255,255,255,0.06);
+.kpi-badge{
+  font-family:'Fira Code',monospace;
+  font-size:10px;padding:3px 9px;
+  border-radius:4px;font-weight:500;
 }
-.kpi-trend{
-font-family:‘IBM Plex Mono’,monospace;
-font-size:11px;padding:3px 8px;
-border-radius:4px;
-font-weight:500;
+.up{background:rgba(16,185,129,.15);color:var(--green);}
+.dn{background:rgba(244,63,94,.15);color:var(--red);}
+.nt{background:rgba(81,88,114,.2);color:var(--text2);}
+.kpi-lbl{
+  font-family:'Fira Code',monospace;
+  font-size:10px;text-transform:uppercase;
+  letter-spacing:1.5px;color:var(--muted);
+  margin-bottom:4px;
 }
-.trend-up{background:rgba(34,197,94,0.15);color:var(–safe);}
-.trend-down{background:rgba(239,68,68,0.15);color:var(–danger);}
-.trend-neutral{background:rgba(99,104,128,0.2);color:var(–muted2);}
-.kpi-label{
-font-family:‘IBM Plex Mono’,monospace;
-font-size:10px;color:var(–muted);
-text-transform:uppercase;letter-spacing:1.5px;
-margin-bottom:6px;
+.kpi-val{
+  font-family:'Clash Display',sans-serif;
+  font-size:40px;font-weight:700;
+  line-height:1;
+  color:var(--kc,var(--a2));
 }
-.kpi-value{
-font-family:‘Syne’,sans-serif;
-font-size:38px;font-weight:800;
-line-height:1;
-color:var(–kpi-color,var(–text));
+.kpi-desc{font-size:12px;color:var(--text2);margin-top:6px;}
+
+/* INSIGHT CARD */
+.insight{
+  display:flex;gap:16px;align-items:flex-start;
+  padding:20px 24px;
+  background:linear-gradient(135deg,rgba(99,102,241,0.07),rgba(6,182,212,0.04));
+  border:1px solid rgba(99,102,241,0.18);
+  border-radius:16px;
+  margin-bottom:22px;
 }
-.kpi-sub{font-size:12px;color:var(–muted2);margin-top:6px;}
+.ins-ico{font-size:28px;flex-shrink:0;margin-top:2px;}
+.ins-tag{
+  font-family:'Fira Code',monospace;
+  font-size:10px;text-transform:uppercase;
+  letter-spacing:2px;color:var(--a2);margin-bottom:8px;
+}
+.ins-body{font-size:13px;line-height:1.75;color:var(--text2);}
+.ins-body strong{color:var(--text);}
+.ins-body .hi{color:var(--a2);}
+.ins-body .warn{color:var(--amber);}
+.ins-body .bad{color:var(--red);}
+.ins-body .good{color:var(--green);}
 
 /* CHARTS GRID */
-.charts-grid{
-display:grid;
-grid-template-columns:repeat(12,1fr);
-gap:16px;
-margin-bottom:24px;
+.cg{
+  display:grid;
+  grid-template-columns:repeat(12,1fr);
+  gap:16px;
+  margin-bottom:22px;
 }
-.chart-card{
-background:var(–card);
-border:1px solid var(–border);
-border-radius:16px;
-padding:22px;
-transition:all .3s;
-grid-column:span 6;
+.cc{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:22px;
+  transition:all .3s;
+  grid-column:span 6;
+  position:relative;overflow:hidden;
 }
-.chart-card.full{grid-column:span 12;}
-.chart-card.third{grid-column:span 4;}
-.chart-card:hover{
-border-color:rgba(255,255,255,0.1);
-box-shadow:0 12px 40px rgba(0,0,0,0.35);
+.cc.w12{grid-column:span 12;}
+.cc.w4{grid-column:span 4;}
+.cc.w8{grid-column:span 8;}
+.cc:hover{
+  border-color:rgba(255,255,255,0.09);
+  box-shadow:0 16px 48px rgba(0,0,0,.4);
 }
-.cc-top{
-display:flex;align-items:center;justify-content:space-between;
-margin-bottom:18px;
+.cc-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;}
+.cc-ttl{
+  font-family:'Clash Display',sans-serif;
+  font-size:15px;font-weight:600;
+  letter-spacing:-.2px;
 }
-.cc-title{
-font-family:‘Syne’,sans-serif;
-font-size:14px;font-weight:700;
-letter-spacing:.5px;
+.cc-desc{font-size:12px;color:var(--text2);margin-top:3px;line-height:1.5;}
+.cc-tag{
+  font-family:'Fira Code',monospace;
+  font-size:9px;text-transform:uppercase;letter-spacing:.5px;
+  padding:3px 10px;border-radius:4px;
+  background:var(--a3);color:var(--a2);
+  border:1px solid rgba(99,102,241,0.2);
+  flex-shrink:0;
 }
-.cc-sub{font-size:12px;color:var(–muted);margin-top:2px;}
-.cc-badge{
-font-family:‘IBM Plex Mono’,monospace;
-font-size:10px;
-padding:3px 10px;border-radius:4px;
-text-transform:uppercase;letter-spacing:.5px;
-background:rgba(249,115,22,0.1);
-color:var(–accent);
-border:1px solid rgba(249,115,22,0.2);
-}
-.chart-wrap{position:relative;height:260px;}
-.chart-wrap.tall{height:320px;}
+.cw{position:relative;height:260px;}
+.cw.tall{height:320px;}
+.cw.short{height:200px;}
 
-/* PERMIT STATUS BARS */
-.status-bars{display:flex;flex-direction:column;gap:14px;padding-top:8px;}
-.sbar-row{display:flex;align-items:center;gap:12px;}
-.sbar-label{
-font-size:12px;color:var(–muted2);
-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-flex-shrink:0;
+/* RECOMMENDATION CARDS */
+.reco-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:14px;margin-bottom:22px;
 }
-.sbar-track{
-flex:1;height:8px;
-background:rgba(255,255,255,0.06);
-border-radius:4px;overflow:hidden;
+.reco-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:18px 20px;
+  border-left:3px solid var(--rc,var(--a1));
+  transition:all .2s;
 }
-.sbar-fill{
-height:100%;border-radius:4px;
-transition:width 1s cubic-bezier(0.34,1.56,0.64,1);
+.reco-card:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,.3);}
+.reco-ico{font-size:22px;margin-bottom:10px;}
+.reco-ttl{
+  font-family:'Clash Display',sans-serif;
+  font-size:14px;font-weight:600;margin-bottom:6px;
 }
-.sbar-val{
-font-family:‘IBM Plex Mono’,monospace;
-font-size:11px;color:var(–muted2);
-width:40px;text-align:right;flex-shrink:0;
-}
-
-/* HEATMAP / TIMELINE */
-.timeline-grid{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(32px,1fr));
-gap:4px;padding-top:8px;
-}
-.tg-cell{
-aspect-ratio:1;
-border-radius:4px;
-background:rgba(249,115,22,0.1);
-transition:all .2s;cursor:default;
-position:relative;
-}
-.tg-cell:hover{transform:scale(1.2);z-index:2;}
-.tg-tooltip{
-position:absolute;bottom:calc(100% + 4px);left:50%;
-transform:translateX(-50%);
-background:var(–card2);
-border:1px solid var(–border2);
-border-radius:6px;padding:6px 10px;
-font-family:‘IBM Plex Mono’,monospace;
-font-size:10px;color:var(–text);
-white-space:nowrap;
-opacity:0;pointer-events:none;
-transition:opacity .2s;z-index:10;
-}
-.tg-cell:hover .tg-tooltip{opacity:1;}
-
-/* AI INSIGHT BOX */
-.insight-box{
-background:linear-gradient(135deg,rgba(249,115,22,0.08),rgba(59,130,246,0.06));
-border:1px solid rgba(249,115,22,0.2);
-border-radius:16px;
-padding:22px 26px;
-margin-bottom:24px;
-display:flex;gap:16px;align-items:flex-start;
-}
-.insight-icon{
-font-size:28px;flex-shrink:0;
-margin-top:2px;
-}
-.insight-content{}
-.insight-tag{
-font-family:‘IBM Plex Mono’,monospace;
-font-size:10px;color:var(–accent);
-text-transform:uppercase;letter-spacing:2px;
-margin-bottom:8px;
-}
-.insight-text{
-font-size:14px;line-height:1.7;
-color:var(–muted2);
-}
-.insight-text strong{color:var(–text);}
-.insight-text .hi{color:var(–accent);}
+.reco-body{font-size:12px;color:var(--text2);line-height:1.65;}
 
 /* TABLE */
-.table-section{
-background:var(–card);
-border:1px solid var(–border);
-border-radius:16px;
-overflow:hidden;
-margin-bottom:24px;
+.tbl-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+  margin-bottom:22px;
 }
-.ts-header{
-padding:18px 22px;
-border-bottom:1px solid var(–border);
-display:flex;align-items:center;justify-content:space-between;
-flex-wrap:wrap;gap:12px;
+.tbl-top{
+  padding:16px 20px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:10px;
 }
-.ts-title{
-font-family:‘Syne’,sans-serif;
-font-size:15px;font-weight:700;
+.tbl-ttl{
+  font-family:'Clash Display',sans-serif;
+  font-size:15px;font-weight:600;
 }
-.ts-count{
-font-family:‘IBM Plex Mono’,monospace;
-font-size:11px;color:var(–muted);
-text-transform:uppercase;letter-spacing:1px;
+.tbl-meta{
+  font-family:'Fira Code',monospace;
+  font-size:10px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1px;
 }
-.table-wrap{overflow-x:auto;max-height:400px;overflow-y:auto;}
+.tw{overflow-x:auto;max-height:380px;overflow-y:auto;}
 table{width:100%;border-collapse:collapse;}
 th{
-padding:11px 16px;
-background:var(–surface);
-text-align:left;
-font-family:‘IBM Plex Mono’,monospace;
-font-size:10px;text-transform:uppercase;
-letter-spacing:1.5px;color:var(–muted);
-border-bottom:1px solid var(–border);
-position:sticky;top:0;z-index:2;
-white-space:nowrap;cursor:pointer;
-user-select:none;
+  padding:10px 14px;
+  background:var(--surface);
+  text-align:left;
+  font-family:'Fira Code',monospace;
+  font-size:9px;text-transform:uppercase;
+  letter-spacing:1.5px;color:var(--muted);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:2;
+  white-space:nowrap;cursor:pointer;
+  user-select:none;transition:color .2s;
 }
-th:hover{color:var(–accent);}
-th.sorted{color:var(–accent);}
+th:hover{color:var(--a2);}
+th.srt{color:var(--a2);}
 td{
-padding:11px 16px;
-font-size:12px;color:var(–text);
-border-bottom:1px solid rgba(255,255,255,0.04);
-white-space:nowrap;
-max-width:180px;overflow:hidden;text-overflow:ellipsis;
+  padding:10px 14px;
+  font-size:12px;font-weight:500;
+  color:var(--text);
+  border-bottom:1px solid rgba(255,255,255,0.03);
+  white-space:nowrap;max-width:180px;
+  overflow:hidden;text-overflow:ellipsis;
 }
-tr:hover td{background:rgba(249,115,22,0.03);}
-.td-num{
-font-family:‘IBM Plex Mono’,monospace;
-color:var(–info);font-size:12px;
+tr:hover td{background:rgba(99,102,241,0.04);}
+.tn{font-family:'Fira Code',monospace;color:var(--blue);font-size:11px;}
+.tb{
+  display:inline-block;
+  padding:2px 9px;border-radius:4px;
+  font-family:'Fira Code',monospace;
+  font-size:9px;text-transform:uppercase;letter-spacing:.5px;
 }
-.td-badge{
-display:inline-block;
-padding:2px 10px;border-radius:4px;
-font-family:‘IBM Plex Mono’,monospace;
-font-size:10px;text-transform:uppercase;letter-spacing:.5px;
-}
-.badge-open{background:rgba(249,115,22,0.15);color:var(–accent);}
-.badge-closed{background:rgba(34,197,94,0.15);color:var(–safe);}
-.badge-overdue{background:rgba(239,68,68,0.15);color:var(–danger);}
-.badge-pending{background:rgba(245,158,11,0.15);color:var(–warning);}
-
-/* SCROLLBAR */
-::-webkit-scrollbar{width:5px;height:5px;}
-::-webkit-scrollbar-track{background:var(–surface);}
-::-webkit-scrollbar-thumb{background:#2a2e3e;border-radius:3px;}
-::-webkit-scrollbar-thumb:hover{background:var(–accent);}
+.tb-g{background:rgba(16,185,129,.12);color:var(--green);}
+.tb-r{background:rgba(244,63,94,.12);color:var(--red);}
+.tb-a{background:rgba(245,158,11,.12);color:var(--amber);}
+.tb-b{background:rgba(59,130,246,.12);color:var(--blue);}
+.tb-p{background:rgba(168,85,247,.12);color:var(--purple);}
 
 /* TOAST */
 .toast{
-position:fixed;bottom:24px;right:24px;
-background:var(–card2);
-border:1px solid var(–border2);
-border-radius:12px;
-padding:14px 18px;
-display:flex;align-items:center;gap:10px;
-font-size:13px;
-transform:translateY(80px);opacity:0;
-transition:all .4s cubic-bezier(0.34,1.56,0.64,1);
-z-index:200;
-box-shadow:0 16px 48px rgba(0,0,0,0.5);
+  position:fixed;bottom:22px;right:22px;
+  background:var(--card2);
+  border:1px solid var(--border2);
+  border-radius:12px;
+  padding:13px 18px;
+  display:flex;align-items:center;gap:10px;
+  font-size:13px;font-weight:500;
+  transform:translateY(80px);opacity:0;
+  transition:all .4s cubic-bezier(.34,1.56,.64,1);
+  z-index:999;
+  box-shadow:0 16px 48px rgba(0,0,0,.5);
 }
-.toast.show{transform:translateY(0);opacity:1;}
-.toast-dot{
-width:8px;height:8px;
-border-radius:50%;flex-shrink:0;
-}
-
-/* EMPTY */
-.empty{
-text-align:center;padding:60px 20px;
-color:var(–muted);font-size:14px;
-grid-column:span 12;
-}
+.toast.on{transform:translateY(0);opacity:1;}
+.td{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 
 /* RESPONSIVE */
-@media(max-width:900px){
-main{padding:20px 16px;}
-header{padding:0 16px;}
-.chart-card{grid-column:span 12 !important;}
-.kpi-grid{grid-template-columns:repeat(2,1fr);}
-.upload-zone{padding:40px 24px;}
+@media(max-width:1000px){
+  .cc{grid-column:span 12 !important;}
+  .cg{grid-template-columns:1fr;}
 }
-@media(max-width:600px){
-.kpi-grid{grid-template-columns:1fr;}
-.upload-title{font-size:32px;}
-.header-center{display:none;}
+@media(max-width:700px){
+  #app{padding:16px 12px;}
+  #header{padding:0 14px;}
+  .nav-tabs{display:none;}
+  .kpi-row{grid-template-columns:repeat(2,1fr);}
+  .upload-h1{font-size:34px;}
+  .drop-zone{padding:36px 20px;}
+}
+@media(max-width:480px){
+  .kpi-row{grid-template-columns:1fr;}
 }
 
 #file-input{display:none;}
 </style>
-
 </head>
 <body>
 
-<header>
+<!-- HEADER -->
+<div id="header">
   <div class="logo">
-    <div class="logo-icon">🛡</div>
-    SENTINEL
+    <div class="logo-mark" id="logo-mark">◈</div>
+    ATLAS<span>PRO</span>
   </div>
-  <div class="header-center">
-    <div class="hbadge active" onclick="setView('overview')">Overview</div>
-    <div class="hbadge" onclick="setView('permits')">Permits</div>
-    <div class="hbadge" onclick="setView('incidents')">Incidents</div>
+  <div class="nav-tabs" id="nav-tabs" style="display:none;">
+    <!-- filled by JS -->
   </div>
-  <div class="header-right">
-    <div class="live-dot">
-      <div class="dot"></div>
-      HSE Live
+  <div class="hdr-right">
+    <div class="domain-pill" id="domain-pill">
+      <div class="pulse"></div>
+      <span id="domain-label">Ready</span>
     </div>
   </div>
-</header>
+</div>
 
-<main>
+<!-- APP -->
+<div id="app">
 
-<!-- UPLOAD SCREEN -->
-
+<!-- ══ UPLOAD SCREEN ══ -->
 <div id="upload-screen">
   <div class="upload-hero">
-    <div class="upload-tag">⚡ HSE Intelligence Platform</div>
-    <h1 class="upload-title">
-      Safety Data.<br>
-      <span>Instant Intelligence.</span>
+    <div class="upload-eyebrow">⬡ Intelligent Data Analysis Platform</div>
+    <h1 class="upload-h1">
+      Your Data.<br>
+      <span class="grad">Deep Intelligence.</span>
     </h1>
-    <p class="upload-sub">Upload your HSE data file — permits, incidents, inspections, violations. SENTINEL reads, cleans, and visualizes everything automatically.</p>
-    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
-      <span class="uz-icon">🛡</span>
-      <div class="uz-text">Drop Your HSE Data Here</div>
-      <div class="uz-sub">CSV, Excel — any format, any structure</div>
-      <button class="btn-primary" onclick="event.stopPropagation();document.getElementById('file-input').click()">
-        ↑ Upload File
+    <p class="upload-desc">
+      Upload any dataset — Sales, HR, Safety, Finance, Operations. ATLAS PRO automatically reads the structure, identifies the domain, builds multi-page analytics dashboards, and writes expert-level insights. No setup required.
+    </p>
+    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+      <span class="dz-icon">◈</span>
+      <div class="dz-title">Drop Your Dataset Here</div>
+      <div class="dz-sub">Any CSV or Excel file from any domain.<br>ATLAS PRO figures out the rest automatically.</div>
+      <button class="btn-upload" onclick="event.stopPropagation();document.getElementById('file-input').click()">
+        ↑ &nbsp; Upload Dataset
       </button>
-      <div class="formats">
+      <div class="fmts" style="margin-top:16px;">
         <span class="fmt">CSV</span>
         <span class="fmt">XLSX</span>
         <span class="fmt">XLS</span>
+        <span class="fmt">TSV</span>
       </div>
     </div>
   </div>
 
   <div class="sample-section">
-    <div class="sample-label">or try a sample dataset</div>
-    <div class="sample-cards">
-      <div class="sample-card" onclick="loadSample('permits')">🔥 Hot Work Permits</div>
-      <div class="sample-card" onclick="loadSample('incidents')">⚠️ Incident Log</div>
-      <div class="sample-card" onclick="loadSample('inspections')">✅ Site Inspections</div>
+    <div class="sample-eyebrow">— or explore with a built-in sample —</div>
+    <div class="sample-grid">
+      <div class="sample-btn" onclick="loadSample('sales')">📈 &nbsp;Sales & Revenue</div>
+      <div class="sample-btn" onclick="loadSample('hr')">👥 &nbsp;Human Resources</div>
+      <div class="sample-btn" onclick="loadSample('safety')">🛡 &nbsp;HSE Safety Permits</div>
+      <div class="sample-btn" onclick="loadSample('finance')">💰 &nbsp;Finance & Budget</div>
     </div>
   </div>
 </div>
 
-<!-- LOADING SCREEN -->
-
-<div id="loading-screen" style="display:none;min-height:calc(100vh - 64px);flex-direction:column;align-items:center;justify-content:center;gap:24px;">
-  <div class="loader"></div>
-  <div class="load-title">ANALYZING DATA</div>
+<!-- ══ LOADING SCREEN ══ -->
+<div id="loading-screen" style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:28px;min-height:calc(100vh - 60px);">
+  <div class="loader-wrap">
+    <div class="loader-ring"></div>
+    <div class="loader-ring2"></div>
+  </div>
+  <div class="load-label">Analyzing Data</div>
   <div class="load-steps">
-    <div class="load-step active" id="s1">Reading file structure...</div>
-    <div class="load-step" id="s2">Cleaning & normalizing data...</div>
-    <div class="load-step" id="s3">Detecting HSE categories...</div>
-    <div class="load-step" id="s4">Generating intelligence...</div>
+    <div class="lstep" id="ls1">Reading file structure</div>
+    <div class="lstep" id="ls2">Cleaning & normalizing records</div>
+    <div class="lstep" id="ls3">Detecting domain & column types</div>
+    <div class="lstep" id="ls4">Building intelligent pages</div>
+    <div class="lstep" id="ls5">Writing expert insights</div>
   </div>
 </div>
 
-<!-- DASHBOARD -->
-
+<!-- ══ DASHBOARD ══ -->
 <div id="dashboard">
-  <!-- TOP BAR -->
-  <div class="dash-topbar">
-    <div class="dash-info">
-      <div class="dash-title"><span id="file-label">SCCT2</span> — HSE Dashboard</div>
-      <div class="dash-meta" id="dash-meta">0 records · 0 columns</div>
-    </div>
-    <div class="dash-actions">
-      <button class="btn-sec" onclick="exportCSV()">⬇ Export CSV</button>
-      <button class="btn-sec" onclick="resetAll()">↺ New File</button>
-    </div>
-  </div>
-
-  <!-- FILTERS -->
-
-  <div class="filters-bar" id="filters-bar">
-    <span class="filter-label">FILTER:</span>
-    <div id="filter-selects"></div>
-    <input type="text" class="fsearch" id="fsearch" placeholder="🔍 Search records..." oninput="applyAll()">
-    <button class="clear-btn" onclick="clearFilters()">✕ Clear</button>
-  </div>
-
-  <!-- KPI CARDS -->
-
-  <div class="kpi-grid" id="kpi-grid"></div>
-
-  <!-- AI INSIGHT -->
-
-  <div class="insight-box" id="insight-box">
-    <div class="insight-icon">🧠</div>
-    <div class="insight-content">
-      <div class="insight-tag">AI Analysis</div>
-      <div class="insight-text" id="insight-text">Analyzing data...</div>
-    </div>
-  </div>
-
-  <!-- CHARTS -->
-
-  <div class="charts-grid" id="charts-grid"></div>
-
-  <!-- TABLE -->
-
-  <div class="table-section">
-    <div class="ts-header">
-      <div class="ts-title">Data Records</div>
-      <div class="ts-count" id="ts-count">0 records</div>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead id="t-head"></thead>
-        <tbody id="t-body"></tbody>
-      </table>
-    </div>
-  </div>
+  <div id="pages-container"></div>
 </div>
 
-</main>
+</div><!-- /app -->
 
 <!-- TOAST -->
-
 <div class="toast" id="toast">
-  <div class="toast-dot" id="toast-dot"></div>
-  <span id="toast-msg">Loaded</span>
+  <div class="td" id="td"></div>
+  <span id="tm">Loaded</span>
 </div>
 
-<input type="file" id="file-input" accept=".csv,.xlsx,.xls">
+<input type="file" id="file-input" accept=".csv,.xlsx,.xls,.tsv">
 
 <script>
-// ═══════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════
-let rawData = [], filteredData = [], headers = [], charts = [];
-let sortCol = null, sortDir = 1;
-let currentView = 'overview';
+// ═══════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════
+let RAW=[], ALL=[], HEADERS=[], CHARTS=[];
+let DOMAIN='general', PAGES=[], ACTIVE_PAGE=0;
+let SORT_COL=null, SORT_DIR=1;
 
-// ═══════════════════════════════════════════════════════
-// UPLOAD
-// ═══════════════════════════════════════════════════════
-const uz = document.getElementById('upload-zone');
+// Domain configurations
+const DOMAINS = {
+  sales:{
+    label:'Sales Analytics',
+    color:'#f97316', color2:'#fbbf24', colorA:'rgba(249,115,22,0.12)',
+    icon:'📈',
+    keywords:['sale','revenue','profit','order','customer','product','quantity','amount','discount','region','price','margin','invoice'],
+    pages:['Performance Overview','Loss & Risk Analysis','Growth & Opportunities'],
+  },
+  hr:{
+    label:'HR Analytics',
+    color:'#a855f7', color2:'#c084fc', colorA:'rgba(168,85,247,0.12)',
+    icon:'👥',
+    keywords:['employee','salary','department','hire','resign','gender','age','position','attendance','leave','performance','headcount'],
+    pages:['Workforce Overview','Attrition & Retention','Performance & Compensation'],
+  },
+  safety:{
+    label:'HSE Intelligence',
+    color:'#f43f5e', color2:'#fb7185', colorA:'rgba(244,63,94,0.12)',
+    icon:'🛡',
+    keywords:['permit','incident','injury','violation','inspection','safety','hse','hazard','severity','lost','days','zone','area','accident'],
+    pages:['Safety Overview','Incident Analysis','Compliance & Permits'],
+  },
+  finance:{
+    label:'Financial Analytics',
+    color:'#10b981', color2:'#34d399', colorA:'rgba(16,185,129,0.12)',
+    icon:'💰',
+    keywords:['budget','expense','cost','income','balance','account','debit','credit','payment','invoice','tax','asset','liability'],
+    pages:['Financial Overview','Cost Analysis','Budget Performance'],
+  },
+  general:{
+    label:'Data Analytics',
+    color:'#6366f1', color2:'#818cf8', colorA:'rgba(99,102,241,0.12)',
+    icon:'◈',
+    keywords:[],
+    pages:['Overview','Breakdown Analysis','Trends & Insights'],
+  },
+};
+
+// ═══════════════════════════════════════════════════════════
+//  UPLOAD HANDLERS
+// ═══════════════════════════════════════════════════════════
+const dz = document.getElementById('drop-zone');
 const fi = document.getElementById('file-input');
-
-uz.addEventListener('dragover', e => { e.preventDefault(); uz.classList.add('over'); });
-uz.addEventListener('dragleave', () => uz.classList.remove('over'));
-uz.addEventListener('drop', e => {
-  e.preventDefault(); uz.classList.remove('over');
-  if (e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]);
+dz.addEventListener('dragover', e=>{e.preventDefault();dz.classList.add('over');});
+dz.addEventListener('dragleave', ()=>dz.classList.remove('over'));
+dz.addEventListener('drop', e=>{
+  e.preventDefault();dz.classList.remove('over');
+  if(e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]);
 });
-fi.addEventListener('change', e => { if (e.target.files[0]) processFile(e.target.files[0]); });
+fi.addEventListener('change', e=>{if(e.target.files[0]) processFile(e.target.files[0]);});
 
 function processFile(file) {
   showLoading();
@@ -825,586 +843,1101 @@ function processFile(file) {
   reader.onload = e => {
     try {
       let data;
-      if (file.name.toLowerCase().endsWith('.csv')) {
-        data = parseCSV(e.target.result);
+      const name = file.name.toLowerCase();
+      if(name.endsWith('.csv')||name.endsWith('.tsv')) {
+        data = parseCSV(e.target.result, name.endsWith('.tsv')?'\t':',');
       } else {
-        const wb = XLSX.read(e.target.result, { type: 'array' });
+        const wb = XLSX.read(e.target.result, {type:'array'});
         const ws = wb.Sheets[wb.SheetNames[0]];
-        data = XLSX.utils.sheet_to_json(ws, { defval: '' });
+        data = XLSX.utils.sheet_to_json(ws, {defval:''});
       }
-      if (!data || data.length === 0) { toast('No data found', 'danger'); showUpload(); return; }
-      rawData = cleanData(data);
-      headers = Object.keys(rawData[0]);
-      filteredData = [...rawData];
-      document.getElementById('file-label').textContent = file.name.replace(/\.[^.]+$/,'').toUpperCase();
-      setTimeout(() => buildDashboard(), 1800);
-    } catch(err) {
-      toast('Error reading file: ' + err.message, 'danger');
-      showUpload();
+      if(!data||data.length===0){toast('No data found in file','red');showUpload();return;}
+      RAW = cleanData(data);
+      HEADERS = Object.keys(RAW[0]);
+      ALL = [...RAW];
+      DOMAIN = detectDomain();
+      applyTheme();
+      setTimeout(()=>buildDashboard(file.name), 2000);
+    } catch(err){
+      toast('Error: '+err.message,'red');showUpload();
     }
   };
-  if (file.name.toLowerCase().endsWith('.csv')) reader.readAsText(file);
+  const name = file.name.toLowerCase();
+  if(name.endsWith('.csv')||name.endsWith('.tsv')) reader.readAsText(file);
   else reader.readAsArrayBuffer(file);
 }
 
-// ═══════════════════════════════════════════════════════
-// DATA CLEANING
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+//  PARSE & CLEAN
+// ═══════════════════════════════════════════════════════════
+function parseCSV(text, sep=',') {
+  const lines = text.trim().split('\n').filter(l=>l.trim());
+  if(lines.length<2) return [];
+  const hdrs = parseLine(lines[0],sep);
+  return lines.slice(1).map(line=>{
+    const vals = parseLine(line,sep);
+    return Object.fromEntries(hdrs.map((h,i)=>[h.trim(),vals[i]??'']));
+  });
+}
+function parseLine(line,sep) {
+  const res=[]; let cur=''; let inQ=false;
+  for(const c of line){
+    if(c==='"') inQ=!inQ;
+    else if(c===sep&&!inQ){res.push(cur.trim());cur='';}
+    else cur+=c;
+  }
+  res.push(cur.trim());
+  return res;
+}
 function cleanData(data) {
-  return data.map(row => {
-    const clean = {};
-    Object.keys(row).forEach(k => {
-      const key = k.trim().replace(/\s+/g, ' ');
-      let val = row[k];
-      if (typeof val === 'string') {
-        val = val.trim();
-        // Try parse numbers
-        const n = parseFloat(val.replace(/,/g,''));
-        if (!isNaN(n) && val !== '') val = n;
+  return data.map(row=>{
+    const r={};
+    Object.keys(row).forEach(k=>{
+      const key=k.trim().replace(/\s+/g,' ');
+      let v=row[k];
+      if(typeof v==='string'){
+        v=v.trim();
+        const n=parseFloat(v.replace(/[,$%]/g,''));
+        if(!isNaN(n)&&v!=='') v=n;
       }
-      clean[key] = val;
+      r[key]=v;
     });
-    return clean;
-  }).filter(row => Object.values(row).some(v => v !== '' && v !== null && v !== undefined));
+    return r;
+  }).filter(r=>Object.values(r).some(v=>v!==''&&v!=null));
 }
 
-function isNumericCol(col) {
-  const sample = rawData.slice(0,30).map(r => r[col]).filter(v => v !== '' && v !== null);
-  if (sample.length === 0) return false;
-  const numCount = sample.filter(v => typeof v === 'number' || (!isNaN(parseFloat(v)) && isFinite(v))).length;
-  return numCount / sample.length > 0.7;
+// ═══════════════════════════════════════════════════════════
+//  DOMAIN DETECTION
+// ═══════════════════════════════════════════════════════════
+function detectDomain() {
+  const txt = HEADERS.map(h=>h.toLowerCase()).join(' ') +
+              RAW.slice(0,5).map(r=>Object.values(r).join(' ')).join(' ').toLowerCase();
+  let best='general', bestScore=0;
+  Object.entries(DOMAINS).forEach(([dom,cfg])=>{
+    if(dom==='general') return;
+    const score = cfg.keywords.filter(k=>txt.includes(k)).length;
+    if(score>bestScore){bestScore=score;best=dom;}
+  });
+  return best;
 }
 
-function isDateCol(col) {
-  const kw = ['date','time','day','month','year','created','issued','expired','closed'];
-  return kw.some(k => col.toLowerCase().includes(k));
+function applyTheme() {
+  const d = DOMAINS[DOMAIN];
+  document.documentElement.style.setProperty('--a1', d.color);
+  document.documentElement.style.setProperty('--a2', d.color2);
+  document.documentElement.style.setProperty('--a3', d.colorA);
+  document.getElementById('domain-label').textContent = d.label;
+  document.getElementById('logo-mark').textContent = d.icon;
 }
 
-function isCatCol(col) {
-  if (isNumericCol(col) || isDateCol(col)) return false;
-  const uniq = [...new Set(rawData.map(r => r[col]))].filter(Boolean);
-  return uniq.length >= 2 && uniq.length <= 50;
+// ═══════════════════════════════════════════════════════════
+//  COLUMN CLASSIFICATION
+// ═══════════════════════════════════════════════════════════
+function isNum(col) {
+  const s=RAW.slice(0,30).map(r=>r[col]).filter(v=>v!==''&&v!=null);
+  if(!s.length) return false;
+  return s.filter(v=>typeof v==='number').length/s.length>0.65;
 }
-
-function isStatusCol(col) {
-  const kw = ['status','state','result','outcome','type','category','permit type','permit_type'];
-  return kw.some(k => col.toLowerCase().includes(k));
+function isCat(col) {
+  if(isNum(col)) return false;
+  const u=[...new Set(RAW.map(r=>r[col]))].filter(Boolean);
+  return u.length>=2&&u.length<=60;
 }
+function isStatus(col) {
+  return ['status','state','result','outcome','type','category','permit type','permit_type','severity','level','grade']
+    .some(k=>col.toLowerCase().includes(k));
+}
+function isDate(col) {
+  return ['date','time','day','month','year','period','quarter','week']
+    .some(k=>col.toLowerCase().includes(k));
+}
+function numCols(){return HEADERS.filter(h=>isNum(h));}
+function catCols(){return HEADERS.filter(h=>isCat(h));}
+function statusCols(){return HEADERS.filter(h=>isStatus(h));}
 
-// ═══════════════════════════════════════════════════════
-// SAMPLE DATA
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+//  SAMPLE DATA GENERATORS
+// ═══════════════════════════════════════════════════════════
 function loadSample(type) {
   showLoading();
-  let data = [];
+  DOMAIN=type;
+  applyTheme();
+  let data=[];
 
-  if (type === 'permits') {
-    const types = ['Hot Work','Confined Space','Excavation','Work at Height','Electrical Isolation','Cold Work'];
-    const statuses = ['Open','Closed','Overdue','Pending Approval'];
-    const areas = ['Zone A','Zone B','Zone C','Zone D','Main Plant','Utilities'];
-    const companies = ['Orascom','Petrotrade','EGPC','Contrack','Arabian'];
-    for (let i = 1; i <= 150; i++) {
-      const issued = new Date(2024, Math.floor(Math.random()*12), Math.floor(Math.random()*28)+1);
+  if(type==='sales'){
+    const products=['Laptop Pro','Steel Chair','Concrete Mix','Safety Helmet','Drill Machine','Generator','Water Pump','Cable Roll','Valve Set','Pipe Joint'];
+    const regions=['Cairo','Alexandria','Suez','Aswan','Port Said','Luxor','Asyut','Mansoura'];
+    const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const channels=['Direct','Distributor','Online','Tender','Referral'];
+    for(let i=1;i<=200;i++){
+      const qty=Math.floor(Math.random()*100)+1;
+      const price=Math.floor(Math.random()*2000)+100;
+      const disc=Math.random()>0.7?Math.floor(Math.random()*20):0;
+      const rev=qty*price*(1-disc/100);
+      const cost=rev*(0.4+Math.random()*0.2);
       data.push({
-        'Permit No': `PT-2024-${String(i).padStart(4,'0')}`,
-        'Permit Type': types[Math.floor(Math.random()*types.length)],
-        'Status': statuses[Math.floor(Math.random()*statuses.length)],
-        'Area / Zone': areas[Math.floor(Math.random()*areas.length)],
-        'Contractor': companies[Math.floor(Math.random()*companies.length)],
-        'Issue Date': issued.toLocaleDateString(),
-        'No. of Workers': Math.floor(Math.random()*20)+1,
-        'Risk Level': ['Low','Medium','High'][Math.floor(Math.random()*3)],
-        'Duration (hrs)': Math.floor(Math.random()*8)+1,
-        'HSE Officer': ['Ahmed','Omar','Khalid','Sara','Fatma'][Math.floor(Math.random()*5)],
+        'Order ID':`ORD-2024-${String(i).padStart(4,'0')}`,
+        'Product':products[Math.floor(Math.random()*products.length)],
+        'Region':regions[Math.floor(Math.random()*regions.length)],
+        'Channel':channels[Math.floor(Math.random()*channels.length)],
+        'Month':months[Math.floor(Math.random()*months.length)],
+        'Quantity':qty,
+        'Unit Price':price,
+        'Discount %':disc,
+        'Revenue':Math.round(rev),
+        'Cost':Math.round(cost),
+        'Profit':Math.round(rev-cost),
+        'Status':Math.random()>0.15?'Completed':Math.random()>0.5?'Pending':'Returned',
       });
     }
-  } else if (type === 'incidents') {
-    const types = ['Near Miss','First Aid','LTI','Property Damage','Environmental','Fire'];
-    const areas = ['Zone A','Zone B','Zone C','Main Plant','Warehouse','Office'];
-    for (let i = 1; i <= 80; i++) {
+  } else if(type==='hr'){
+    const depts=['Engineering','HSE','Finance','HR','Procurement','IT','Operations','Legal'];
+    const positions=['Manager','Engineer','Analyst','Coordinator','Specialist','Director','Technician','Assistant'];
+    const statuses=['Active','Resigned','Terminated','On Leave'];
+    for(let i=1;i<=150;i++){
+      const sal=Math.floor(Math.random()*15000)+3000;
+      const perf=['Excellent','Good','Average','Below Average'][Math.floor(Math.random()*4)];
       data.push({
-        'Incident No': `INC-${String(i).padStart(3,'0')}`,
-        'Incident Type': types[Math.floor(Math.random()*types.length)],
-        'Severity': ['Minor','Moderate','Major','Critical'][Math.floor(Math.random()*4)],
-        'Area': areas[Math.floor(Math.random()*areas.length)],
-        'Date': new Date(2024, Math.floor(Math.random()*12), Math.floor(Math.random()*28)+1).toLocaleDateString(),
-        'Injured': Math.floor(Math.random()*3),
-        'Lost Days': Math.floor(Math.random()*10),
-        'Investigation': ['Open','Closed','In Progress'][Math.floor(Math.random()*3)],
-        'Root Cause': ['Human Error','Equipment','Environment','Procedure','Unknown'][Math.floor(Math.random()*5)],
+        'Employee ID':`EMP-${String(i).padStart(4,'0')}`,
+        'Department':depts[Math.floor(Math.random()*depts.length)],
+        'Position':positions[Math.floor(Math.random()*positions.length)],
+        'Gender':Math.random()>0.35?'Male':'Female',
+        'Age':Math.floor(Math.random()*30)+22,
+        'Years of Service':Math.floor(Math.random()*15)+1,
+        'Salary (EGP)':sal,
+        'Performance':perf,
+        'Status':statuses[Math.floor(Math.random()*statuses.length)],
+        'Absences (days)':Math.floor(Math.random()*20),
+        'Training Hours':Math.floor(Math.random()*40),
+      });
+    }
+  } else if(type==='safety'){
+    const permitTypes=['Hot Work','Confined Space','Excavation','Work at Height','Electrical Isolation','Cold Work','Radiography'];
+    const statuses=['Open','Closed','Overdue','Pending Approval','Rejected'];
+    const areas=['Zone A','Zone B','Zone C','Zone D','Main Plant','Utilities','Warehouse','Admin'];
+    const severities=['Low','Medium','High','Critical'];
+    const contractors=['Orascom Construction','Contrack','ENPPI','Petrofac','Arabian Contractors'];
+    for(let i=1;i<=180;i++){
+      data.push({
+        'Permit No':`PT-2024-${String(i).padStart(4,'0')}`,
+        'Permit Type':permitTypes[Math.floor(Math.random()*permitTypes.length)],
+        'Status':statuses[Math.floor(Math.random()*statuses.length)],
+        'Area':areas[Math.floor(Math.random()*areas.length)],
+        'Contractor':contractors[Math.floor(Math.random()*contractors.length)],
+        'Risk Level':severities[Math.floor(Math.random()*severities.length)],
+        'Workers Count':Math.floor(Math.random()*25)+1,
+        'Duration (hrs)':Math.floor(Math.random()*8)+1,
+        'Violations':Math.floor(Math.random()*4),
+        'HSE Officer':['Ahmed Gharib','Omar Salem','Khalid Hassan','Sara Farouk'][Math.floor(Math.random()*4)],
+        'Month':['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Math.floor(Math.random()*12)],
       });
     }
   } else {
-    const areas = ['Zone A','Zone B','Zone C','Main Plant','Utilities'];
-    for (let i = 1; i <= 100; i++) {
+    const categories=['Salaries','Materials','Equipment','Subcontract','Admin','Transport','Maintenance','Utilities'];
+    const depts=['Engineering','HSE','Finance','Operations','Procurement','IT'];
+    const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    for(let i=1;i<=160;i++){
+      const budget=Math.floor(Math.random()*50000)+5000;
+      const actual=budget*(0.7+Math.random()*0.6);
       data.push({
-        'Inspection No': `INS-${String(i).padStart(3,'0')}`,
-        'Area': areas[Math.floor(Math.random()*areas.length)],
-        'Type': ['Routine','Planned','Unplanned','Audit'][Math.floor(Math.random()*4)],
-        'Result': ['Pass','Fail','Conditional Pass'][Math.floor(Math.random()*3)],
-        'Score (%)': Math.floor(Math.random()*40)+60,
-        'Violations': Math.floor(Math.random()*5),
-        'Date': new Date(2024, Math.floor(Math.random()*12), Math.floor(Math.random()*28)+1).toLocaleDateString(),
-        'Inspector': ['Ahmed','Omar','Khalid','Sara'][Math.floor(Math.random()*4)],
-        'Action Items': Math.floor(Math.random()*8),
+        'Transaction ID':`TXN-${String(i).padStart(4,'0')}`,
+        'Category':categories[Math.floor(Math.random()*categories.length)],
+        'Department':depts[Math.floor(Math.random()*depts.length)],
+        'Month':months[Math.floor(Math.random()*months.length)],
+        'Budget (EGP)':Math.round(budget),
+        'Actual (EGP)':Math.round(actual),
+        'Variance':Math.round(budget-actual),
+        'Status':actual<=budget?'Within Budget':'Over Budget',
+        'Approved By':['CFO','Finance Manager','Director'][Math.floor(Math.random()*3)],
       });
     }
   }
 
-  rawData = cleanData(data);
-  headers = Object.keys(rawData[0]);
-  filteredData = [...rawData];
-  const names = {permits:'HOT-WORK-PERMITS', incidents:'INCIDENT-LOG', inspections:'SITE-INSPECTIONS'};
-  document.getElementById('file-label').textContent = names[type];
-  setTimeout(() => buildDashboard(), 1800);
+  RAW=cleanData(data);
+  HEADERS=Object.keys(RAW[0]);
+  ALL=[...RAW];
+  setTimeout(()=>buildDashboard(DOMAINS[DOMAIN].label+' Dataset'), 2000);
 }
 
-// ═══════════════════════════════════════════════════════
-// DASHBOARD BUILDER
-// ═══════════════════════════════════════════════════════
-function buildDashboard() {
+// ═══════════════════════════════════════════════════════════
+//  MAIN DASHBOARD BUILDER
+// ═══════════════════════════════════════════════════════════
+function buildDashboard(fileName) {
   hideLoading();
-  document.getElementById('upload-screen').style.display = 'none';
-  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('upload-screen').style.display='none';
+  document.getElementById('dashboard').style.display='block';
 
-  const numCols = headers.filter(h => isNumericCol(h));
-  const catCols = headers.filter(h => isCatCol(h));
-  const statusCols = headers.filter(h => isStatusCol(h));
+  CHARTS.forEach(c=>{try{c.destroy();}catch(e){}});
+  CHARTS=[];
 
-  document.getElementById('dash-meta').textContent =
-    `${rawData.length.toLocaleString()} records · ${headers.length} columns · ${numCols.length} numeric · ${catCols.length} categorical`;
+  const d=DOMAINS[DOMAIN];
+  const container=document.getElementById('pages-container');
+  container.innerHTML='';
 
-  buildFilters(catCols);
-  buildKPIs(numCols, catCols, statusCols);
-  buildInsight(numCols, catCols, statusCols);
-  buildCharts(numCols, catCols, statusCols);
-  buildTable(filteredData);
-
-  toast(`✓ ${rawData.length} records loaded & analyzed`, 'safe');
-}
-
-// ═══════════════════════════════════════════════════════
-// FILTERS
-// ═══════════════════════════════════════════════════════
-function buildFilters(catCols) {
-  const container = document.getElementById('filter-selects');
-  container.innerHTML = '';
-  container.style.display = 'flex';
-  container.style.gap = '8px';
-  container.style.flexWrap = 'wrap';
-
-  catCols.slice(0,5).forEach(col => {
-    const vals = [...new Set(rawData.map(r => r[col]))].filter(Boolean).sort();
-    if (vals.length < 2 || vals.length > 40) return;
-    const sel = document.createElement('select');
-    sel.className = 'fselect';
-    sel.dataset.col = col;
-    sel.innerHTML = `<option value="">All ${col}</option>` +
-      vals.map(v => `<option value="${v}">${v}</option>`).join('');
-    sel.onchange = applyAll;
-    container.appendChild(sel);
-  });
-}
-
-function applyAll() {
-  const selects = document.querySelectorAll('.fselect');
-  const search = document.getElementById('fsearch').value.toLowerCase();
-
-  filteredData = rawData.filter(row => {
-    // filters
-    for (const sel of selects) {
-      if (sel.value && String(row[sel.dataset.col]) !== sel.value) return false;
-    }
-    // search
-    if (search) {
-      return headers.some(h => String(row[h]).toLowerCase().includes(search));
-    }
-    return true;
+  // Build nav
+  const nav=document.getElementById('nav-tabs');
+  nav.style.display='flex';
+  nav.innerHTML='';
+  d.pages.forEach((name,i)=>{
+    const btn=document.createElement('button');
+    btn.className='ntab'+(i===0?' active':'');
+    btn.textContent=name;
+    btn.onclick=()=>switchPage(i);
+    nav.appendChild(btn);
   });
 
-  rebuildCharts();
-  buildTable(filteredData);
-  document.getElementById('ts-count').textContent = `${filteredData.length.toLocaleString()} records`;
-}
-
-function clearFilters() {
-  document.querySelectorAll('.fselect').forEach(s => s.value = '');
-  document.getElementById('fsearch').value = '';
-  filteredData = [...rawData];
-  rebuildCharts();
-  buildTable(filteredData);
-}
-
-// ═══════════════════════════════════════════════════════
-// KPI CARDS
-// ═══════════════════════════════════════════════════════
-function buildKPIs(numCols, catCols, statusCols) {
-  const grid = document.getElementById('kpi-grid');
-  grid.innerHTML = '';
-  const kpis = [];
-
-  // Total records
-  kpis.push({ label:'Total Records', value:rawData.length.toLocaleString(), sub:'all entries', color:'var(--accent)', icon:'📋', trend:'', trendClass:'trend-neutral' });
-
-  // Status breakdown
-  if (statusCols.length > 0) {
-    const col = statusCols[0];
-    const counts = {};
-    rawData.forEach(r => { const v = String(r[col]||'').toLowerCase(); counts[v]=(counts[v]||0)+1; });
-    const open = (counts['open']||0) + (counts['active']||0) + (counts['pending']||0) + (counts['pending approval']||0);
-    const closed = (counts['closed']||0) + (counts['completed']||0) + (counts['pass']||0);
-    const overdue = (counts['overdue']||0) + (counts['fail']||0) + (counts['failed']||0);
-
-    if (open) kpis.push({ label:'Open / Active', value:open, sub:col, color:'var(--warning)', icon:'🔓', trend:'', trendClass:'trend-neutral' });
-    if (closed) kpis.push({ label:'Closed / Done', value:closed, sub:col, color:'var(--safe)', icon:'✅', trend:'', trendClass:'trend-up' });
-    if (overdue) kpis.push({ label:'Overdue / Failed', value:overdue, sub:col, color:'var(--danger)', icon:'🚨', trend:'⚠', trendClass:'trend-down' });
-  }
-
-  // Numeric KPIs
-  numCols.slice(0,3).forEach(col => {
-    const vals = filteredData.map(r => parseFloat(r[col])).filter(v => !isNaN(v));
-    if (vals.length === 0) return;
-    const sum = vals.reduce((a,b)=>a+b,0);
-    const avg = sum/vals.length;
-    kpis.push({
-      label: col.length > 16 ? col.slice(0,16)+'…' : col,
-      value: formatNum(sum),
-      sub: `avg ${formatNum(avg)} · max ${formatNum(Math.max(...vals))}`,
-      color:'var(--info)', icon:'📊',
-      trend:'', trendClass:'trend-neutral'
-    });
+  // Build 3 pages
+  d.pages.forEach((name,i)=>{
+    const page=document.createElement('div');
+    page.className='page'+(i===0?' active':'');
+    page.id='page-'+i;
+    container.appendChild(page);
+    buildPage(page, i, fileName);
   });
 
-  kpis.slice(0,6).forEach(k => {
-    grid.innerHTML += `<div class="kpi-card" style="--kpi-color:${k.color}">
-      <div class="kpi-top">
-        <div class="kpi-icon">${k.icon}</div>
-        ${k.trend ? `<div class="kpi-trend ${k.trendClass}">${k.trend}</div>` : ''}
+  ACTIVE_PAGE=0;
+  toast(`✓ ${RAW.length.toLocaleString()} records analyzed — ${d.pages.length} pages generated`,'green');
+}
+
+function switchPage(idx) {
+  ACTIVE_PAGE=idx;
+  document.querySelectorAll('.page').forEach((p,i)=>p.classList.toggle('active',i===idx));
+  document.querySelectorAll('.ntab').forEach((b,i)=>b.classList.toggle('active',i===idx));
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PAGE BUILDER — per domain + page index
+// ═══════════════════════════════════════════════════════════
+function buildPage(container, pageIdx, fileName) {
+  const nc=numCols(), cc=catCols(), sc=statusCols();
+  const d=DOMAINS[DOMAIN];
+  const filtered=[...RAW];
+
+  // Page descriptions per domain + page
+  const pageDescs = getPageDescs();
+  const pageKPIs = getPageKPIs(filtered, nc, cc, sc);
+  const pageInsight = getInsight(filtered, nc, cc, sc, pageIdx);
+  const pageCharts = getCharts(pageIdx, nc, cc, sc);
+  const pageRecos = getRecos(filtered, nc, cc, sc, pageIdx);
+
+  container.innerHTML = `
+    <!-- TOP BAR -->
+    <div class="dash-top">
+      <div class="dash-info">
+        <div class="dash-heading"><span>${d.pages[pageIdx]}</span> — ${d.label}</div>
+        <div class="dash-sub">${RAW.length.toLocaleString()} records · ${HEADERS.length} columns · Last updated: ${new Date().toLocaleDateString('en-GB')}</div>
       </div>
-      <div class="kpi-label">${k.label}</div>
-      <div class="kpi-value">${k.value}</div>
-      <div class="kpi-sub">${k.sub}</div>
-    </div>`;
-  });
+      <div class="dash-acts">
+        <button class="btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+        <button class="btn-sm" onclick="resetAll()">↺ New Dataset</button>
+      </div>
+    </div>
+
+    <!-- PAGE DESC -->
+    <div class="page-desc">${pageDescs[pageIdx]||''}</div>
+
+    <!-- FILTERS -->
+    <div class="filter-bar" id="fb-${pageIdx}">
+      <span class="fl">Filter:</span>
+      <div id="fselects-${pageIdx}" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+      <input type="text" class="fsrch" id="fsrch-${pageIdx}" placeholder="🔍 Search records..." oninput="applyFilters(${pageIdx})">
+      <button class="clr-btn" onclick="clearFilters(${pageIdx})">✕ Clear All</button>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-row" id="kpi-${pageIdx}"></div>
+
+    <!-- INSIGHT -->
+    <div class="insight">
+      <div class="ins-ico">${d.icon}</div>
+      <div>
+        <div class="ins-tag">AI Expert Analysis · Page ${pageIdx+1}: ${d.pages[pageIdx]}</div>
+        <div class="ins-body" id="ins-${pageIdx}">${pageInsight}</div>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="cg" id="cg-${pageIdx}"></div>
+
+    <!-- RECOMMENDATIONS -->
+    ${pageRecos.length>0?`
+    <div style="margin-bottom:22px;">
+      <div style="font-family:'Clash Display',sans-serif;font-size:15px;font-weight:600;margin-bottom:14px;letter-spacing:-.2px;">
+        Expert Recommendations
+      </div>
+      <div class="reco-grid" id="reco-${pageIdx}"></div>
+    </div>`:''}
+
+    <!-- TABLE (page 0 only) -->
+    ${pageIdx===0?`
+    <div class="tbl-card">
+      <div class="tbl-top">
+        <div class="tbl-ttl">Raw Data — All Records</div>
+        <div class="tbl-meta" id="tbl-meta-${pageIdx}">${RAW.length.toLocaleString()} records</div>
+      </div>
+      <div class="tw"><table>
+        <thead id="thead-${pageIdx}"></thead>
+        <tbody id="tbody-${pageIdx}"></tbody>
+      </table></div>
+    </div>`:''}
+  `;
+
+  // Build filters
+  buildFilters(pageIdx, cc);
+  // Build KPIs
+  buildKPIs(pageIdx, pageKPIs);
+  // Build charts
+  buildPageCharts(pageIdx, nc, cc, sc, filtered);
+  // Build recos
+  if(pageRecos.length>0) buildRecos(pageIdx, pageRecos);
+  // Table
+  if(pageIdx===0) buildTable(pageIdx, filtered);
 }
 
-// ═══════════════════════════════════════════════════════
-// AI INSIGHT
-// ═══════════════════════════════════════════════════════
-function buildInsight(numCols, catCols, statusCols) {
-  let text = `Dataset contains <strong>${rawData.length} records</strong> across <strong>${headers.length} fields</strong>. `;
-
-  if (statusCols.length > 0) {
-    const col = statusCols[0];
-    const counts = {};
-    rawData.forEach(r => { const v = r[col]||'Unknown'; counts[v]=(counts[v]||0)+1; });
-    const top = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
-    const overdue = Object.entries(counts).filter(([k]) => k.toLowerCase().includes('overdue') || k.toLowerCase().includes('fail'));
-    if (overdue.length > 0) {
-      text += `<span class="hi">⚠ ${overdue.reduce((a,b)=>a+b[1],0)} overdue/failed items</span> require immediate attention. `;
-    }
-    if (top) text += `Most common <strong>${col}</strong>: <strong>${top[0]}</strong> (${top[1]} records). `;
-  }
-
-  if (catCols.length > 0) {
-    const col = catCols[0];
-    const counts = {};
-    rawData.forEach(r => { const v = r[col]||'N/A'; counts[v]=(counts[v]||0)+1; });
-    const top = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
-    if (top) text += `Top <strong>${col}</strong>: <strong class="hi">${top[0]}</strong> with ${top[1]} entries. `;
-  }
-
-  if (numCols.length > 0) {
-    const col = numCols[0];
-    const vals = rawData.map(r => parseFloat(r[col])).filter(v => !isNaN(v));
-    if (vals.length > 0) {
-      text += `<strong>${col}</strong>: total <span class="hi">${formatNum(vals.reduce((a,b)=>a+b,0))}</span>, avg <strong>${formatNum(vals.reduce((a,b)=>a+b,0)/vals.length)}</strong>.`;
-    }
-  }
-
-  document.getElementById('insight-text').innerHTML = text;
+// ═══════════════════════════════════════════════════════════
+//  PAGE DESCRIPTIONS
+// ═══════════════════════════════════════════════════════════
+function getPageDescs() {
+  const d=DOMAINS[DOMAIN];
+  const descs={
+    sales:[
+      `This page provides a <strong>complete performance overview</strong> of your sales data. You will see total revenue, profit margins, and order volumes broken down by region, product, and channel. Use these metrics to understand where your business stands today.`,
+      `This page digs into <strong>loss drivers and risk zones</strong> — returned orders, high-discount segments, underperforming regions, and products with negative margins. Identifying these patterns helps stop the revenue leak before it grows.`,
+      `This page highlights your <strong>growth opportunities</strong> — top products by profit, regions with the highest potential, and channel mix analysis. Use these insights to focus your sales efforts where they generate the most return.`,
+    ],
+    hr:[
+      `This page gives you a <strong>complete workforce snapshot</strong> — headcount, gender balance, department distribution, and salary benchmarks. Understanding your people structure is the foundation of every HR decision.`,
+      `This page analyzes <strong>attrition, absences, and retention risk</strong>. You will see which departments are losing the most talent, where absence rates are high, and which employee segments are at highest churn risk.`,
+      `This page covers <strong>performance ratings and compensation analysis</strong> — who your top performers are, whether pay is aligned with performance, and where training investment is needed.`,
+    ],
+    safety:[
+      `This page provides a <strong>360° safety overview</strong> for your site — total permits issued, open vs. closed status, risk level distribution, and violation counts. This is your daily HSE command center.`,
+      `This page focuses on <strong>incident patterns and risk concentration</strong> — which areas have the most violations, which permit types carry the highest risk, and where corrective action is most urgent.`,
+      `This page tracks <strong>compliance and permit performance</strong> — overdue permits, contractor compliance scores, and monthly permit trends. Maintaining permit discipline is your first line of site safety defense.`,
+    ],
+    finance:[
+      `This page delivers a <strong>high-level financial overview</strong> — total budget, actual spend, variance analysis, and department cost breakdown. This is your financial control tower.`,
+      `This page zooms into <strong>cost drivers and overspend categories</strong> — which departments exceeded their budgets, which cost categories consumed the most resources, and where the biggest variances occurred.`,
+      `This page compares <strong>budget vs. actual performance</strong> month-by-month and category-by-category, helping you identify trends, forecast more accurately, and tighten financial discipline.`,
+    ],
+    general:[
+      `This page gives you a <strong>complete overview</strong> of your dataset — record counts, key metrics, and categorical distribution. Understand your data at a glance before diving deeper.`,
+      `This page provides a <strong>detailed breakdown</strong> of how your data is distributed across categories and dimensions. Spot patterns, outliers, and concentrations quickly.`,
+      `This page focuses on <strong>trends and correlations</strong> within your data — how key metrics evolve over time and how different variables relate to each other.`,
+    ],
+  };
+  return descs[DOMAIN]||descs.general;
 }
 
-// ═══════════════════════════════════════════════════════
-// CHARTS
-// ═══════════════════════════════════════════════════════
-const PALETTE = ['#f97316','#3b82f6','#22c55e','#ef4444','#a855f7','#06b6d4','#f59e0b','#ec4899','#14b8a6','#8b5cf6'];
+// ═══════════════════════════════════════════════════════════
+//  KPI DEFINITIONS PER PAGE
+// ═══════════════════════════════════════════════════════════
+function getPageKPIs(data, nc, cc, sc) {
+  const kpiSets={
+    sales:[
+      [
+        {ico:'💰',lbl:'Total Revenue',fn:d=>sum(d,nc.find(c=>c.toLowerCase().includes('rev'))||nc[0]),color:'var(--green)',badge:'Revenue'},
+        {ico:'📦',lbl:'Total Orders',fn:d=>d.length,color:'var(--a1)',badge:'Orders'},
+        {ico:'📈',lbl:'Total Profit',fn:d=>sum(d,nc.find(c=>c.toLowerCase().includes('profit'))||nc[1]),color:'var(--a2)',badge:'Profit'},
+        {ico:'🎯',lbl:'Avg Order Value',fn:d=>{const r=nc.find(c=>c.toLowerCase().includes('rev'))||nc[0];return r?avg(d,r):0;},color:'var(--cyan)',badge:'AOV'},
+      ],
+      [
+        {ico:'↩️',lbl:'Returned Orders',fn:d=>d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('return')).length,color:'var(--red)',badge:'⚠ Risk'},
+        {ico:'🔻',lbl:'Avg Discount %',fn:d=>{const c=nc.find(x=>x.toLowerCase().includes('disc'));return c?avg(d,c):0;},color:'var(--amber)',badge:'Discount'},
+        {ico:'📉',lbl:'Loss Amount',fn:d=>{const c=nc.find(x=>x.toLowerCase().includes('profit'));return c?Math.abs(d.filter(r=>(r[c]||0)<0).reduce((a,r)=>a+(r[c]||0),0)):0;},color:'var(--red)',badge:'Loss'},
+        {ico:'⚠️',lbl:'Pending Orders',fn:d=>d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('pend')).length,color:'var(--amber)',badge:'Pending'},
+      ],
+      [
+        {ico:'🏆',lbl:'Best Region Revenue',fn:d=>{const rc=cc.find(c=>c.toLowerCase().includes('region'));const vc=nc.find(c=>c.toLowerCase().includes('rev'))||nc[0];if(!rc||!vc)return 0;const g={};d.forEach(r=>{const k=r[rc];g[k]=(g[k]||0)+(r[vc]||0);});return Math.max(...Object.values(g));},color:'var(--green)',badge:'Top'},
+        {ico:'📊',lbl:'Unique Products',fn:d=>{const c=cc.find(x=>x.toLowerCase().includes('product'));return c?new Set(d.map(r=>r[c])).size:0;},color:'var(--a1)',badge:'Products'},
+        {ico:'✅',lbl:'Completed Orders',fn:d=>d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('complet')).length,color:'var(--green)',badge:'Done'},
+        {ico:'💡',lbl:'Profit Margin %',fn:d=>{const rv=nc.find(c=>c.toLowerCase().includes('rev'))||nc[0];const pr=nc.find(c=>c.toLowerCase().includes('profit'))||nc[1];if(!rv||!pr)return 0;const r=sum(d,rv);return r?Math.round(sum(d,pr)/r*100):0;},color:'var(--cyan)',badge:'Margin',suffix:'%'},
+      ],
+    ],
+    hr:[
+      [
+        {ico:'👥',lbl:'Total Headcount',fn:d=>d.length,color:'var(--a1)',badge:'Staff'},
+        {ico:'💰',lbl:'Total Payroll',fn:d=>sum(d,nc.find(c=>c.toLowerCase().includes('salary'))||nc[0]),color:'var(--green)',badge:'Payroll'},
+        {ico:'👩',lbl:'Female Ratio %',fn:d=>{const gc=cc.find(c=>c.toLowerCase().includes('gender'));return gc?Math.round(d.filter(r=>String(r[gc]||'').toLowerCase().includes('female')).length/d.length*100):0;},color:'var(--purple)',badge:'Gender',suffix:'%'},
+        {ico:'📊',lbl:'Departments',fn:d=>{const dc=cc.find(c=>c.toLowerCase().includes('dept'));return dc?new Set(d.map(r=>r[dc])).size:0;},color:'var(--cyan)',badge:'Depts'},
+      ],
+      [
+        {ico:'🚪',lbl:'Resigned / Left',fn:d=>d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('resign')||String(r[sc[0]]||'').toLowerCase().includes('termin')).length,color:'var(--red)',badge:'Attrition'},
+        {ico:'📅',lbl:'Avg Absences',fn:d=>{const ac=nc.find(c=>c.toLowerCase().includes('absence'));return ac?avg(d,ac):0;},color:'var(--amber)',badge:'Absences'},
+        {ico:'✅',lbl:'Active Employees',fn:d=>d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('active')).length,color:'var(--green)',badge:'Active'},
+        {ico:'⚠️',lbl:'On Leave',fn:d=>d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('leave')).length,color:'var(--amber)',badge:'Leave'},
+      ],
+      [
+        {ico:'🏆',lbl:'Excellent Performers',fn:d=>{const pc=sc.find(c=>c.toLowerCase().includes('perf'));return pc?d.filter(r=>String(r[pc]||'').toLowerCase().includes('excell')).length:0;},color:'var(--green)',badge:'Top'},
+        {ico:'💰',lbl:'Avg Salary',fn:d=>avg(d,nc.find(c=>c.toLowerCase().includes('salary'))||nc[0]),color:'var(--a2)',badge:'Avg'},
+        {ico:'📚',lbl:'Avg Training Hrs',fn:d=>{const tc=nc.find(c=>c.toLowerCase().includes('train'));return tc?avg(d,tc):0;},color:'var(--cyan)',badge:'Training'},
+        {ico:'📈',lbl:'Avg Years Service',fn:d=>{const yc=nc.find(c=>c.toLowerCase().includes('year')||c.toLowerCase().includes('service'));return yc?avg(d,yc):0;},color:'var(--blue)',badge:'Tenure'},
+      ],
+    ],
+    safety:[
+      [
+        {ico:'📋',lbl:'Total Permits',fn:d=>d.length,color:'var(--a1)',badge:'All Permits'},
+        {ico:'🔓',lbl:'Open Permits',fn:d=>d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('open')||String(r[sc[0]]||'').toLowerCase().includes('pend')).length,color:'var(--amber)',badge:'Open'},
+        {ico:'✅',lbl:'Closed Permits',fn:d=>d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('close')).length,color:'var(--green)',badge:'Closed'},
+        {ico:'🚨',lbl:'Overdue Permits',fn:d=>d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('overdue')).length,color:'var(--red)',badge:'⚠ Overdue'},
+      ],
+      [
+        {ico:'⚡',lbl:'Total Violations',fn:d=>sum(d,nc.find(c=>c.toLowerCase().includes('viol'))||nc[0]),color:'var(--red)',badge:'Violations'},
+        {ico:'👷',lbl:'Total Workers',fn:d=>sum(d,nc.find(c=>c.toLowerCase().includes('worker'))||nc.find(c=>c.toLowerCase().includes('count'))||nc[0]),color:'var(--a1)',badge:'Workers'},
+        {ico:'🔥',lbl:'High Risk Permits',fn:d=>{const rc=sc.find(c=>c.toLowerCase().includes('risk'));return rc?d.filter(r=>String(r[rc]||'').toLowerCase().includes('high')||String(r[rc]||'').toLowerCase().includes('critical')).length:0;},color:'var(--red)',badge:'High Risk'},
+        {ico:'🕐',lbl:'Avg Duration (hrs)',fn:d=>avg(d,nc.find(c=>c.toLowerCase().includes('duration'))||nc.find(c=>c.toLowerCase().includes('hr'))||nc[0]),color:'var(--cyan)',badge:'Avg Hrs'},
+      ],
+      [
+        {ico:'✅',lbl:'Compliance Rate %',fn:d=>{const closed=d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('close')).length;return d.length?Math.round(closed/d.length*100):0;},color:'var(--green)',badge:'Compliance',suffix:'%'},
+        {ico:'🚨',lbl:'Rejected Permits',fn:d=>d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('reject')).length,color:'var(--red)',badge:'Rejected'},
+        {ico:'🏢',lbl:'Active Contractors',fn:d=>{const cc2=cc.find(c=>c.toLowerCase().includes('contractor'));return cc2?new Set(d.map(r=>r[cc2])).size:0;},color:'var(--a1)',badge:'Contractors'},
+        {ico:'📊',lbl:'Permit Types',fn:d=>{const tc=cc.find(c=>c.toLowerCase().includes('type'));return tc?new Set(d.map(r=>r[tc])).size:0;},color:'var(--cyan)',badge:'Types'},
+      ],
+    ],
+    finance:[
+      [
+        {ico:'💰',lbl:'Total Budget',fn:d=>sum(d,nc.find(c=>c.toLowerCase().includes('budget'))||nc[0]),color:'var(--a1)',badge:'Budget'},
+        {ico:'💸',lbl:'Total Actual Spend',fn:d=>sum(d,nc.find(c=>c.toLowerCase().includes('actual'))||nc[1]),color:'var(--amber)',badge:'Actual'},
+        {ico:'📊',lbl:'Total Variance',fn:d=>sum(d,nc.find(c=>c.toLowerCase().includes('vari'))||nc[2]),color:'var(--green)',badge:'Variance'},
+        {ico:'🏢',lbl:'Departments',fn:d=>{const dc=cc.find(c=>c.toLowerCase().includes('dept'));return dc?new Set(d.map(r=>r[dc])).size:0;},color:'var(--cyan)',badge:'Depts'},
+      ],
+      [
+        {ico:'🔺',lbl:'Over Budget Items',fn:d=>d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('over')).length,color:'var(--red)',badge:'⚠ Overspend'},
+        {ico:'✅',lbl:'Within Budget',fn:d=>d.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('within')).length,color:'var(--green)',badge:'OK'},
+        {ico:'💥',lbl:'Max Overspend',fn:d=>{const ac=nc.find(c=>c.toLowerCase().includes('actual'))||nc[1];const bc=nc.find(c=>c.toLowerCase().includes('budget'))||nc[0];if(!ac||!bc)return 0;return Math.max(...d.map(r=>((r[ac]||0)-(r[bc]||0))));},color:'var(--red)',badge:'Worst'},
+        {ico:'📉',lbl:'Avg Variance',fn:d=>avg(d,nc.find(c=>c.toLowerCase().includes('vari'))||nc[2]),color:'var(--amber)',badge:'Avg'},
+      ],
+      [
+        {ico:'📅',lbl:'Months Tracked',fn:d=>{const mc=cc.find(c=>c.toLowerCase().includes('month'));return mc?new Set(d.map(r=>r[mc])).size:0;},color:'var(--a1)',badge:'Months'},
+        {ico:'🏆',lbl:'Best Month (Budget Saved)',fn:d=>{const mc=cc.find(c=>c.toLowerCase().includes('month'));const vc=nc.find(c=>c.toLowerCase().includes('vari'))||nc[2];if(!mc||!vc)return 0;const g={};d.forEach(r=>{const k=r[mc];g[k]=(g[k]||0)+(r[vc]||0);});return Math.max(...Object.values(g));},color:'var(--green)',badge:'Best'},
+        {ico:'📈',lbl:'Budget Utilization %',fn:d=>{const ac=nc.find(c=>c.toLowerCase().includes('actual'))||nc[1];const bc=nc.find(c=>c.toLowerCase().includes('budget'))||nc[0];if(!ac||!bc)return 0;const a=sum(d,ac),b=sum(d,bc);return b?Math.round(a/b*100):0;},color:'var(--cyan)',badge:'Utilization',suffix:'%'},
+        {ico:'💰',lbl:'Avg Monthly Budget',fn:d=>{const bc=nc.find(c=>c.toLowerCase().includes('budget'))||nc[0];return bc?avg(d,bc):0;},color:'var(--a2)',badge:'Avg'},
+      ],
+    ],
+  };
 
-function buildCharts(numCols, catCols, statusCols, data) {
-  data = data || filteredData;
-  const grid = document.getElementById('charts-grid');
-  grid.innerHTML = '';
-  charts.forEach(c => { try{c.destroy();}catch(e){} });
-  charts = [];
+  const sets=kpiSets[DOMAIN]||[
+    [
+      {ico:'📊',lbl:'Total Records',fn:d=>d.length,color:'var(--a1)',badge:'Total'},
+      {ico:'🔢',lbl:'Total '+（nc[0]||'Value'），fn:d=>sum(d,nc[0]),color:'var(--green)',badge:'Sum'},
+      {ico:'📈',lbl:'Avg '+(nc[0]||'Value'),fn:d=>avg(d,nc[0]),color:'var(--a2)',badge:'Avg'},
+      {ico:'🏆',lbl:'Max '+(nc[0]||'Value'),fn:d=>nc[0]?Math.max(...d.map(r=>r[nc[0]]||0)):0,color:'var(--cyan)',badge:'Max'},
+    ],
+    [{ico:'📊',lbl:'Categories',fn:d=>catCols().length,color:'var(--a1)',badge:'Cols'}],
+    [{ico:'📊',lbl:'Records',fn:d=>d.length,color:'var(--a1)',badge:'Total'}],
+  ];
 
-  if (catCols.length === 0 && numCols.length === 0) {
-    grid.innerHTML = '<div class="empty">No chartable columns detected.</div>';
+  return (sets[0]||[]).map((k,pageIdx_ignored)=>k);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  AI INSIGHTS PER PAGE
+// ═══════════════════════════════════════════════════════════
+function getInsight(data, nc, cc, sc, pageIdx) {
+  const d=DOMAINS[DOMAIN];
+  const nr=data.length;
+
+  if(DOMAIN==='sales'){
+    const rc=nc.find(c=>c.toLowerCase().includes('rev'))||nc[0];
+    const pc=nc.find(c=>c.toLowerCase().includes('profit'))||nc[1];
+    const regc=cc.find(c=>c.toLowerCase().includes('region'));
+    const prodc=cc.find(c=>c.toLowerCase().includes('product'));
+    const statc=sc[0];
+    const totalRev=rc?fmtN(sum(data,rc)):'-';
+    const totalProfit=pc?fmtN(sum(data,pc)):'-';
+
+    const topRegion=regc?topGroup(data,regc,rc):'N/A';
+    const topProduct=prodc?topGroup(data,prodc,rc):'N/A';
+    const returned=statc?data.filter(r=>String(r[statc]||'').toLowerCase().includes('return')).length:0;
+    const margin=rc&&pc?Math.round(sum(data,pc)/sum(data,rc)*100):0;
+
+    const insights=[
+      `Your dataset contains <strong>${nr} sales transactions</strong> generating a total revenue of <span class="hi">${totalRev}</span> with a gross profit of <span class="good">${totalProfit}</span>. Overall profit margin is <strong>${margin}%</strong>. <strong>${topRegion}</strong> is the top-performing region by revenue, while <strong>${topProduct}</strong> leads by product.`,
+      `<span class="bad">${returned} orders (${Math.round(returned/nr*100)}%)</span> were returned, directly eroding revenue. High-discount transactions are pulling down margins in key segments. Focus on understanding <strong>why returns are happening</strong> — product quality issues or incorrect order matching are the most common root causes in construction supply chains.`,
+      `Your top region and product are driving the majority of revenue. <span class="good">Concentrate budget and sales effort on these proven performers.</span> Expanding the top product into underperforming regions could unlock significant growth. Consider reducing low-margin SKUs and renegotiating terms with high-discount channels.`,
+    ];
+    return insights[pageIdx]||insights[0];
+  }
+
+  if(DOMAIN==='hr'){
+    const sc_col=nc.find(c=>c.toLowerCase().includes('salary'))||nc[0];
+    const totalPayroll=sc_col?fmtN(sum(data,sc_col)):'-';
+    const avgSal=sc_col?fmtN(avg(data,sc_col)):'-';
+    const resigned=sc[0]?data.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('resign')||String(r[sc[0]]||'').toLowerCase().includes('termin')).length:0;
+    const attrRate=Math.round(resigned/nr*100);
+    const topDept=cc.find(c=>c.toLowerCase().includes('dept'))?topGroupByCount(data,cc.find(c=>c.toLowerCase().includes('dept'))):'N/A';
+
+    const insights=[
+      `Your workforce consists of <strong>${nr} employees</strong> across all departments, with a total payroll of <span class="hi">${totalPayroll}</span> and an average salary of <strong>${avgSal}</strong>. <strong>${topDept}</strong> is your largest department. Understanding the workforce structure is your foundation for strategic HR planning.`,
+      `<span class="bad">${resigned} employees (${attrRate}% attrition rate)</span> have resigned or been terminated. This is a significant cost — each departure costs roughly 50-200% of annual salary in replacement and training. Identify which departments have the highest attrition and act on retention strategies — compensation review, workload balance, and career development paths.`,
+      `Performance and compensation alignment is critical. <span class="good">Top performers should be identified and rewarded</span> before they become flight risks. Employees with high absence rates and below-average performance scores need structured development plans. Training investment hours should be tracked as a leading indicator of future performance.`,
+    ];
+    return insights[pageIdx]||insights[0];
+  }
+
+  if(DOMAIN==='safety'){
+    const statc=sc[0];
+    const open=statc?data.filter(r=>String(r[statc]||'').toLowerCase().includes('open')||String(r[statc]||'').toLowerCase().includes('pend')).length:0;
+    const overdue=statc?data.filter(r=>String(r[statc]||'').toLowerCase().includes('overdue')).length:0;
+    const violations=nc.find(c=>c.toLowerCase().includes('viol'))?Math.round(sum(data,nc.find(c=>c.toLowerCase().includes('viol')))):'-';
+    const compliance=statc?Math.round(data.filter(r=>String(r[statc]||'').toLowerCase().includes('close')).length/nr*100):'-';
+    const topArea=cc.find(c=>c.toLowerCase().includes('area')||c.toLowerCase().includes('zone'))?topGroupByCount(data,cc.find(c=>c.toLowerCase().includes('area')||c.toLowerCase().includes('zone'))):'N/A';
+
+    const insights=[
+      `Your site currently has <strong>${nr} safety permits</strong> on record. <span class="warn">${open} permits are open or pending</span> and require active monitoring. Permit closure rate stands at <span class="good">${compliance}%</span>. <strong>${topArea}</strong> has the highest permit activity — ensure daily HSE walkdowns are conducted in this area.`,
+      `<span class="bad">${overdue} permits are overdue</span> — this is a direct compliance violation and must be addressed immediately. Total recorded violations: <strong>${violations}</strong>. High-risk and critical permits should never exceed their validity period. Review all overdue permits with site HSE officers today and implement a permit tracking register if not already in place.`,
+      `Compliance rate of <strong>${compliance}%</strong> ${Number(compliance)>=85?'is acceptable but should target 95%+':'is below acceptable threshold — immediate corrective action required'}. Ensure all contractors have valid permit-to-work certificates. Monthly compliance trending is your best early warning system — a declining trend over 3 months signals a systemic HSE breakdown.`,
+    ];
+    return insights[pageIdx]||insights[0];
+  }
+
+  if(DOMAIN==='finance'){
+    const bc=nc.find(c=>c.toLowerCase().includes('budget'))||nc[0];
+    const ac=nc.find(c=>c.toLowerCase().includes('actual'))||nc[1];
+    const totalBudget=bc?fmtN(sum(data,bc)):'-';
+    const totalActual=ac?fmtN(sum(data,ac)):'-';
+    const overItems=sc[0]?data.filter(r=>String(r[sc[0]]||'').toLowerCase().includes('over')).length:0;
+    const utilRate=bc&&ac?Math.round(sum(data,ac)/sum(data,bc)*100):'-';
+
+    const insights=[
+      `Financial overview: <strong>${nr} transactions</strong> with a total approved budget of <span class="hi">${totalBudget}</span> against actual spend of <strong>${totalActual}</strong>. Budget utilization rate is <span class="${Number(utilRate)>100?'bad':'good'}">${utilRate}%</span>. ${Number(utilRate)>100?'<span class="bad">You are over budget — immediate cost control measures required.</span>':'<span class="good">Spending is within approved limits.</span>'}`,
+      `<span class="bad">${overItems} line items are over budget</span>, representing direct financial risk. Overspending categories need to be reviewed with department heads this week. The largest cost drivers are consuming a disproportionate share of total budget — renegotiate rates, defer non-critical spend, or seek budget revision approval.`,
+      `Month-by-month comparison reveals spending patterns and forecast accuracy. <span class="good">Months where actuals closely track budget indicate strong financial discipline.</span> Use variance trend data to improve next cycle's budget accuracy. Categories with consistently high variance should be restructured with more granular cost codes.`,
+    ];
+    return insights[pageIdx]||insights[0];
+  }
+
+  // general
+  const topCat=cc[0]?topGroupByCount(data,cc[0]):'N/A';
+  const totalVal=nc[0]?fmtN(sum(data,nc[0])):'-';
+  return [
+    `Dataset contains <strong>${nr} records</strong> across <strong>${HEADERS.length} columns</strong>. Total ${nc[0]||'value'}: <span class="hi">${totalVal}</span>. The most frequent <strong>${cc[0]||'category'}</strong> is <span class="good">${topCat}</span>. Use the filters above to slice the data and explore specific segments.`,
+    `Categorical breakdown reveals how your data is distributed across key dimensions. Identify the dominant categories and determine whether that concentration reflects a real-world bias or a data collection gap.`,
+    `Trend analysis shows how key metrics evolve across your dataset. Look for inflection points — sudden spikes or drops often signal important business events that deserve investigation.`,
+  ][pageIdx]||'';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CHART BUILDERS
+// ═══════════════════════════════════════════════════════════
+const PAL=['#6366f1','#06b6d4','#10b981','#f97316','#a855f7','#f43f5e','#f59e0b','#3b82f6','#14b8a6','#ec4899'];
+
+function buildPageCharts(pageIdx, nc, cc, sc, data) {
+  const grid=document.getElementById('cg-'+pageIdx);
+  if(!grid) return;
+  grid.innerHTML='';
+
+  const d=DOMAINS[DOMAIN];
+
+  if(DOMAIN==='sales') buildSalesCharts(grid,pageIdx,data,nc,cc,sc);
+  else if(DOMAIN==='hr') buildHRCharts(grid,pageIdx,data,nc,cc,sc);
+  else if(DOMAIN==='safety') buildSafetyCharts(grid,pageIdx,data,nc,cc,sc);
+  else if(DOMAIN==='finance') buildFinanceCharts(grid,pageIdx,data,nc,cc,sc);
+  else buildGeneralCharts(grid,pageIdx,data,nc,cc,sc);
+}
+
+function buildSalesCharts(grid,pi,data,nc,cc,sc) {
+  const rc=nc.find(c=>c.toLowerCase().includes('rev'))||nc[0];
+  const pc=nc.find(c=>c.toLowerCase().includes('profit'))||nc[1];
+  const regc=cc.find(c=>c.toLowerCase().includes('region'));
+  const prodc=cc.find(c=>c.toLowerCase().includes('product'));
+  const chc=cc.find(c=>c.toLowerCase().includes('channel'));
+  const mc=cc.find(c=>c.toLowerCase().includes('month'));
+  const statc=sc[0];
+
+  if(pi===0){
+    if(regc&&rc) addChart(grid,'Revenue by Region','Highest revenue-generating regions ranked by total sales volume','bar',groupBy(data,regc,rc),'w6',false,'Revenue');
+    if(prodc&&rc) addChart(grid,'Top Products by Revenue','Best-performing products contributing most to total revenue','bar',groupBy(data,prodc,rc),'w6',false,'Products');
+    if(statc) addChart(grid,'Order Status Breakdown','Distribution of completed, pending, and returned orders','doughnut',countBy(data,statc),'w4','','Status');
+    if(chc&&rc) addChart(grid,'Revenue by Sales Channel','Which channels drive the most revenue — direct, distributor, online, or tender','bar',groupBy(data,chc,rc),'w8',false,'Channels');
+  } else if(pi===1){
+    if(statc) addChart(grid,'Returns & Losses by Status','Volume of returned and problematic orders','doughnut',countBy(data,statc),'w4','','Returns');
+    if(regc&&pc) addChart(grid,'Profit by Region','Which regions are genuinely profitable vs. high-revenue but low-margin','bar',groupBy(data,regc,pc),'w8',false,'Profit');
+    if(prodc&&pc) addChart(grid,'Product Profit Analysis','Identify low-margin or loss-making products that need repricing or removal','bar',groupBy(data,prodc,pc),'w12',false,'Margin');
+  } else {
+    if(mc&&rc) addChart(grid,'Monthly Revenue Trend','Revenue progression month-by-month — spot seasonal peaks and troughs','line',groupBy(data,mc,rc),'w12',false,'Trend');
+    if(regc&&pc&&rc) addChart(grid,'Revenue vs. Profit by Region','Compare revenue size against profit efficiency by region','bar',groupBy(data,regc,rc),'w6',false,'Rev vs Profit');
+    if(chc&&pc) addChart(grid,'Channel Profitability','Which channel delivers the best profit per transaction','bar',groupBy(data,chc,pc),'w6',false,'Channel Profit');
+  }
+}
+
+function buildHRCharts(grid,pi,data,nc,cc,sc) {
+  const dc=cc.find(c=>c.toLowerCase().includes('dept'));
+  const gc=cc.find(c=>c.toLowerCase().includes('gender'));
+  const pc2=cc.find(c=>c.toLowerCase().includes('perf'));
+  const sc_col=nc.find(c=>c.toLowerCase().includes('salary'));
+  const ac=nc.find(c=>c.toLowerCase().includes('absence'));
+  const statc=sc[0];
+
+  if(pi===0){
+    if(dc) addChart(grid,'Headcount by Department','How your workforce is distributed across departments','bar',countBy(data,dc),'w8',false,'Headcount');
+    if(gc) addChart(grid,'Gender Distribution','Male vs. female ratio across the entire organization','doughnut',countBy(data,gc),'w4','','Gender');
+    if(dc&&sc_col) addChart(grid,'Total Payroll by Department','Department-level payroll cost comparison','bar',groupBy(data,dc,sc_col),'w12',false,'Payroll');
+  } else if(pi===1){
+    if(statc) addChart(grid,'Employment Status Breakdown','Active, resigned, terminated, and on-leave distribution','doughnut',countBy(data,statc),'w4','','Status');
+    if(dc&&ac) addChart(grid,'Absence Days by Department','Which departments have the highest absenteeism — a key retention risk signal','bar',groupBy(data,dc,ac),'w8',false,'Absences');
+    if(dc) addChart(grid,'Attrition by Department','Count of resigned/terminated employees per department','bar',countBy(data.filter(r=>String(r[statc]||'').toLowerCase().includes('resign')||String(r[statc]||'').toLowerCase().includes('termin')),dc),'w12',false,'Attrition');
+  } else {
+    if(pc2) addChart(grid,'Performance Rating Distribution','How performance ratings are spread across the workforce','doughnut',countBy(data,pc2),'w4','','Performance');
+    if(dc&&sc_col) addChart(grid,'Average Salary by Department','Compensation benchmarking across departments','bar',groupByAvg(data,dc,sc_col),'w8',false,'Avg Salary');
+    if(pc2&&sc_col) addChart(grid,'Salary vs. Performance Rating','Are your best performers compensated appropriately?','bar',groupByAvg(data,pc2,sc_col),'w12',false,'Pay vs Perf');
+  }
+}
+
+function buildSafetyCharts(grid,pi,data,nc,cc,sc) {
+  const tc=cc.find(c=>c.toLowerCase().includes('type'));
+  const ac=cc.find(c=>c.toLowerCase().includes('area')||c.toLowerCase().includes('zone'));
+  const rc=cc.find(c=>c.toLowerCase().includes('risk'));
+  const cc2=cc.find(c=>c.toLowerCase().includes('contractor'));
+  const mc=cc.find(c=>c.toLowerCase().includes('month'));
+  const statc=sc[0];
+  const vc=nc.find(c=>c.toLowerCase().includes('viol'));
+
+  if(pi===0){
+    if(statc) addChart(grid,'Permit Status Overview','Open, closed, overdue, and pending permits at a glance','doughnut',countByColor(data,statc),'w4','','Status');
+    if(tc) addChart(grid,'Permits by Type','Which permit types are issued most — Hot Work, Confined Space, etc.','bar',countBy(data,tc),'w8',false,'Types');
+    if(ac&&mc) addChart(grid,'Monthly Permit Volume by Area','Permit activity trends month-by-month per zone — spot when work peaks','bar',countBy(data,ac),'w12',false,'Area Trend');
+  } else if(pi===1){
+    if(ac&&vc) addChart(grid,'Violations by Area / Zone','Which zones accumulate the most safety violations — requires immediate attention','bar',groupBy(data,ac,vc),'w8',false,'Violations');
+    if(rc) addChart(grid,'Risk Level Distribution','Breakdown of permits by risk classification — Low, Medium, High, Critical','doughnut',countBy(data,rc),'w4','','Risk');
+    if(tc&&vc) addChart(grid,'Violations by Permit Type','Which permit types are associated with the most violations','bar',groupBy(data,tc,vc),'w12',true,'Violations');
+  } else {
+    if(mc) addChart(grid,'Monthly Permit Trend','Track permit volume over time to identify compliance seasonality','line',countBy(data,mc),'w12',false,'Trend');
+    if(cc2) addChart(grid,'Permits by Contractor','Contractor workload distribution on site','bar',countBy(data,cc2),'w6',false,'Contractors');
+    if(statc&&cc2) addChart(grid,'Overdue by Contractor','Which contractors have the most overdue permits — compliance ranking','bar',countBy(data.filter(r=>String(r[statc]||'').toLowerCase().includes('overdue')),cc2),'w6',false,'Overdue');
+  }
+}
+
+function buildFinanceCharts(grid,pi,data,nc,cc,sc) {
+  const bc=nc.find(c=>c.toLowerCase().includes('budget'))||nc[0];
+  const ac2=nc.find(c=>c.toLowerCase().includes('actual'))||nc[1];
+  const vc=nc.find(c=>c.toLowerCase().includes('vari'))||nc[2];
+  const catc=cc.find(c=>c.toLowerCase().includes('categ'));
+  const dc=cc.find(c=>c.toLowerCase().includes('dept'));
+  const mc=cc.find(c=>c.toLowerCase().includes('month'));
+  const statc=sc[0];
+
+  if(pi===0){
+    if(dc&&bc) addChart(grid,'Budget by Department','How approved budget is allocated across departments','bar',groupBy(data,dc,bc),'w8',false,'Budget');
+    if(statc) addChart(grid,'Over vs. Within Budget','Share of transactions that exceeded their approved budget','doughnut',countBy(data,statc),'w4','','Status');
+    if(catc&&bc) addChart(grid,'Budget by Category','Which cost categories consume the most budget','bar',groupBy(data,catc,bc),'w12',true,'Categories');
+  } else if(pi===1){
+    if(catc&&vc) addChart(grid,'Variance by Category','Where the biggest gaps between budget and actual occur','bar',groupBy(data,catc,vc),'w8',false,'Variance');
+    if(dc&&vc) addChart(grid,'Variance by Department','Department-level budget discipline — who is overspending','bar',groupBy(data,dc,vc),'w4',false,'Dept Variance');
+    if(catc&&ac2) addChart(grid,'Actual Spend by Category','Real money spent per cost category — ranked highest to lowest','bar',groupBy(data,catc,ac2),'w12',false,'Actual Spend');
+  } else {
+    if(mc&&bc&&ac2) addChart(grid,'Budget vs. Actual — Monthly','Month-by-month comparison of planned vs. actual spend','bar',groupBy(data,mc,bc),'w12',false,'Monthly');
+    if(dc&&bc) addChart(grid,'Department Budget Allocation','Final budget distribution across departments for the period','bar',groupBy(data,dc,bc),'w6',false,'Allocation');
+    if(mc&&vc) addChart(grid,'Variance Trend Over Time','Is budget discipline improving or deteriorating month over month?','line',groupBy(data,mc,vc),'w6',false,'Trend');
+  }
+}
+
+function buildGeneralCharts(grid,pi,data,nc,cc,sc) {
+  if(pi===0){
+    if(cc[0]&&nc[0]) addChart(grid,`${nc[0]} by ${cc[0]}`,'Primary metric breakdown by main category','bar',groupBy(data,cc[0],nc[0]),'w8',false,'Primary');
+    if(sc[0]) addChart(grid,`${sc[0]} Distribution`,'Category distribution overview','doughnut',countBy(data,sc[0]),'w4','','Status');
+    if(cc[1]&&nc[0]) addChart(grid,`${nc[0]} by ${cc[1]}`,'Secondary breakdown for deeper analysis','bar',groupBy(data,cc[1],nc[0]),'w12',true,'Secondary');
+  } else if(pi===1){
+    if(cc[0]) addChart(grid,`${cc[0]} Count Distribution`,'How records are distributed across categories','bar',countBy(data,cc[0]),'w6',false,'Distribution');
+    if(nc[1]&&cc[0]) addChart(grid,`${nc[1]||nc[0]} by ${cc[0]}`,'Secondary metric analysis','bar',groupBy(data,cc[0],nc[1]||nc[0]),'w6',false,'Breakdown');
+  } else {
+    if(nc[0]) addChart(grid,`${nc[0]} Trend`,'Value progression across the dataset','line',Array.from({length:Math.min(data.length,60)},(_,i)=>({k:i+1,v:data[i][nc[0]]||0})).reduce((a,x)=>{a.labels.push(x.k);a.values.push(x.v);return a;},{labels:[],values:[]}),'w12',false,'Trend raw');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  GENERIC CHART ADDER
+// ═══════════════════════════════════════════════════════════
+function addChart(grid, title, desc, type, groupedData, width, horizontal, tag) {
+  let labels=[], values=[];
+  if(Array.isArray(groupedData)){
+    labels=groupedData.map(x=>x.k||x.label||x[0]);
+    values=groupedData.map(x=>x.v||x.value||x[1]);
+  } else if(groupedData&&groupedData.labels){
+    labels=groupedData.labels; values=groupedData.values;
+  } else {
     return;
   }
+  if(!labels.length) return;
 
-  // Chart 1: Status donut (half width)
-  if (statusCols.length > 0) {
-    const col = statusCols[0];
-    const counts = {};
-    data.forEach(r => { const v = r[col]||'Unknown'; counts[v]=(counts[v]||0)+1; });
-    const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8);
-    addChart(grid, `${col} Breakdown`, 'doughnut',
-      sorted.map(x=>x[0]), [{
-        data: sorted.map(x=>x[1]),
-        backgroundColor: sorted.map((_,i) => {
-          const k = sorted[i][0].toLowerCase();
-          if(k.includes('open')||k.includes('active')) return '#f97316cc';
-          if(k.includes('close')||k.includes('pass')||k.includes('complet')) return '#22c55ecc';
-          if(k.includes('overdue')||k.includes('fail')) return '#ef4444cc';
-          if(k.includes('pend')) return '#f59e0bcc';
-          return PALETTE[i]+'cc';
-        }),
-        borderColor:'#191d28',borderWidth:3,
-      }], '', false, 'half');
-  }
-
-  // Chart 2: Bar by first cat + first num (half width)
-  if (catCols.length > 0 && numCols.length > 0) {
-    const col = catCols[0], val = numCols[0];
-    const groups = {};
-    data.forEach(r => { const k=r[col]||'N/A'; groups[k]=(groups[k]||0)+(parseFloat(r[val])||0); });
-    const sorted = Object.entries(groups).sort((a,b)=>b[1]-a[1]).slice(0,10);
-    addChart(grid, `${val} by ${col}`, 'bar',
-      sorted.map(x=>x[0]),
-      [{ data:sorted.map(x=>x[1]), backgroundColor:PALETTE.map(c=>c+'cc'), borderRadius:6, borderSkipped:false }],
-      'bar', false, 'half');
-  }
-
-  // Chart 3: Line trend for first numeric (full width)
-  if (numCols.length >= 1) {
-    const col = numCols[0];
-    const sample = data.slice(0,80);
-    addChart(grid, `${col} — Trend Analysis`, 'line',
-      sample.map((_,i)=>i+1),
-      [{
-        label:col,
-        data:sample.map(r=>parseFloat(r[col])||0),
-        borderColor:'#f97316',
-        backgroundColor:'rgba(249,115,22,0.08)',
-        tension:0.4,fill:true,
-        pointRadius:3,pointBackgroundColor:'#f97316',
-        borderWidth:2,
-      }],
-      'line', false, 'full');
-  }
-
-  // Chart 4: Horizontal bar (second cat)
-  if (catCols.length >= 2 && numCols.length > 0) {
-    const col = catCols[1]||catCols[0], val = numCols[0];
-    const groups = {};
-    data.forEach(r => { const k=r[col]||'N/A'; groups[k]=(groups[k]||0)+(parseFloat(r[val])||0); });
-    const sorted = Object.entries(groups).sort((a,b)=>b[1]-a[1]).slice(0,8);
-    addChart(grid, `${val} by ${col}`, 'bar',
-      sorted.map(x=>x[0]),
-      [{ data:sorted.map(x=>x[1]), backgroundColor:'#3b82f6cc', borderRadius:6, borderSkipped:false }],
-      'bar', true, 'half');
-  }
-
-  // Chart 5: Second numeric distribution
-  if (numCols.length >= 2 && catCols.length > 0) {
-    const col = catCols[0], val = numCols[1];
-    const groups = {};
-    data.forEach(r => { const k=r[col]||'N/A'; groups[k]=(groups[k]||0)+(parseFloat(r[val])||0); });
-    const sorted = Object.entries(groups).sort((a,b)=>b[1]-a[1]).slice(0,8);
-    addChart(grid, `${val} by ${col}`, 'bar',
-      sorted.map(x=>x[0]),
-      [{ data:sorted.map(x=>x[1]), backgroundColor:'#22c55ecc', borderRadius:6, borderSkipped:false }],
-      'bar', false, 'half');
-  }
-}
-
-function addChart(grid, title, type, labels, datasets, tag, horizontal, size) {
-  const id = 'ch_' + Math.random().toString(36).slice(2);
-  const card = document.createElement('div');
-  const cls = size==='full'?'chart-card full':size==='third'?'chart-card third':'chart-card';
-  card.className = cls;
-  card.innerHTML = `
-    <div class="cc-top">
+  const id='c'+Math.random().toString(36).slice(2);
+  const card=document.createElement('div');
+  card.className='cc '+(width||'w6');
+  const isDnt=type==='doughnut'||type==='pie';
+  card.innerHTML=`
+    <div class="cc-head">
       <div>
-        <div class="cc-title">${title}</div>
-        <div class="cc-sub">${filteredData.length} records · ${type}</div>
+        <div class="cc-ttl">${title}</div>
+        <div class="cc-desc">${desc}</div>
       </div>
-      ${tag?`<div class="cc-badge">${tag}</div>`:''}
+      ${tag?`<div class="cc-tag">${tag}</div>`:''}
     </div>
-    <div class="chart-wrap"><canvas id="${id}"></canvas></div>`;
+    <div class="cw${isDnt?' short':''}"><canvas id="${id}"></canvas></div>`;
   grid.appendChild(card);
 
-  const ctx = document.getElementById(id).getContext('2d');
-  const isDoughnut = type === 'doughnut';
-  const cfg = {
-    type,
-    data:{ labels, datasets },
+  const ctx=document.getElementById(id).getContext('2d');
+  const getColor=(i,a=1)=>{
+    const c=PAL[i%PAL.length];
+    return a<1?c+(Math.round(a*255).toString(16).padStart(2,'0')):c;
+  };
+
+  const datasets=[{
+    label:title,
+    data:values,
+    backgroundColor:isDnt?labels.map((_,i)=>getColor(i,.8)):getColor(0,.8),
+    borderColor:isDnt?labels.map((_,i)=>getColor(i)):getColor(0),
+    borderWidth:isDnt?3:1.5,
+    borderRadius:isDnt?0:6,
+    borderSkipped:false,
+    tension:.4,
+    fill:type==='line',
+    pointRadius:type==='line'?3:0,
+    pointBackgroundColor:getColor(0),
+    ...(isDnt?{borderColor:'#161b27'}:{}),
+  }];
+
+  const chart=new Chart(ctx,{
+    type:type==='doughnut'?'doughnut':type,
+    data:{labels,datasets},
     options:{
       responsive:true,maintainAspectRatio:false,
-      indexAxis: horizontal?'y':'x',
+      indexAxis:horizontal?'y':'x',
       plugins:{
         legend:{
-          display:isDoughnut,
+          display:isDnt,
           position:'right',
-          labels:{color:'#636880',font:{size:11,family:'IBM Plex Mono'},padding:10,boxWidth:10}
+          labels:{color:'#9ba3bf',font:{size:10,family:'Fira Code'},padding:8,boxWidth:8,boxHeight:8}
         },
         tooltip:{
-          backgroundColor:'#1e2330',
-          borderColor:'rgba(249,115,22,0.3)',
+          backgroundColor:'#1c2235',
+          borderColor:'rgba(99,102,241,0.25)',
           borderWidth:1,
-          titleColor:'#eef0f5',
-          bodyColor:'#8b90a8',
-          padding:12,
+          titleColor:'#e8ecf5',
+          bodyColor:'#9ba3bf',
+          padding:12,titleFont:{family:'Clash Display',size:13},
           callbacks:{
             label:ctx=>{
               const v=ctx.parsed?.y??ctx.parsed?.r??ctx.raw;
-              return typeof v==='number'?' '+formatNum(v):' '+(v||'');
+              return typeof v==='number'?' '+fmtN(v):' '+(v||'');
             }
           }
         }
       },
-      scales:isDoughnut?{}:{
+      scales:isDnt?{}:{
         x:{
-          ticks:{color:'#636880',font:{size:11,family:'IBM Plex Mono'},maxRotation:30,maxTicksLimit:10},
-          grid:{color:'rgba(255,255,255,0.04)'},
-          border:{color:'rgba(255,255,255,0.07)'}
+          ticks:{color:'#515872',font:{size:10,family:'Fira Code'},maxRotation:30,maxTicksLimit:12},
+          grid:{color:'rgba(255,255,255,0.035)'},
+          border:{color:'rgba(255,255,255,0.06)'},
         },
         y:{
-          ticks:{color:'#636880',font:{size:11,family:'IBM Plex Mono'},callback:v=>formatNum(v)},
-          grid:{color:'rgba(255,255,255,0.04)'},
-          border:{color:'rgba(255,255,255,0.07)'}
+          ticks:{color:'#515872',font:{size:10,family:'Fira Code'},callback:v=>fmtN(v)},
+          grid:{color:'rgba(255,255,255,0.035)'},
+          border:{color:'rgba(255,255,255,0.06)'},
         }
       }
     }
+  });
+  CHARTS.push(chart);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RECOMMENDATIONS
+// ═══════════════════════════════════════════════════════════
+function getRecos(data,nc,cc,sc,pageIdx) {
+  const recoMap={
+    sales:[
+      [
+        {ico:'🎯',ttl:'Double Down on Top Region',body:'Allocate 30-40% more of your sales budget to the highest-performing region. Data shows this is where conversion rates and order values are strongest.',color:'var(--green)'},
+        {ico:'🔁',ttl:'Fix the Return Problem First',body:'Returned orders represent direct revenue loss. Implement pre-shipment quality checks and improve order specification accuracy to cut return rates by half.',color:'var(--red)'},
+        {ico:'💡',ttl:'Renegotiate High-Discount Channels',body:'Channels with average discounts above 15% are eroding your margin. Set maximum discount thresholds and require management approval for exceptions.',color:'var(--amber)'},
+      ],
+      [
+        {ico:'🚫',ttl:'Discontinue Loss-Making Products',body:'Products with negative or near-zero profit margin are consuming resources without generating returns. Review and phase out the bottom 20% by profitability.',color:'var(--red)'},
+        {ico:'📊',ttl:'Improve Demand Forecasting',body:'High return rates often signal a forecasting problem. Implementing better demand signals will reduce over-ordering and mismatch between supply and actual demand.',color:'var(--blue)'},
+      ],
+      [
+        {ico:'🌍',ttl:'Expand Top Product to New Regions',body:'Your best-selling product is concentrated in a few regions. A targeted expansion campaign to underperforming regions could add 15-25% to total revenue.',color:'var(--green)'},
+        {ico:'📈',ttl:'Build a Monthly Sales Cadence',body:'Month-by-month data shows seasonal patterns. Use these patterns to pre-position inventory, plan promotions, and align sales team targets with expected demand cycles.',color:'var(--a1)'},
+      ],
+    ],
+    hr:[
+      [
+        {ico:'📊',ttl:'Conduct Annual Compensation Review',body:'Ensure salaries are competitive with market benchmarks. Underpaying high performers is the #1 driver of voluntary attrition in engineering organizations.',color:'var(--green)'},
+        {ico:'⚖️',ttl:'Address Gender Imbalance',body:'Low female representation in technical departments limits organizational diversity and innovation. Set measurable hiring targets for underrepresented groups.',color:'var(--purple)'},
+      ],
+      [
+        {ico:'🚪',ttl:'Implement Exit Interview Program',body:'You cannot fix attrition without understanding its cause. Structured exit interviews reveal the real reasons people leave — and most of them are preventable.',color:'var(--red)'},
+        {ico:'📅',ttl:'Address High-Absence Departments',body:'Departments with above-average absence rates have an engagement or workload problem. Manager conversations and workload reviews should happen this quarter.',color:'var(--amber)'},
+      ],
+      [
+        {ico:'🏆',ttl:'Reward Your Top Performers Now',body:'High performers who are not recognized within 12 months of outstanding results have a 60% probability of actively seeking other opportunities.',color:'var(--green)'},
+        {ico:'📚',ttl:'Increase Training Investment',body:'Low training hours correlate with lower performance scores in your data. A structured development program will improve both retention and output quality.',color:'var(--blue)'},
+      ],
+    ],
+    safety:[
+      [
+        {ico:'🚨',ttl:'Clear All Overdue Permits Today',body:'Overdue permits represent active regulatory violations. Assign a dedicated HSE officer to close every overdue permit within 24 hours and investigate why they lapsed.',color:'var(--red)'},
+        {ico:'📋',ttl:'Implement Daily Permit Dashboard',body:'A real-time permit status board visible to all site supervisors creates accountability and prevents permits from falling through the cracks.',color:'var(--amber)'},
+      ],
+      [
+        {ico:'🔍',ttl:'Conduct Root Cause Analysis on High-Violation Zones',body:'Zones with repeat violations need a structured RCA process — not just corrective actions. The same hazard returning means the root cause was never eliminated.',color:'var(--red)'},
+        {ico:'👷',ttl:'Increase Supervision on High-Risk Permit Types',body:'Hot Work and Confined Space permits carry the highest fatality risk. Ensure a qualified HSE officer is physically present for every high-risk permit execution.',color:'var(--amber)'},
+      ],
+      [
+        {ico:'📊',ttl:'Score Contractor Compliance Monthly',body:'Rank contractors by permit compliance rate and share the scores openly on site. Accountability through visibility dramatically improves contractor HSE behavior.',color:'var(--blue)'},
+        {ico:'✅',ttl:'Target 95%+ Permit Closure Rate',body:'World-class HSE programs maintain permit closure rates above 95%. Set this as a KPI for all HSE officers and report progress weekly to site management.',color:'var(--green)'},
+      ],
+    ],
+    finance:[
+      [
+        {ico:'💰',ttl:'Tighten Budget Approval Process',body:'Over-budget items signal either poor planning or insufficient control. Implement a two-signature approval for any spend exceeding 110% of approved budget.',color:'var(--amber)'},
+        {ico:'📊',ttl:'Monthly Budget Review Meetings',body:'Departments with high variance need monthly budget review sessions with the CFO. Early visibility prevents small overruns from becoming large problems.',color:'var(--blue)'},
+      ],
+      [
+        {ico:'🔻',ttl:'Negotiate Key Cost Categories',body:'Your top spending categories represent the highest leverage for cost reduction. Even a 5% reduction in the top category can free significant budget for reinvestment.',color:'var(--red)'},
+        {ico:'📈',ttl:'Improve Budget Accuracy',body:'High variance categories need more granular cost coding. Break broad categories into specific line items to improve forecast accuracy in the next budget cycle.',color:'var(--amber)'},
+      ],
+      [
+        {ico:'📅',ttl:'Build a Rolling 3-Month Forecast',body:'Replace annual-only budgeting with a rolling quarterly forecast. This gives you the flexibility to reallocate budget as priorities shift throughout the year.',color:'var(--green)'},
+        {ico:'✅',ttl:'Reward Budget Discipline',body:'Departments that consistently stay within budget while delivering results should be recognized. This creates a culture of financial responsibility across the organization.',color:'var(--blue)'},
+      ],
+    ],
   };
-  charts.push(new Chart(ctx, cfg));
+
+  return (recoMap[DOMAIN]&&recoMap[DOMAIN][pageIdx])||[];
 }
 
-function rebuildCharts() {
-  const numCols = headers.filter(h => isNumericCol(h));
-  const catCols = headers.filter(h => isCatCol(h));
-  const statusCols = headers.filter(h => isStatusCol(h));
-  buildCharts(numCols, catCols, statusCols, filteredData);
+function buildRecos(pageIdx, recos) {
+  const grid=document.getElementById('reco-'+pageIdx);
+  if(!grid) return;
+  recos.forEach(r=>{
+    const card=document.createElement('div');
+    card.className='reco-card';
+    card.style.setProperty('--rc',r.color||'var(--a1)');
+    card.innerHTML=`<div class="reco-ico">${r.ico}</div><div class="reco-ttl">${r.ttl}</div><div class="reco-body">${r.body}</div>`;
+    grid.appendChild(card);
+  });
 }
 
-// ═══════════════════════════════════════════════════════
-// TABLE
-// ═══════════════════════════════════════════════════════
-function buildTable(data) {
-  const head = document.getElementById('t-head');
-  const body = document.getElementById('t-body');
-  document.getElementById('ts-count').textContent = `${data.length.toLocaleString()} records`;
+// ═══════════════════════════════════════════════════════════
+//  FILTERS
+// ═══════════════════════════════════════════════════════════
+function buildFilters(pageIdx, cc) {
+  const container=document.getElementById('fselects-'+pageIdx);
+  if(!container) return;
+  container.innerHTML='';
+  cc.slice(0,5).forEach(col=>{
+    const vals=[...new Set(RAW.map(r=>r[col]))].filter(Boolean).sort();
+    if(vals.length<2||vals.length>50) return;
+    const sel=document.createElement('select');
+    sel.className='fsel';
+    sel.dataset.col=col;
+    sel.dataset.page=pageIdx;
+    sel.innerHTML=`<option value="">All ${col}</option>`+vals.map(v=>`<option value="${v}">${v}</option>`).join('');
+    sel.onchange=()=>applyFilters(pageIdx);
+    container.appendChild(sel);
+  });
+}
 
-  head.innerHTML = '<tr>' + headers.map(h =>
-    `<th onclick="sortBy('${h}')" class="${sortCol===h?'sorted':''}">${h} ${sortCol===h?(sortDir>0?'↑':'↓'):''}</th>`
-  ).join('') + '</tr>';
+function applyFilters(pageIdx) {
+  const selects=document.querySelectorAll(`[data-page="${pageIdx}"]`);
+  const search=(document.getElementById('fsrch-'+pageIdx)||{}).value?.toLowerCase()||'';
+  ALL=RAW.filter(row=>{
+    for(const sel of selects){
+      if(sel.value&&String(row[sel.dataset.col])!==sel.value) return false;
+    }
+    if(search) return HEADERS.some(h=>String(row[h]).toLowerCase().includes(search));
+    return true;
+  });
+  const nc=numCols(),cc=catCols(),sc=statusCols();
+  buildPageCharts(pageIdx,nc,cc,sc,ALL);
+  if(pageIdx===0) buildTable(pageIdx,ALL);
+  document.getElementById('tbl-meta-'+pageIdx)&&(document.getElementById('tbl-meta-'+pageIdx).textContent=ALL.length.toLocaleString()+' records');
+}
 
-  const numSet = new Set(headers.filter(h => isNumericCol(h)));
-  const statusSet = new Set(headers.filter(h => isStatusCol(h)));
+function clearFilters(pageIdx) {
+  document.querySelectorAll(`[data-page="${pageIdx}"]`).forEach(s=>s.value='');
+  const si=document.getElementById('fsrch-'+pageIdx);
+  if(si) si.value='';
+  ALL=[...RAW];
+  const nc=numCols(),cc=catCols(),sc=statusCols();
+  buildPageCharts(pageIdx,nc,cc,sc,ALL);
+  if(pageIdx===0) buildTable(pageIdx,ALL);
+}
 
-  body.innerHTML = data.slice(0,300).map(row =>
-    '<tr>' + headers.map(h => {
-      const v = row[h] ?? '';
-      const isNum = numSet.has(h) && typeof v === 'number';
-      const isStat = statusSet.has(h);
-      let cell = v;
-      if (isNum) return `<td class="td-num">${formatNum(v)}</td>`;
-      if (isStat) {
-        const sl = String(v).toLowerCase();
-        let cls = '';
-        if(sl.includes('open')||sl.includes('active')||sl.includes('pend')) cls='badge-open';
-        else if(sl.includes('close')||sl.includes('complet')||sl.includes('pass')) cls='badge-closed';
-        else if(sl.includes('overdue')||sl.includes('fail')) cls='badge-overdue';
-        return `<td><span class="td-badge ${cls}">${v}</span></td>`;
+// ═══════════════════════════════════════════════════════════
+//  KPI BUILDER
+// ═══════════════════════════════════════════════════════════
+function buildKPIs(pageIdx, kpiDefs) {
+  const grid=document.getElementById('kpi-'+pageIdx);
+  if(!grid) return;
+  grid.innerHTML='';
+  const data=ALL.length?ALL:RAW;
+  const validDefs=kpiDefs.filter(k=>k);
+  validDefs.slice(0,6).forEach(k=>{
+    try{
+      let val=k.fn(data);
+      if(typeof val==='number') val=fmtN(val)+(k.suffix||'');
+      grid.innerHTML+=`<div class="kpi" style="--kc:${k.color||'var(--a1)'}">
+        <div class="kpi-top">
+          <div class="kpi-ico">${k.ico}</div>
+          ${k.badge?`<div class="kpi-badge nt">${k.badge}</div>`:''}
+        </div>
+        <div class="kpi-lbl">${k.lbl}</div>
+        <div class="kpi-val">${val}</div>
+        <div class="kpi-desc">${k.desc||''}</div>
+      </div>`;
+    }catch(e){}
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  TABLE
+// ═══════════════════════════════════════════════════════════
+function buildTable(pageIdx, data) {
+  const thead=document.getElementById('thead-'+pageIdx);
+  const tbody=document.getElementById('tbody-'+pageIdx);
+  if(!thead||!tbody) return;
+
+  const numSet=new Set(HEADERS.filter(h=>isNum(h)));
+  const statSet=new Set(HEADERS.filter(h=>isStatus(h)));
+
+  thead.innerHTML='<tr>'+HEADERS.map(h=>
+    `<th onclick="sortTable('${h}',${pageIdx})" class="${SORT_COL===h?'srt':''}">${h}${SORT_COL===h?(SORT_DIR>0?' ↑':' ↓'):''}</th>`
+  ).join('')+'</tr>';
+
+  tbody.innerHTML=data.slice(0,300).map(row=>
+    '<tr>'+HEADERS.map(h=>{
+      const v=row[h]??'';
+      if(numSet.has(h)&&typeof v==='number') return `<td class="tn">${fmtN(v)}</td>`;
+      if(statSet.has(h)){
+        const sl=String(v).toLowerCase();
+        let cls='tb-b';
+        if(sl.includes('close')||sl.includes('complet')||sl.includes('pass')||sl.includes('active')||sl.includes('within')) cls='tb-g';
+        else if(sl.includes('overdue')||sl.includes('fail')||sl.includes('return')||sl.includes('termin')||sl.includes('over ')) cls='tb-r';
+        else if(sl.includes('pend')||sl.includes('open')||sl.includes('progress')) cls='tb-a';
+        else if(sl.includes('reject')) cls='tb-p';
+        return `<td><span class="tb ${cls}">${v}</span></td>`;
       }
       return `<td title="${v}">${v}</td>`;
-    }).join('') + '</tr>'
+    }).join('')+'</tr>'
   ).join('');
+
+  const meta=document.getElementById('tbl-meta-'+pageIdx);
+  if(meta) meta.textContent=data.length.toLocaleString()+' records';
 }
 
-function sortBy(col) {
-  if (sortCol === col) sortDir *= -1;
-  else { sortCol = col; sortDir = 1; }
-  filteredData.sort((a,b) => {
-    const va = a[col], vb = b[col];
-    if (typeof va === 'number' && typeof vb === 'number') return (va-vb)*sortDir;
-    return String(va).localeCompare(String(vb)) * sortDir;
+function sortTable(col, pageIdx) {
+  if(SORT_COL===col) SORT_DIR*=-1;
+  else{SORT_COL=col;SORT_DIR=1;}
+  ALL.sort((a,b)=>{
+    const va=a[col],vb=b[col];
+    if(typeof va==='number'&&typeof vb==='number') return (va-vb)*SORT_DIR;
+    return String(va||'').localeCompare(String(vb||''))*SORT_DIR;
   });
-  buildTable(filteredData);
+  buildTable(pageIdx,ALL);
 }
 
-// ═══════════════════════════════════════════════════════
-// EXPORT
-// ═══════════════════════════════════════════════════════
-function exportCSV() {
-  const rows = [headers.join(',')];
-  filteredData.forEach(row => {
-    rows.push(headers.map(h => {
-      const v = row[h] ?? '';
-      return typeof v === 'string' && v.includes(',') ? `"${v}"` : v;
-    }).join(','));
-  });
-  const blob = new Blob([rows.join('\n')], {type:'text/csv'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'hse-export.csv';
-  a.click();
-  toast('CSV exported ✓', 'safe');
+// ═══════════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════════
+function sum(data,col){if(!col) return 0;return data.reduce((a,r)=>a+(typeof r[col]==='number'?r[col]:0),0);}
+function avg(data,col){if(!col||!data.length) return 0;const s=sum(data,col);return s/data.length;}
+function groupBy(data,groupCol,valCol,limit=12){
+  if(!groupCol||!valCol) return [];
+  const g={};
+  data.forEach(r=>{const k=r[groupCol]||'N/A';g[k]=(g[k]||0)+(typeof r[valCol]==='number'?r[valCol]:0);});
+  return Object.entries(g).sort((a,b)=>b[1]-a[1]).slice(0,limit).map(([k,v])=>({k,v:Math.round(v)}));
+}
+function groupByAvg(data,groupCol,valCol,limit=12){
+  if(!groupCol||!valCol) return [];
+  const g={},cnt={};
+  data.forEach(r=>{const k=r[groupCol]||'N/A';g[k]=(g[k]||0)+(typeof r[valCol]==='number'?r[valCol]:0);cnt[k]=(cnt[k]||0)+1;});
+  return Object.entries(g).sort((a,b)=>b[1]-a[1]).slice(0,limit).map(([k,v])=>({k,v:Math.round(v/cnt[k])}));
+}
+function countBy(data,col,limit=12){
+  if(!col) return [];
+  const g={};
+  data.forEach(r=>{const k=r[col]||'N/A';g[k]=(g[k]||0)+1;});
+  return Object.entries(g).sort((a,b)=>b[1]-a[1]).slice(0,limit).map(([k,v])=>({k,v}));
+}
+function countByColor(data,col){return countBy(data,col);}
+function topGroup(data,groupCol,valCol){
+  const g=groupBy(data,groupCol,valCol);
+  return g.length?g[0].k:'N/A';
+}
+function topGroupByCount(data,col){
+  const g=countBy(data,col);
+  return g.length?g[0].k:'N/A';
+}
+function fmtN(n){
+  if(n===undefined||n===null||isNaN(n)) return '0';
+  if(Math.abs(n)>=1e9) return (n/1e9).toFixed(1)+'B';
+  if(Math.abs(n)>=1e6) return (n/1e6).toFixed(1)+'M';
+  if(Math.abs(n)>=1e3) return (n/1e3).toFixed(1)+'K';
+  return parseFloat(n.toFixed(1)).toLocaleString();
 }
 
-// ═══════════════════════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════════════════════
-function formatNum(n) {
-  if (n===undefined||n===null||isNaN(n)) return '0';
-  if (Math.abs(n)>=1e9) return (n/1e9).toFixed(1)+'B';
-  if (Math.abs(n)>=1e6) return (n/1e6).toFixed(1)+'M';
-  if (Math.abs(n)>=1e3) return (n/1e3).toFixed(1)+'K';
-  return parseFloat(n.toFixed(2)).toLocaleString();
+// ═══════════════════════════════════════════════════════════
+//  EXPORT
+// ═══════════════════════════════════════════════════════════
+function exportCSV(){
+  const data=ALL.length?ALL:RAW;
+  const rows=[HEADERS.join(',')];
+  data.forEach(r=>rows.push(HEADERS.map(h=>{const v=r[h]??'';return typeof v==='string'&&v.includes(',')? `"${v}"`:v;}).join(',')));
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));
+  a.download='atlas-pro-export.csv';a.click();
+  toast('CSV exported successfully','green');
 }
 
-function showLoading() {
-  document.getElementById('upload-screen').style.display = 'none';
-  const ls = document.getElementById('loading-screen');
-  ls.style.display = 'flex';
-  // animate steps
-  ['s1','s2','s3','s4'].forEach((id,i) => {
+// ═══════════════════════════════════════════════════════════
+//  UI HELPERS
+// ═══════════════════════════════════════════════════════════
+function showLoading(){
+  document.getElementById('upload-screen').style.display='none';
+  const ls=document.getElementById('loading-screen');
+  ls.style.display='flex';
+  const steps=['ls1','ls2','ls3','ls4','ls5'];
+  steps.forEach((id,i)=>{
+    document.getElementById(id).className='lstep';
     setTimeout(()=>{
-      document.querySelectorAll('.load-step').forEach(s=>s.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-    }, i*450);
+      steps.slice(0,i).forEach(sid=>document.getElementById(sid).className='lstep done');
+      document.getElementById(id).className='lstep on';
+    },i*380);
   });
 }
-function hideLoading() {
-  document.getElementById('loading-screen').style.display = 'none';
+function hideLoading(){document.getElementById('loading-screen').style.display='none';}
+function showUpload(){
+  document.getElementById('loading-screen').style.display='none';
+  document.getElementById('upload-screen').style.display='flex';
 }
-function showUpload() {
-  document.getElementById('loading-screen').style.display = 'none';
-  document.getElementById('upload-screen').style.display = 'flex';
+function resetAll(){
+  CHARTS.forEach(c=>{try{c.destroy();}catch(e){}});
+  CHARTS=[];RAW=[];ALL=[];HEADERS=[];
+  DOMAIN='general';ACTIVE_PAGE=0;
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('nav-tabs').style.display='none';
+  document.getElementById('pages-container').innerHTML='';
+  document.getElementById('upload-screen').style.display='flex';
+  document.getElementById('domain-label').textContent='Ready';
+  document.getElementById('logo-mark').textContent='◈';
+  document.documentElement.style.setProperty('--a1','#6366f1');
+  document.documentElement.style.setProperty('--a2','#818cf8');
+  document.documentElement.style.setProperty('--a3','rgba(99,102,241,0.12)');
+  document.getElementById('file-input').value='';
 }
-function resetAll() {
-  charts.forEach(c=>{try{c.destroy();}catch(e){}});
-  charts=[];rawData=[];filteredData=[];headers=[];
-  document.getElementById('dashboard').style.display = 'none';
-  document.getElementById('upload-screen').style.display = 'flex';
-  document.getElementById('file-input').value = '';
+function toast(msg,type='green'){
+  const colors={green:'#10b981',red:'#f43f5e',amber:'#f59e0b',blue:'#3b82f6'};
+  const t=document.getElementById('toast');
+  document.getElementById('td').style.background=colors[type]||colors.green;
+  t.style.borderColor=(colors[type]||colors.green)+'33';
+  document.getElementById('tm').textContent=msg;
+  t.classList.add('on');
+  setTimeout(()=>t.classList.remove('on'),3800);
 }
-function setView(v) {
-  currentView = v;
-  document.querySelectorAll('.hbadge').forEach(b=>b.classList.remove('active'));
-  event.target.classList.add('active');
-}
-function toast(msg, type='safe') {
-  const t = document.getElementById('toast');
-  const d = document.getElementById('toast-dot');
-  document.getElementById('toast-msg').textContent = msg;
-  const colors = {safe:'#22c55e',danger:'#ef4444',warning:'#f59e0b',info:'#3b82f6'};
-  d.style.background = colors[type]||colors.safe;
-  t.style.borderColor = (colors[type]||colors.safe)+'44';
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 3500);
-}
-</script>
 
+// Fix syntax error - replace ） with )
+</script>
 </body>
 </html>

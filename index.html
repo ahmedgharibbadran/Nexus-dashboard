@@ -36,7 +36,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .splash-bar-fill{height:100%;width:0;background:linear-gradient(90deg,var(--a1),var(--cyan));border-radius:2px;animation:splashbar 2s ease-out forwards}
 @keyframes splashbar{to{width:100%}}
 
-/* LOGIN — full screen PowerBI style */
+/* LOGIN */
 #login-screen{position:fixed;inset:0;z-index:8888;background:var(--bg);display:none;overflow:hidden}
 .login-bg{position:absolute;inset:0;background:linear-gradient(135deg,#0A0D14 0%,#0F1632 50%,#0A0D14 100%)}
 .login-bg::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 80% at 50% 50%,rgba(99,102,241,0.08),transparent 70%)}
@@ -90,12 +90,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .login-theme-btn{position:absolute;top:20px;right:20px;z-index:10;padding:8px 14px;background:rgba(255,255,255,0.07);border:1px solid var(--border2);color:var(--text2);border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;backdrop-filter:blur(10px);transition:all .2s;font-family:'Plus Jakarta Sans',sans-serif}
 .login-theme-btn:hover{border-color:var(--a1);color:var(--a2)}
 
-/* SIDEBAR LAYOUT */
-#hdr{display:none}
+/* SIDEBAR */
 #sidebar{position:fixed;left:0;top:0;bottom:0;width:var(--sidebar);background:var(--surface);border-right:1px solid var(--border);z-index:500;display:none;flex-direction:column;overflow:hidden;transition:background .35s}
 [data-theme="light"] #sidebar{background:rgba(255,255,255,0.95)}
 .sb-top{padding:20px 16px 16px;border-bottom:1px solid var(--border)}
-.sb-brand{display:flex;align-items:center;gap:10px;margin-bottom:0}
+.sb-brand{display:flex;align-items:center;gap:10px}
 .sb-logo{width:36px;height:36px;background:linear-gradient(135deg,var(--a1),var(--cyan));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;letter-spacing:1px;flex-shrink:0}
 .sb-name{font-size:15px;font-weight:800;letter-spacing:2px;color:var(--text)}
 .sb-domain{font-size:9px;color:var(--a2);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-top:2px}
@@ -129,8 +128,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .tb-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;background:transparent;border:1px solid var(--border2);color:var(--text2);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap}
 .tb-btn:hover{border-color:var(--a1);color:var(--a2)}
 .tb-btn.danger:hover{border-color:var(--red);color:var(--red)}
-.tb-btn.excel-btn{border-color:rgba(16,185,129,0.3);color:var(--green)}
-.tb-btn.excel-btn:hover{background:rgba(16,185,129,0.08);border-color:var(--green)}
 .chart-type-grp{display:flex;gap:2px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:3px}
 .ct-btn{width:28px;height:26px;border-radius:5px;background:transparent;border:none;color:var(--text2);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
 .ct-btn.on{background:var(--a1);color:#fff}
@@ -141,7 +138,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 #app.no-sidebar{margin-left:0;padding-top:0}
 
 /* UPLOAD PAGE */
-#upload{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;padding:40px 20px;position:relative}
+#upload{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;gap:28px;padding:40px 20px;position:relative}
 .u-h1{font-size:clamp(34px,5vw,58px);font-weight:800;line-height:1.08;letter-spacing:-1.5px;margin-bottom:14px;color:var(--text);text-align:center}
 [dir="rtl"] .u-h1{letter-spacing:0}
 .u-h1 .g{background:linear-gradient(120deg,var(--a1),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
@@ -246,7 +243,6 @@ select:focus{outline:none;border-color:var(--a1)}
 .cc-sub{font-size:11px;color:var(--text2);margin-top:2px;line-height:1.5}
 .cc-actions{display:flex;gap:4px;align-items:center;flex-shrink:0}
 .cc-tag{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;border-radius:4px;background:var(--a3);color:var(--a2);border:1px solid rgba(99,102,241,0.18)}
-/* Download button on each chart */
 .chart-dl-btn{width:26px;height:26px;border-radius:6px;background:var(--card2);border:1px solid var(--border2);color:var(--muted);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
 .chart-dl-btn:hover{border-color:var(--a1);color:var(--a2);background:var(--a3)}
 .chart-dl-menu{position:absolute;top:44px;right:18px;background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:6px;z-index:100;box-shadow:0 12px 40px rgba(0,0,0,.4);display:none;min-width:130px;animation:fadeIn .15s ease}
@@ -327,7 +323,7 @@ tr:hover td{background:rgba(99,102,241,0.03)}
   <div class="splash-bar"><div class="splash-bar-fill"></div></div>
 </div>
 
-<!-- LOGIN — full screen -->
+<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-bg"><div class="login-grid"></div></div>
   <button class="login-theme-btn" onclick="toggleTheme()" id="login-theme-btn">🌙 Light</button>
@@ -382,7 +378,7 @@ tr:hover td{background:rgba(99,102,241,0.03)}
         </div>
         <button class="login-btn" onclick="doLogin()" id="login-btn-txt">Authenticate →</button>
         <div class="login-err" id="lerr">⚠ Unauthorized access detected</div>
-        <div class="login-footer">AGB Analytics · v4.0.0 · Enterprise Edition · Biometric Ready</div>
+        <div class="login-footer">AGB Analytics · v4.0.0 · Enterprise Edition</div>
       </div>
     </div>
   </div>
@@ -400,17 +396,11 @@ tr:hover td{background:rgba(99,102,241,0.03)}
   <div class="sb-nav" id="sb-nav">
     <div class="sb-section" id="sb-sec-pages">Pages</div>
     <div id="sb-page-btns"></div>
-    <div class="sb-section" id="sb-sec-tools" style="margin-top:8px">Tools</div>
-    <button class="sb-item" onclick="exportCSV()" id="sb-export-btn">
-      <div class="sb-item-icon">⬇</div><span id="export-lbl">Export CSV</span>
-    </button>
-    <button class="sb-item excel-sb" onclick="exportExcel()" id="sb-excel-btn">
-      <div class="sb-item-icon">🟢</div><span id="excel-lbl">Export Excel</span>
-    </button>
-    <button class="sb-item" onclick="resetAll()">
-      <div class="sb-item-icon">↺</div><span id="newfile-lbl">New Dataset</span>
-    </button>
-    <div class="sb-section" id="sb-sec-prefs" style="margin-top:8px">Preferences</div>
+    <div class="sb-section" style="margin-top:8px">Tools</div>
+    <button class="sb-item" onclick="exportCSV()"><div class="sb-item-icon">⬇</div><span id="export-lbl">Export CSV</span></button>
+    <button class="sb-item" onclick="exportExcel()"><div class="sb-item-icon">🟢</div><span id="excel-lbl">Export Excel</span></button>
+    <button class="sb-item" onclick="resetAll()"><div class="sb-item-icon">↺</div><span id="newfile-lbl">New Dataset</span></button>
+    <div class="sb-section" style="margin-top:8px">Preferences</div>
     <button class="sb-item" onclick="toggleLang()"><div class="sb-item-icon">🌐</div><span id="lang-lbl">العربية</span></button>
     <button class="sb-item" onclick="toggleTheme()"><div class="sb-item-icon" id="theme-icon">🌙</div><span id="theme-lbl">Light Mode</span></button>
   </div>
@@ -440,7 +430,8 @@ tr:hover td{background:rgba(99,102,241,0.03)}
 
 <!-- APP -->
 <div id="app" class="no-sidebar">
-  <div id="upload">
+  <!-- UPLOAD — hidden by default, shown after auth -->
+  <div id="upload" style="display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:28px;padding:40px 20px">
     <div>
       <h1 class="u-h1" id="u-h1">Your Data.<br><span class="g">Deep Intelligence.</span></h1>
     </div>
@@ -460,6 +451,8 @@ tr:hover td{background:rgba(99,102,241,0.03)}
       </div>
     </div>
   </div>
+
+  <!-- LOADING -->
   <div id="loading-screen" style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:22px;min-height:100vh">
     <div class="ld-rings"><div class="ld-ring"></div><div class="ld-ring"></div></div>
     <div class="ld-lbl" id="ld-lbl">Analyzing Data</div>
@@ -471,7 +464,9 @@ tr:hover td{background:rgba(99,102,241,0.03)}
       <div class="lstep" id="ls5">Building interactive dashboards</div>
     </div>
   </div>
-  <div id="dash"><div id="pages"></div></div>
+
+  <!-- DASHBOARD -->
+  <div id="dash" style="display:none"><div id="pages"></div></div>
 </div>
 
 <div class="toast" id="toast"><div class="tdot" id="tdot"></div><span id="tmsg">Done</span></div>
@@ -571,7 +566,8 @@ function onPwInput(){
 window.addEventListener('DOMContentLoaded',()=>{
   applyTheme();applyLang();
   setTimeout(()=>{
-    const sp=document.getElementById('splash');sp.classList.add('out');
+    const sp=document.getElementById('splash');
+    sp.classList.add('out');
     setTimeout(()=>{
       sp.style.display='none';
       if(localStorage.getItem(LS_AUTH)==='ok'){
@@ -585,22 +581,34 @@ window.addEventListener('DOMContentLoaded',()=>{
               RAW=parsed;HDR=Object.keys(RAW[0]);ALL=[...RAW];
               DOMAIN=savedDomain||'general';
               detectPrimaryEntity();applyDomainTheme();
-              showAppWithDash('Restored Session');return;
+              // Show app first, then trigger loading flow
+              document.getElementById('app').style.display='block';
+              document.getElementById('app').classList.remove('no-sidebar');
+              document.getElementById('sidebar').style.display='flex';
+              document.getElementById('topbar').style.display='flex';
+              showLoading();
+              setTimeout(()=>buildDash('Restored Session'),2200);
+              return;
             }
           }catch(e){}
         }
+        // Auth ok but no data — show upload
         showApp();
-      }else{document.getElementById('login-screen').style.display='block';}
+      }else{
+        document.getElementById('login-screen').style.display='block';
+      }
     },700);
   },2400);
 });
+
 function doLogin(){
   const pw=document.getElementById('pw'),err=document.getElementById('lerr'),fp=document.getElementById('fp-btn');
   if(pw.value===PASS){
     fp.classList.remove('fp-err');fp.classList.add('fp-ok');
     localStorage.setItem(LS_AUTH,'ok');
     const ls=document.getElementById('login-screen');
-    ls.style.transition='opacity .5s ease,transform .5s ease';ls.style.opacity='0';ls.style.transform='scale(0.97)';
+    ls.style.transition='opacity .5s ease,transform .5s ease';
+    ls.style.opacity='0';ls.style.transform='scale(0.97)';
     setTimeout(()=>{ls.style.display='none';showApp();},500);
   }else{
     fp.classList.remove('fp-ok');fp.classList.add('fp-err');
@@ -608,17 +616,22 @@ function doLogin(){
     setTimeout(()=>{pw.classList.remove('shake','err');err.classList.remove('show');fp.classList.remove('fp-err');},3200);
   }
 }
-function doLogout(){localStorage.removeItem(LS_AUTH);localStorage.removeItem(LS_DATA);localStorage.removeItem(LS_DOMAIN);location.reload();}
-function showApp(){
-  document.getElementById('app').classList.remove('no-sidebar');
-  document.getElementById('app').style.display='block';
+
+function doLogout(){
+  localStorage.removeItem(LS_AUTH);
+  localStorage.removeItem(LS_DATA);
+  localStorage.removeItem(LS_DOMAIN);
+  location.reload();
 }
-function showAppWithDash(fileName){
-  showApp();
-  document.getElementById('sidebar').style.display='flex';
-  document.getElementById('topbar').style.display='flex';
-  showLoading();
-  setTimeout(()=>buildDash(fileName),2200);
+
+// Show app with upload screen visible
+function showApp(){
+  const app=document.getElementById('app');
+  app.style.display='block';
+  app.classList.add('no-sidebar');
+  document.getElementById('upload').style.display='flex';
+  document.getElementById('loading-screen').style.display='none';
+  document.getElementById('dash').style.display='none';
 }
 
 // ── DOMAIN CONFIG
@@ -645,7 +658,8 @@ dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');if
 fi.addEventListener('change',e=>{if(e.target.files[0])processFile(e.target.files[0])});
 
 function processFile(f){
-  resetState();showLoading();
+  resetState();
+  showLoadingInApp();
   const reader=new FileReader();
   reader.onload=e=>{
     try{
@@ -653,14 +667,15 @@ function processFile(f){
       if(name.endsWith('.json')){const p=JSON.parse(e.target.result);data=Array.isArray(p)?p:p.data||Object.values(p)[0];}
       else if(name.endsWith('.csv')||name.endsWith('.tsv')||name.endsWith('.txt')){data=parseCSV(e.target.result,name.endsWith('.tsv')?'\t':',');}
       else{const wb=XLSX.read(e.target.result,{type:'array'});data=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});}
-      if(!data||!data.length){showToast(LANG==='ar'?'لا توجد بيانات':'No data found','red');showUpload();return;}
+      if(!data||!data.length){showToast(LANG==='ar'?'لا توجد بيانات':'No data found','red');showUploadScreen();return;}
       processLargeData(data,f.name);
-    }catch(err){showToast('Error: '+err.message,'red');showUpload();}
+    }catch(err){showToast('Error: '+err.message,'red');showUploadScreen();}
   };
   const name=f.name.toLowerCase();
   if(name.endsWith('.csv')||name.endsWith('.tsv')||name.endsWith('.txt')||name.endsWith('.json'))reader.readAsText(f);
   else reader.readAsArrayBuffer(f);
 }
+
 function processLargeData(data,fileName){
   const CHUNK=5000;let processed=[],idx=0;
   function chunk(){
@@ -669,13 +684,13 @@ function processLargeData(data,fileName){
     else{
       RAW=processed;HDR=Object.keys(RAW[0]);ALL=[...RAW];
       DOMAIN=detectDomain();detectPrimaryEntity();applyDomainTheme();
-      // Save to localStorage for refresh persistence
       try{localStorage.setItem(LS_DATA,JSON.stringify(RAW.slice(0,2000)));localStorage.setItem(LS_DOMAIN,DOMAIN);}catch(e){}
       setTimeout(()=>buildDash(fileName),2100);
     }
   }
   chunk();
 }
+
 function parseCSV(txt,sep=','){
   const lines=txt.trim().split('\n').filter(l=>l.trim());if(lines.length<2)return[];
   const hdrs=parseLine(lines[0],sep);
@@ -725,16 +740,42 @@ function topG(data,grp,val){const e=groupBy(data,grp,val,1);return e.length?e[0]
 function topC(data,grp){const e=countBy(data,grp,1);return e.length?e[0][0]:'N/A';}
 function fmt(n){if(!n&&n!==0)return'-';const a=Math.abs(n);if(a>=1e9)return(n<0?'-':'')+Math.round(a/1e7)/100+'B';if(a>=1e6)return(n<0?'-':'')+Math.round(a/1e4)/100+'M';if(a>=1e3)return(n<0?'-':'')+Math.round(a/100)/10+'K';return Math.round(n).toLocaleString();}
 
-// ── SCREEN MANAGEMENT
-function showLoading(){
+// ── SCREEN MANAGEMENT (fixed)
+function showLoadingInApp(){
+  // Hide other screens
   document.getElementById('upload').style.display='none';
-  const ld=document.getElementById('loading-screen');ld.style.display='flex';
+  document.getElementById('dash').style.display='none';
+  // Show loading
+  const ld=document.getElementById('loading-screen');
+  ld.style.display='flex';
+  // Animate steps
   const steps=['ls1','ls2','ls3','ls4','ls5'];
   steps.forEach(id=>document.getElementById(id).className='lstep');
-  let i=0;const iv=setInterval(()=>{if(i>0)document.getElementById(steps[i-1]).className='lstep dn';if(i<steps.length)document.getElementById(steps[i]).className='lstep on';i++;if(i>steps.length)clearInterval(iv);},380);
+  let i=0;
+  const iv=setInterval(()=>{
+    if(i>0)document.getElementById(steps[i-1]).className='lstep dn';
+    if(i<steps.length)document.getElementById(steps[i]).className='lstep on';
+    i++;
+    if(i>steps.length)clearInterval(iv);
+  },380);
 }
-function hideLoading(){document.getElementById('loading-screen').style.display='none';}
-function showUpload(){document.getElementById('loading-screen').style.display='none';document.getElementById('upload').style.display='flex';}
+
+// Alias for internal use
+function showLoading(){showLoadingInApp();}
+
+function hideLoading(){
+  document.getElementById('loading-screen').style.display='none';
+}
+
+function showUploadScreen(){
+  document.getElementById('loading-screen').style.display='none';
+  document.getElementById('dash').style.display='none';
+  document.getElementById('upload').style.display='flex';
+  document.getElementById('app').classList.add('no-sidebar');
+  document.getElementById('sidebar').style.display='none';
+  document.getElementById('topbar').style.display='none';
+}
+
 function showToast(msg,color='green'){
   const t2=document.getElementById('toast'),d=document.getElementById('tdot'),m=document.getElementById('tmsg');
   m.textContent=msg;const colors={green:'var(--green)',red:'var(--red)',amber:'var(--amber)'};
@@ -750,13 +791,12 @@ function exportCSV(){
   showToast(LANG==='ar'?'تم التصدير ✓':'CSV Exported ✓','green');
 }
 
-// ── EXPORT EXCEL (real .xlsx)
+// ── EXPORT EXCEL
 function exportExcel(){
   if(!ALL.length){showToast('No data','red');return;}
   const wb=XLSX.utils.book_new();
   const ws=XLSX.utils.json_to_sheet(ALL);
   XLSX.utils.book_append_sheet(wb,'Data',ws);
-  // Add summary sheet
   const summary=[{Metric:'Total Records',Value:ALL.length},{Metric:'Columns',Value:HDR.length},{Metric:'Domain',Value:DOMAINS[DOMAIN][LANG].label},{Metric:'Export Date',Value:new Date().toLocaleDateString()}];
   const ws2=XLSX.utils.json_to_sheet(summary);
   XLSX.utils.book_append_sheet(wb,'Summary',ws2);
@@ -767,7 +807,6 @@ function exportExcel(){
 // ── DOWNLOAD CHART as PNG
 function downloadChart(canvasId,title){
   const canvas=document.getElementById(canvasId);if(!canvas)return;
-  // Create a new canvas with background
   const off=document.createElement('canvas');off.width=canvas.width;off.height=canvas.height;
   const ctx=off.getContext('2d');
   ctx.fillStyle=THEME==='dark'?'#181E2D':'#FFFFFF';
@@ -778,7 +817,6 @@ function downloadChart(canvasId,title){
   showToast('Chart downloaded ✓','green');
 }
 
-// ── DOWNLOAD INSIGHT/RECO as text
 function downloadInsight(pi){
   const el=document.getElementById('es'+pi);if(!el)return;
   const text=el.innerText||el.textContent;
@@ -798,23 +836,25 @@ function downloadReco(ttl,body){
 // ── RESET STATE
 function resetState(){
   CHARTS.forEach(c=>{try{c.destroy();}catch(e){}});
-  CHARTS=[];CHART_REFS={};RAW=[];ALL=[];HDR=[];
+  CHARTS=[];CHART_REFS={};
   DYNAMIC={primaryEntityCol:null,primaryEntityLabel:'Record',primaryEntityLabelAr:'سجل',primaryEntityIcon:'📋'};
   GLOBAL_FILTER={col:null,val:null};
   document.getElementById('dash').style.display='none';
   document.getElementById('pages').innerHTML='';
   SCOL=null;SDIR=1;ACTIVE=0;
-  // Close all dropdown menus
   document.querySelectorAll('.chart-dl-menu').forEach(m=>m.classList.remove('show'));
 }
+
 function resetAll(){
-  resetState();localStorage.removeItem(LS_DATA);localStorage.removeItem(LS_DOMAIN);
-  document.getElementById('upload').style.display='flex';
-  document.getElementById('sb-domain').textContent='Analytics';
-  document.getElementById('tb-badge').textContent='Ready';
+  const savedRaw=RAW;
+  RAW=[];ALL=[];HDR=[];
+  resetState();
+  localStorage.removeItem(LS_DATA);localStorage.removeItem(LS_DOMAIN);
+  showUploadScreen();
+  const sd=document.getElementById('sb-domain');if(sd)sd.textContent='Analytics';
+  const tb=document.getElementById('tb-badge');if(tb)tb.textContent='Ready';
   ['--a1','--a2','--a3'].forEach((v,i)=>{document.documentElement.style.setProperty(v,['#6366f1','#818cf8','rgba(99,102,241,0.10)'][i]);});
   fi.value='';
-  // Update sidebar nav
   document.getElementById('sb-page-btns').innerHTML='';
 }
 
@@ -836,7 +876,16 @@ function rebuildDash(){
 
 // ── SAMPLE DATA
 function loadSample(type){
-  resetState();showLoading();DOMAIN=type;applyDomainTheme();
+  resetState();
+  DOMAIN=type;applyDomainTheme();
+  // Show app + loading
+  const app=document.getElementById('app');
+  app.style.display='block';
+  app.classList.remove('no-sidebar');
+  document.getElementById('sidebar').style.display='flex';
+  document.getElementById('topbar').style.display='flex';
+  showLoadingInApp();
+
   let data=[];
   if(type==='sales'){
     const prods=['Laptop Pro X1','Industrial Drill Set','Safety Helmet Pro','Steel Cable 20m','Generator 5KVA','Concrete Mixer','Water Pump 3HP','Welding Machine','Scaffolding Set','Compressor 50L'];
@@ -879,7 +928,7 @@ function buildDash(fileName){
     container.appendChild(pg);buildPage(pg,i);
   });
   ACTIVE=0;buildSidebarNav();buildChartTypeSwitcher();
-  showToast(`✓ ${RAW.length.toLocaleString()} ${LANG==='ar'?'سجل — جاهز':'records analyzed'},'green');
+  showToast(`✓ ${RAW.length.toLocaleString()} ${LANG==='ar'?'سجل — جاهز':'records analyzed'}`,'green');
 }
 
 function buildSidebarNav(){
@@ -891,7 +940,6 @@ function buildSidebarNav(){
     btn.innerHTML=`<div class="sb-item-icon">${icons[i]||'📋'}</div><span>${name}</span>`;
     btn.onclick=()=>switchPage(i);nav.appendChild(btn);
   });
-  // Update topbar title
   const ttl=document.getElementById('tb-page-title');
   if(ttl)ttl.textContent=d[LANG].pages[ACTIVE];
 }
@@ -934,7 +982,7 @@ function buildPage(container,pi){
     <div class="kgrid" id="kg${pi}"></div>
     <div class="cg" id="cg${pi}"></div>
     <div id="reco${pi}"></div>
-    ${pi===0?`<div class="tcard"><div class="tcard-top"><div class="tcard-ttl">${t('full_data')}</div><div class="tcard-actions"><button class="tb-btn excel-btn" onclick="exportExcel()">🟢 Excel</button><button class="tb-btn" onclick="exportCSV()">⬇ CSV</button></div><div class="tcard-meta" id="tmeta${pi}">${RAW.length.toLocaleString()} ${t('records')}</div></div><div class="tw"><table><thead id="th${pi}"></thead><tbody id="tb${pi}"></tbody></table></div></div>`:''}
+    ${pi===0?`<div class="tcard"><div class="tcard-top"><div class="tcard-ttl">${t('full_data')}</div><div class="tcard-actions"><button class="tb-btn" style="border-color:rgba(16,185,129,0.3);color:var(--green)" onclick="exportExcel()">🟢 Excel</button><button class="tb-btn" onclick="exportCSV()">⬇ CSV</button></div><div class="tcard-meta" id="tmeta${pi}">${RAW.length.toLocaleString()} ${t('records')}</div></div><div class="tw"><table><thead id="th${pi}"></thead><tbody id="tb${pi}"></tbody></table></div></div>`:''}
   </div>`;
   buildFilters(pi,catCols());renderPage(container,pi,ALL);if(pi===0)buildTable(pi,ALL);
 }
@@ -978,7 +1026,7 @@ function buildKPIs(pi,data){
   if(!row.innerHTML.trim())row.innerHTML=`<div class="kpi"><div class="klbl">${LANG==='ar'?'البيانات':'Records'}</div><div class="kval" style="color:var(--a2)">${data.length.toLocaleString()}</div></div>`;
 }
 function computeKPIs(pi,data){
-  const nc=numCols(),cc=catCols(),sc=statusCols();const el=eLabel(),ei=eIcon();const isAr=LANG==='ar';
+  const nc=numCols(),cc=catCols(),sc=statusCols();const el=eLabel();const isAr=LANG==='ar';
   if(DOMAIN==='sales'){
     const rv=fc('revenue')||nc[0],pr=fc('profit')||nc[1],dc=fc('discount');
     const stc=fc('status')||sc[0],regc=fc('region')||cc[0],prodc=fc('product')||cc[1];
@@ -991,7 +1039,7 @@ function computeKPIs(pi,data){
     const uniqueCh=chc?new Set(data.map(r=>r[chc])).size:0;
     const sets=[[
       {ico:'💰',lbl:isAr?'إجمالي الإيرادات':'Total Revenue',val:d=>rv?sum(d,rv):0,color:'var(--green)',badge:'Revenue',bc:'up',money:true,desc:isAr?'إجمالي المبيعات':'Gross sales'},
-      {ico:ei,lbl:(isAr?'إجمالي ':'Total ')+el+'s',val:d=>d.length,color:'var(--a1)',badge:el+'s',bc:'nt',desc:''},
+      {ico:'📦',lbl:(isAr?'إجمالي ':' Total ')+el+'s',val:d=>d.length,color:'var(--a1)',badge:el+'s',bc:'nt',desc:''},
       ...(pr?[{ico:'📈',lbl:isAr?'إجمالي الأرباح':'Gross Profit',val:d=>sum(d,pr),color:'var(--a2)',badge:'Profit',bc:totalProfit>0?'up':'dn',money:true}]:[]),
       ...(rv&&pr?[{ico:'🎯',lbl:isAr?'هامش الربح':'Profit Margin',val:d=>{const r=sum(d,rv);return r?sum(d,pr)/r*100:0;},color:'var(--cyan)',badge:'Margin',bc:margin>20?'up':margin>10?'nt':'dn',pct:true,desc:`${margin}% — target >20%`}]:[]),
       ...(uniqueReg>0?[{ico:'🌐',lbl:isAr?'المناطق':'Regions',val:d=>regc?new Set(d.map(r=>r[regc])).size:0,color:'var(--cyan)',badge:'Geo',bc:'nt',desc:topReg}]:[]),
@@ -1045,7 +1093,7 @@ function computeKPIs(pi,data){
     const closed=stc?data.filter(r=>String(r[stc]||'').match(/close/i)).length:0;
     const compliance=Math.round(closed/total*100);
     const sets=[[
-      {ico:ei,lbl:(isAr?'إجمالي ':' Total ')+eLabel()+'s',val:d=>d.length,color:'var(--a1)',badge:'All',bc:'nt'},
+      {ico:'📋',lbl:(isAr?'إجمالي ':' Total ')+eLabel()+'s',val:d=>d.length,color:'var(--a1)',badge:'All',bc:'nt'},
       {ico:'🔓',lbl:isAr?'مفتوح/معلق':'Open/Pending',val:d=>stc?d.filter(r=>String(r[stc]||'').match(/open|pend/i)).length:0,color:'var(--amber)',badge:'Open',bc:'wn'},
       {ico:'✅',lbl:isAr?'مغلق':'Closed',val:d=>stc?d.filter(r=>String(r[stc]||'').match(/close/i)).length:0,color:'var(--green)',badge:'Done',bc:'up',desc:`${compliance}% closure`},
       {ico:'🚨',lbl:isAr?'متأخر':'Overdue',val:d=>stc?d.filter(r=>String(r[stc]||'').match(/overdue/i)).length:0,color:'var(--red)',badge:'OD',bc:'dn'},
@@ -1065,7 +1113,7 @@ function computeKPIs(pi,data){
     ]];
     return (sets[pi]||sets[0]).map(k=>({...k,val:typeof k.val==='function'?k.val(data):k.val}));
   }
-  const kpis=[{ico:ei,lbl:(isAr?'إجمالي ':'Total ')+eLabel()+'s',val:data.length,color:'var(--a1)',badge:'Total',bc:'nt'}];
+  const kpis=[{ico:'📋',lbl:(isAr?'إجمالي ':'Total ')+eLabel()+'s',val:data.length,color:'var(--a1)',badge:'Total',bc:'nt'}];
   numCols().slice(0,3).forEach((col,i)=>{const s=sum(data,col);if(s===0)return;kpis.push({ico:['📊','📈','💡'][i],lbl:'Total '+col,val:s,color:['var(--green)','var(--a2)','var(--cyan)'][i],badge:col.substring(0,5),bc:'nt',money:true});});
   return kpis;
 }
@@ -1124,7 +1172,7 @@ function getInsight(pi,data){
 // ── CHARTS
 const PAL=['#6366f1','#06b6d4','#10b981','#f97316','#a855f7','#f43f5e','#f59e0b','#3b82f6','#14b8a6','#ec4899','#84cc16','#fb7185'];
 const PAL2=PAL.map(c=>c+'28');
-function getChartColors(){return{text:THEME==='dark'?'#8892b0':'#4a5270',grid:THEME==='dark'?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.05)'};}
+function getChartColors(){return{text:THEME==='dark'?'#8892b0':'#4a5270',grid:THEME==='dark'?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.05)'}}
 
 function buildCharts(pi,data){
   const grid=document.getElementById('cg'+pi);if(!grid)return;
@@ -1163,7 +1211,6 @@ function closeMenu(){if(_openMenu){_openMenu.classList.remove('show');_openMenu=
 document.addEventListener('click',()=>closeMenu());
 
 function downloadChartData(canvasId,title){
-  // Find the chart object
   const chart=CHARTS.find(c=>c.canvas&&c.canvas.id===canvasId);if(!chart)return;
   const labels=chart.data.labels||[];
   const datasets=chart.data.datasets||[];

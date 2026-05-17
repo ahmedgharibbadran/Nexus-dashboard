@@ -6,29 +6,33 @@
 <title>AGB Analytics</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
 <style>
+/* ═══════════════════════════════════════════
+   ROOT TOKENS
+═══════════════════════════════════════════ */
 :root {
   --bg:#07090F;--bg2:#0D1119;--surface:#111520;--card:#161B27;--card2:#1C2236;
   --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);
   --text:#E8ECF8;--text2:#7A86A8;--muted:#3D4560;
   --a1:#5B6EF5;--a2:#818cf8;--a3:rgba(91,110,245,0.10);
   --green:#0FBA7E;--red:#F03E5E;--amber:#F5A623;--blue:#3B82F6;--cyan:#00C2D1;--purple:#A259FF;
-  --shadow:0 32px 80px rgba(0,0,0,0.7);--radius:16px;--radius-sm:10px;
+  --shadow:0 24px 64px rgba(0,0,0,0.6);--radius:12px;--radius-sm:8px;
   --font:'Sora',sans-serif;
+  --hdr-h:54px;
+  --nav-h:48px;
 }
 [data-theme="light"]{
-  --bg:#F0F2FA;--bg2:#E8EBF5;--surface:#FFFFFF;--card:#FFFFFF;--card2:#F4F6FF;
+  --bg:#F2F4FB;--bg2:#E8EBF5;--surface:#FFFFFF;--card:#FFFFFF;--card2:#F4F6FF;
   --border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.12);
-  --text:#0A0E1F;--text2:#4A5270;--muted:#9BA3C0;--shadow:0 8px 40px rgba(0,0,0,0.10);
+  --text:#0A0E1F;--text2:#4A5270;--muted:#9BA3C0;--shadow:0 8px 32px rgba(0,0,0,0.09);
 }
 [dir="rtl"]{font-family:'Tajawal',sans-serif!important;}
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
 body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden;transition:background .35s,color .35s;}
-body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 50% at 15% -5%,rgba(91,110,245,0.09) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 85% 105%,rgba(0,194,209,0.05) 0%,transparent 60%);pointer-events:none;z-index:0;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 65% 45% at 12% -5%,rgba(91,110,245,0.08) 0%,transparent 58%),radial-gradient(ellipse 45% 35% at 88% 105%,rgba(0,194,209,0.05) 0%,transparent 58%);pointer-events:none;z-index:0;}
 [data-theme="light"] body::before{background:none;}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
@@ -36,174 +40,243 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 ::-webkit-scrollbar-thumb:hover{background:var(--a1);}
 
 /* ═══════════ SPLASH ═══════════ */
-#splash{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px;transition:opacity .7s ease,transform .7s ease;}
+#splash{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;transition:opacity .7s ease,transform .7s ease;}
 #splash.out{opacity:0;transform:scale(1.05);pointer-events:none;}
 .splash-wordmark{font-size:10px;font-weight:700;letter-spacing:9px;text-transform:uppercase;color:var(--muted);}
-.splash-logo-wrap{position:relative;width:90px;height:90px;display:flex;align-items:center;justify-content:center;}
-.splash-logo-txt{font-size:28px;font-weight:800;letter-spacing:5px;color:var(--text);position:relative;z-index:2;}
+.splash-logo-wrap{position:relative;width:88px;height:88px;display:flex;align-items:center;justify-content:center;}
+.splash-logo-txt{font-size:26px;font-weight:800;letter-spacing:5px;color:var(--text);position:relative;z-index:2;}
 .splash-ring{position:absolute;border-radius:50%;border:1.5px solid transparent;animation:sring 1.3s linear infinite;}
 .splash-ring:nth-child(1){inset:0;border-top-color:var(--a1);animation-duration:1.1s;}
 .splash-ring:nth-child(2){inset:12px;border-right-color:var(--cyan);animation-duration:.85s;animation-direction:reverse;}
 .splash-ring:nth-child(3){inset:24px;border-bottom-color:var(--a2);animation-duration:1.4s;}
 @keyframes sring{to{transform:rotate(360deg);}}
-.splash-bar{width:160px;height:2px;background:var(--border2);border-radius:2px;overflow:hidden;}
+.splash-bar{width:150px;height:2px;background:var(--border2);border-radius:2px;overflow:hidden;}
 .splash-bar-fill{height:100%;width:0;background:linear-gradient(90deg,var(--a1),var(--cyan));border-radius:2px;animation:splashbar 2.2s ease-out forwards;}
 @keyframes splashbar{to{width:100%;}}
 
-/* ═══════════ LOGIN — FULL SCREEN ═══════════ */
-#login-screen{position:fixed;inset:0;z-index:8888;background:var(--bg);display:none;align-items:stretch;justify-content:stretch;overflow:hidden;}
+/* ═══════════ LOGIN — SPLIT SCREEN ═══════════ */
+#login-screen{position:fixed;inset:0;z-index:8888;background:var(--bg);display:none;align-items:stretch;}
 .login-layout{display:grid;grid-template-columns:1fr 1fr;width:100%;height:100%;}
-
-/* ════ POWER BI STYLE LAYOUT ════ */
-.pbi-header{margin-bottom:8px;}
-.pbi-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
-.pbi-filter-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
-.pbi-body{display:grid;grid-template-columns:260px 1fr;gap:10px;align-items:start;margin-bottom:10px;}
-.pbi-left{display:flex;flex-direction:column;gap:8px;min-width:0;}
-.pbi-right{min-width:0;}
-/* Dense chart grid inside pbi-right */
-.pbi-right .cg{grid-template-columns:repeat(12,1fr);gap:8px;}
-/* Force charts to be compact */
-.pbi-right .cc.c6{grid-column:span 6;}
-.pbi-right .cc.c4{grid-column:span 4;}
-.pbi-right .cc.c8{grid-column:span 8;}
-.pbi-right .cc.c12{grid-column:span 12;}
-/* KPI inside left panel */
-.pbi-left .kgrid{gap:6px;}
-.pbi-left .kpi{padding:10px 12px;}
-.pbi-left .kval{font-size:22px;}
-.pbi-left .kpi-ico{width:28px;height:28px;font-size:14px;}
-/* Reco compact */
-.reco-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-bottom:10px;}
-.reco{padding:12px 14px;}
-.tcard-top{padding:10px 14px;}
-@media(max-width:1100px){
-  .pbi-body{grid-template-columns:1fr;}
-  .pbi-left .kgrid{grid-template-columns:repeat(4,1fr);}
-}
-@media(max-width:768px){
-  .pbi-body{grid-template-columns:1fr;}
-  .pbi-right .cc{grid-column:span 12!important;}
-  .pbi-left .kgrid{grid-template-columns:repeat(2,1fr);}
-}
 @media(max-width:768px){.login-layout{grid-template-columns:1fr;}.login-visual{display:none!important;}}
 
-/* Left visual panel */
-.login-visual{background:linear-gradient(145deg,#0A0D1A 0%,#111530 50%,#0D1525 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px;position:relative;overflow:hidden;}
-.login-visual::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 30% 40%,rgba(91,110,245,0.15) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 70% 70%,rgba(0,194,209,0.08) 0%,transparent 60%);}
-.lv-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(91,110,245,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(91,110,245,0.04) 1px,transparent 1px);background-size:40px 40px;}
-.lv-content{position:relative;z-index:2;text-align:center;}
-.lv-logo{font-size:64px;font-weight:800;letter-spacing:8px;color:#fff;margin-bottom:8px;text-shadow:0 0 60px rgba(91,110,245,0.5);}
-.lv-tagline{font-size:13px;font-weight:500;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:60px;}
-.lv-stats{display:flex;flex-direction:column;gap:16px;width:100%;max-width:300px;}
-.lv-stat{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;backdrop-filter:blur(10px);}
-.lv-stat-ico{font-size:24px;}
-.lv-stat-val{font-size:22px;font-weight:800;color:#fff;}
-.lv-stat-lbl{font-size:10px;color:rgba(255,255,255,0.4);font-weight:500;letter-spacing:1px;text-transform:uppercase;}
-.lv-dots{display:flex;gap:6px;margin-top:40px;justify-content:center;}
-.lv-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.15);}
-.lv-dot:first-child{background:var(--a1);width:18px;border-radius:3px;}
+.login-visual{background:linear-gradient(145deg,#080B18 0%,#0F1430 55%,#0B1120 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px;position:relative;overflow:hidden;}
+.login-visual::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 30% 40%,rgba(91,110,245,0.14) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 75% 70%,rgba(0,194,209,0.07) 0%,transparent 60%);}
+.lv-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(91,110,245,0.045) 1px,transparent 1px),linear-gradient(90deg,rgba(91,110,245,0.045) 1px,transparent 1px);background-size:44px 44px;}
+.lv-content{position:relative;z-index:2;text-align:center;width:100%;max-width:320px;}
+.lv-logo{font-size:68px;font-weight:800;letter-spacing:10px;color:#fff;margin-bottom:6px;text-shadow:0 0 80px rgba(91,110,245,0.5);}
+.lv-tagline{font-size:11px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:52px;}
+.lv-stats{display:flex;flex-direction:column;gap:14px;width:100%;}
+.lv-stat{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:18px 22px;display:flex;align-items:center;gap:16px;backdrop-filter:blur(12px);transition:all .3s;}
+.lv-stat:hover{background:rgba(91,110,245,0.08);border-color:rgba(91,110,245,0.2);}
+.lv-stat-ico{font-size:26px;flex-shrink:0;}
+.lv-stat-val{font-size:24px;font-weight:800;color:#fff;line-height:1;}
+.lv-stat-lbl{font-size:10px;color:rgba(255,255,255,0.38);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+.lv-dots{display:flex;gap:7px;margin-top:44px;justify-content:center;}
+.lv-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.14);}
+.lv-dot:first-child{background:var(--a1);width:22px;border-radius:3px;}
 
-/* Right form panel */
-.login-form-panel{display:flex;align-items:center;justify-content:center;padding:40px;background:var(--bg);}
-[data-theme="light"] .login-form-panel{background:var(--bg);}
-.login-card{width:100%;max-width:440px;animation:loginIn .5s cubic-bezier(.34,1.56,.64,1) both;}
-@keyframes loginIn{from{opacity:0;transform:translateY(24px);}}
-.login-brand{display:flex;align-items:center;gap:10px;margin-bottom:48px;}
+.login-form-panel{display:flex;align-items:center;justify-content:center;padding:48px 36px;background:var(--bg);overflow-y:auto;}
+.login-card{width:100%;max-width:420px;animation:loginIn .5s cubic-bezier(.34,1.56,.64,1) both;}
+@keyframes loginIn{from{opacity:0;transform:translateY(22px);}}
+.login-brand{display:flex;align-items:center;gap:10px;margin-bottom:44px;}
 .login-brand-logo{font-size:20px;font-weight:800;letter-spacing:4px;color:var(--text);}
 .login-brand-dot{width:6px;height:6px;border-radius:50%;background:var(--a1);}
 .login-brand-ver{font-size:9px;color:var(--muted);font-weight:600;letter-spacing:1px;}
-.login-avatar{width:80px;height:80px;border-radius:24px;background:var(--a3);border:1.5px solid rgba(91,110,245,0.2);display:flex;align-items:center;justify-content:center;margin-bottom:20px;}
-.login-name{font-size:28px;font-weight:800;color:var(--text);letter-spacing:-0.5px;margin-bottom:4px;}
-.login-role{font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--a2);margin-bottom:36px;}
+.login-avatar{width:76px;height:76px;border-radius:22px;background:var(--a3);border:1.5px solid rgba(91,110,245,0.2);display:flex;align-items:center;justify-content:center;margin-bottom:18px;}
+.login-name{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.5px;margin-bottom:4px;}
+.login-role{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--a2);margin-bottom:34px;}
 .login-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
-.login-field-wrap{position:relative;margin-bottom:16px;display:flex;align-items:center;}
-.login-input{width:100%;padding:16px 60px 16px 18px;background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:15px;font-weight:500;letter-spacing:4px;transition:all .25s;}
+.login-field-wrap{position:relative;margin-bottom:14px;display:flex;align-items:center;}
+.login-input{width:100%;padding:16px 62px 16px 18px;background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:15px;font-weight:500;letter-spacing:4px;transition:all .25s;}
 .login-input:focus{outline:none;border-color:var(--a1);box-shadow:0 0 0 4px rgba(91,110,245,0.12);}
 .login-input::placeholder{letter-spacing:0;color:var(--muted);}
 .login-input.shake{animation:shake .38s ease;}
 .login-input.err{border-color:var(--red)!important;box-shadow:0 0 0 4px rgba(240,62,94,0.12)!important;}
 @keyframes shake{0%,100%{transform:translateX(0)}18%,54%{transform:translateX(-10px)}36%,72%{transform:translateX(10px)}90%{transform:translateX(-4px)}}
-.fp-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:42px;height:42px;border-radius:12px;background:var(--a3);border:1px solid rgba(91,110,245,0.2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s;}
-.fp-btn:hover{background:rgba(91,110,245,0.2);border-color:var(--a1);transform:translateY(-50%) scale(1.08);}
-.fp-btn.fp-ok{background:rgba(15,186,126,0.18);border-color:var(--green);box-shadow:0 0 20px rgba(15,186,126,0.35);}
+.fp-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:10px;background:var(--a3);border:1px solid rgba(91,110,245,0.2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s;}
+.fp-btn:hover{background:rgba(91,110,245,0.2);border-color:var(--a1);}
+.fp-btn.fp-ok{background:rgba(15,186,126,0.18);border-color:var(--green);box-shadow:0 0 20px rgba(15,186,126,0.3);}
 .fp-btn.fp-err{background:rgba(240,62,94,0.18);border-color:var(--red);}
-.fp-svg{transition:all .3s;}
+.fp-svg path{transition:stroke .3s;}
 .fp-btn.fp-ok .fp-svg path{stroke:#0FBA7E;}
 .fp-btn.fp-err .fp-svg path{stroke:#F03E5E;}
-.login-btn{width:100%;padding:18px;background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;border:none;border-radius:var(--radius);font-family:var(--font);font-weight:700;font-size:14px;cursor:pointer;transition:all .25s;letter-spacing:.5px;box-shadow:0 12px 36px rgba(91,110,245,0.35);position:relative;overflow:hidden;margin-bottom:12px;}
+.login-btn{width:100%;padding:17px;background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;border:none;border-radius:var(--radius);font-family:var(--font);font-weight:700;font-size:14px;cursor:pointer;transition:all .25s;letter-spacing:.5px;box-shadow:0 12px 36px rgba(91,110,245,0.35);margin-bottom:12px;}
 .login-btn:hover{transform:translateY(-2px);box-shadow:0 18px 48px rgba(91,110,245,0.5);}
 .login-err{font-size:11px;font-weight:600;color:var(--red);letter-spacing:.2px;opacity:0;transition:opacity .3s;min-height:18px;display:flex;align-items:center;gap:6px;}
 .login-err.show{opacity:1;}
-.login-footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.login-footer{margin-top:38px;padding-top:18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
 .login-footer-lbl{font-size:10px;color:var(--muted);letter-spacing:.5px;}
-.login-secure{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--green);font-weight:600;}
+.login-secure{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--green);font-weight:700;}
 
 /* ═══════════ HEADER ═══════════ */
-#hdr{position:sticky;top:0;z-index:500;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(7,9,15,0.94);backdrop-filter:blur(28px);border-bottom:1px solid var(--border);transition:background .35s;}
-[data-theme="light"] #hdr{background:rgba(240,242,250,0.94);}
-.logo{display:flex;align-items:center;gap:10px;cursor:default;}
-.logo-agb{font-size:18px;font-weight:800;letter-spacing:5px;color:var(--text);}
+#hdr{position:sticky;top:0;z-index:600;height:var(--hdr-h);display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:rgba(7,9,15,0.95);backdrop-filter:blur(28px);border-bottom:1px solid var(--border);transition:background .35s;}
+[data-theme="light"] #hdr{background:rgba(242,244,251,0.95);}
+.logo{display:flex;align-items:center;gap:8px;cursor:default;}
+.logo-agb{font-size:17px;font-weight:800;letter-spacing:5px;color:var(--text);}
 .logo-dot{width:5px;height:5px;border-radius:50%;background:var(--a1);}
 .logo-domain{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.5px;padding:3px 8px;border:1px solid var(--border2);border-radius:20px;}
-.hdr-right{display:flex;align-items:center;gap:6px;}
-.hdr-btn{display:flex;align-items:center;gap:5px;padding:7px 12px;background:transparent;border:1px solid var(--border2);color:var(--text2);border-radius:var(--radius-sm);font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font);white-space:nowrap;letter-spacing:.2px;}
+.hdr-right{display:flex;align-items:center;gap:5px;}
+.hdr-btn{display:flex;align-items:center;gap:5px;padding:6px 11px;background:transparent;border:1px solid var(--border2);color:var(--text2);border-radius:var(--radius-sm);font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font);white-space:nowrap;}
 .hdr-btn:hover{border-color:var(--a1);color:var(--a2);}
 .hdr-btn.logout:hover{border-color:var(--red);color:var(--red);}
-.live-pill{display:flex;align-items:center;gap:5px;padding:6px 12px;border:1px solid var(--border2);border-radius:20px;font-size:10px;font-weight:700;color:var(--a2);background:var(--a3);letter-spacing:.5px;}
+.live-pill{display:flex;align-items:center;gap:5px;padding:5px 11px;border:1px solid var(--border2);border-radius:20px;font-size:10px;font-weight:700;color:var(--a2);background:var(--a3);letter-spacing:.5px;}
 .ldot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:ldot 2s infinite;}
 @keyframes ldot{0%,100%{opacity:1}50%{opacity:.3}}
 
-/* ═══════════ PAGE NAV ═══════════ */
-#page-nav-bar{display:none;position:sticky;top:56px;z-index:490;background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;backdrop-filter:blur(20px);}
-[data-theme="light"] #page-nav-bar{background:rgba(240,242,250,0.96);}
-.page-nav-inner{display:flex;align-items:center;gap:8px;justify-content:space-between;flex-wrap:wrap;}
-.pnav-tabs{display:flex;gap:4px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:4px;}
-.ptab{padding:8px 20px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;color:var(--text2);border:none;background:transparent;font-family:var(--font);letter-spacing:.2px;white-space:nowrap;}
+/* ═══════════ PAGE NAV BAR — sticky below header ═══════════ */
+#page-nav-bar{
+  display:none;
+  position:sticky;
+  top:var(--hdr-h);
+  z-index:500;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:0 20px;
+  height:var(--nav-h);
+  backdrop-filter:blur(20px);
+}
+[data-theme="light"] #page-nav-bar{background:rgba(242,244,251,0.97);}
+.page-nav-inner{display:flex;align-items:center;height:100%;gap:8px;justify-content:space-between;}
+.pnav-tabs{display:flex;gap:3px;align-items:center;}
+.ptab{padding:6px 16px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;color:var(--text2);border:none;background:transparent;font-family:var(--font);letter-spacing:.2px;white-space:nowrap;}
 [dir="rtl"] .ptab{font-family:'Tajawal',sans-serif;}
-.ptab.on{background:var(--a1);color:#fff;box-shadow:0 4px 18px rgba(91,110,245,0.4);}
+.ptab.on{background:var(--a1);color:#fff;box-shadow:0 2px 14px rgba(91,110,245,0.35);}
 .ptab:hover:not(.on){color:var(--text);background:rgba(255,255,255,0.05);}
-.pnav-right{display:flex;gap:6px;align-items:center;}
-.chart-type-btn{padding:7px 12px;background:var(--card2);border:1px solid var(--border2);color:var(--text2);border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.5px;font-family:var(--font);}
+.pnav-right{display:flex;gap:5px;align-items:center;}
+.chart-type-btn{padding:6px 10px;background:var(--card2);border:1px solid var(--border2);color:var(--text2);border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;font-family:var(--font);}
 .chart-type-btn:hover,.chart-type-btn.active{border-color:var(--a1);color:var(--a2);background:var(--a3);}
-.filter-active-badge{display:none;padding:4px 10px;background:rgba(245,166,35,0.12);color:var(--amber);border-radius:6px;font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.filter-active-badge{display:none;padding:3px 9px;background:rgba(245,166,35,0.12);color:var(--amber);border-radius:5px;font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
 .filter-active-badge.show{display:inline-flex;align-items:center;gap:4px;}
+.btn-s{padding:6px 12px;background:transparent;border:1px solid var(--border2);color:var(--text2);border-radius:var(--radius-sm);font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;font-family:var(--font);transition:all .2s;white-space:nowrap;}
+.btn-s:hover{border-color:var(--a1);color:var(--a2);}
 
 /* ═══════════ APP ═══════════ */
-#app{position:relative;z-index:1;padding:12px 16px;display:none;}
+#app{position:relative;z-index:1;display:none;}
 
-/* ═══════════ UPLOAD ═══════════ */
-#upload{min-height:calc(100vh - 56px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px;padding:40px 20px;}
-.u-h1{font-size:clamp(36px,5vw,62px);font-weight:800;line-height:1.05;letter-spacing:-2px;margin-bottom:14px;color:var(--text);text-align:center;}
-[dir="rtl"] .u-h1{font-family:'Tajawal',sans-serif;letter-spacing:0;}
-.u-h1 .g{background:linear-gradient(120deg,var(--a1),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.drop-zone{width:100%;max-width:600px;border:1.5px dashed rgba(91,110,245,0.3);border-radius:24px;padding:56px 40px;text-align:center;cursor:pointer;transition:all .3s;background:rgba(91,110,245,0.02);position:relative;overflow:hidden;}
-.drop-zone::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(91,110,245,0.04),transparent);transform:translateX(-100%);animation:sheen 4s ease-in-out infinite;}
+/* ═══════════════════════════════════════
+   UPLOAD — FULL PROFESSIONAL LANDING PAGE
+═══════════════════════════════════════ */
+#upload{
+  min-height:calc(100vh - var(--hdr-h));
+  display:none;
+  flex-direction:column;
+  background:var(--bg);
+  overflow:hidden;
+}
+/* Hero section */
+.upload-hero{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:48px 40px 32px;
+  position:relative;
+}
+.upload-hero::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:radial-gradient(ellipse 70% 60% at 50% 30%,rgba(91,110,245,0.07) 0%,transparent 65%);
+  pointer-events:none;
+}
+.hero-inner{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:80px;
+  align-items:center;
+  max-width:1100px;
+  width:100%;
+  position:relative;
+  z-index:1;
+}
+@media(max-width:860px){.hero-inner{grid-template-columns:1fr;gap:36px;text-align:center;}}
+.hero-left{}
+.hero-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 14px;
+  background:var(--a3);
+  border:1px solid rgba(91,110,245,0.22);
+  border-radius:20px;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--a2);
+  margin-bottom:24px;
+}
+.hero-badge-dot{width:5px;height:5px;border-radius:50%;background:var(--a1);animation:ldot 2s infinite;}
+.hero-h1{
+  font-size:clamp(38px,5vw,58px);
+  font-weight:800;
+  line-height:1.06;
+  letter-spacing:-2px;
+  color:var(--text);
+  margin-bottom:16px;
+}
+[dir="rtl"] .hero-h1{font-family:'Tajawal',sans-serif;letter-spacing:0;}
+.hero-h1 .g{background:linear-gradient(120deg,var(--a1),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-desc{font-size:14px;line-height:1.8;color:var(--text2);margin-bottom:32px;max-width:440px;}
+[dir="rtl"] .hero-desc{max-width:none;}
+.hero-features{display:flex;flex-direction:column;gap:10px;margin-bottom:32px;}
+.feat-item{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);font-weight:500;}
+.feat-check{width:20px;height:20px;border-radius:6px;background:rgba(15,186,126,0.12);border:1px solid rgba(15,186,126,0.2);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--green);flex-shrink:0;}
+.hero-cta-row{display:flex;gap:10px;flex-wrap:wrap;}
+@media(max-width:860px){.hero-cta-row{justify-content:center;}.hero-features{align-items:center;}}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;border:none;border-radius:var(--radius);font-family:var(--font);font-weight:700;font-size:13px;cursor:pointer;transition:all .25s;box-shadow:0 8px 28px rgba(91,110,245,0.35);}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 14px 42px rgba(91,110,245,0.5);}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;padding:13px 22px;background:transparent;border:1.5px solid var(--border2);color:var(--text2);border-radius:var(--radius);font-family:var(--font);font-weight:600;font-size:13px;cursor:pointer;transition:all .25s;}
+.btn-ghost:hover{border-color:var(--a1);color:var(--a2);background:var(--a3);}
+
+/* Drop zone — right side */
+.hero-right{}
+.drop-zone-pro{
+  border:1.5px dashed rgba(91,110,245,0.3);
+  border-radius:20px;
+  padding:40px 30px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .3s;
+  background:rgba(91,110,245,0.025);
+  position:relative;
+  overflow:hidden;
+}
+.drop-zone-pro::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(91,110,245,0.04),transparent);transform:translateX(-100%);animation:sheen 4s ease-in-out infinite;}
 @keyframes sheen{to{transform:translateX(100%);}}
-.drop-zone:hover,.drop-zone.over{border-color:var(--a1);background:rgba(91,110,245,0.06);box-shadow:0 0 80px rgba(91,110,245,0.1);}
-.dz-icon{font-size:46px;display:block;margin-bottom:18px;animation:float 3.5s ease-in-out infinite;}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-.dz-ttl{font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px;letter-spacing:-.3px;}
-.dz-sub{font-size:13px;color:var(--text2);margin-bottom:28px;line-height:1.7;}
-.btn-upload{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-weight:700;font-size:13px;cursor:pointer;transition:all .25s;box-shadow:0 8px 28px rgba(91,110,245,0.35);}
-.btn-upload:hover{transform:translateY(-2px);box-shadow:0 14px 42px rgba(91,110,245,0.5);}
-.fmts{display:flex;justify-content:center;gap:6px;margin-top:14px;flex-wrap:wrap;}
-.fmt{padding:3px 9px;border:1px solid var(--border2);border-radius:5px;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
-.sample-wrap{text-align:center;}
-.sample-label{font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
-.sample-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
-.sbtn{padding:12px 20px;background:var(--card);border:1px solid var(--border2);border-radius:12px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text2);display:flex;align-items:center;gap:8px;transition:all .2s;font-family:var(--font);}
+.drop-zone-pro:hover,.drop-zone-pro.over{border-color:var(--a1);background:rgba(91,110,245,0.06);box-shadow:0 0 60px rgba(91,110,245,0.10);}
+.dz-icon-pro{font-size:42px;display:block;margin:0 auto 16px;animation:float 3.5s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.dz-ttl-pro{font-size:17px;font-weight:700;color:var(--text);margin-bottom:6px;letter-spacing:-.3px;}
+.dz-sub-pro{font-size:12px;color:var(--text2);margin-bottom:22px;line-height:1.65;}
+.dz-btn{display:inline-flex;align-items:center;gap:7px;padding:12px 26px;background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-weight:700;font-size:12px;cursor:pointer;transition:all .25s;box-shadow:0 6px 22px rgba(91,110,245,0.32);}
+.dz-btn:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(91,110,245,0.48);}
+.fmts{display:flex;justify-content:center;gap:5px;margin-top:14px;flex-wrap:wrap;}
+.fmt{padding:2px 8px;border:1px solid var(--border2);border-radius:4px;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+
+/* Stats strip + samples */
+.upload-bottom{padding:28px 40px;border-top:1px solid var(--border);background:var(--surface);}
+.upload-bottom-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;}
+.up-stats{display:flex;gap:32px;flex-wrap:wrap;}
+.up-stat{display:flex;flex-direction:column;gap:2px;}
+.up-stat-val{font-size:18px;font-weight:800;color:var(--text);letter-spacing:-1px;}
+.up-stat-lbl{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+.sample-col{display:flex;flex-direction:column;gap:8px;align-items:flex-end;}
+@media(max-width:680px){.upload-bottom-inner{flex-direction:column;align-items:flex-start;}.sample-col{align-items:flex-start;}}
+.sample-label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);text-align:right;}
+.sample-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.sbtn{padding:9px 16px;background:var(--card);border:1px solid var(--border2);border-radius:10px;font-size:11px;font-weight:600;cursor:pointer;color:var(--text2);display:flex;align-items:center;gap:7px;transition:all .2s;font-family:var(--font);}
 .sbtn:hover{border-color:var(--a1);color:var(--a2);background:rgba(91,110,245,0.06);transform:translateY(-2px);}
 
 /* ═══════════ LOADING ═══════════ */
-#loading-screen{display:none;min-height:calc(100vh - 56px);flex-direction:column;align-items:center;justify-content:center;gap:24px;}
-.ld-rings{position:relative;width:64px;height:64px;}
+#loading-screen{display:none;min-height:calc(100vh - var(--hdr-h));flex-direction:column;align-items:center;justify-content:center;gap:22px;}
+.ld-rings{position:relative;width:60px;height:60px;}
 .ld-ring{position:absolute;border-radius:50%;border:2px solid var(--border);}
 .ld-ring:nth-child(1){inset:0;border-top-color:var(--a1);animation:spin 1s linear infinite;}
 .ld-ring:nth-child(2){inset:12px;border-bottom-color:var(--cyan);animation:spin .72s linear infinite reverse;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .ld-lbl{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--a2);}
-.ld-steps{display:flex;flex-direction:column;gap:10px;align-items:center;}
+.ld-steps{display:flex;flex-direction:column;gap:9px;align-items:center;}
 .lstep{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);opacity:0;transition:opacity .3s;display:flex;align-items:center;gap:8px;}
 .lstep.on{opacity:1;color:var(--text2);}
 .lstep.dn{opacity:.4;color:var(--green);}
@@ -212,158 +285,183 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .lstep.dn::before{content:'✓';color:var(--green);}
 
 /* ═══════════ DASHBOARD ═══════════ */
-#dash{display:none;}
+#dash{display:none;padding:12px 16px;}
 .page{display:none;}
 .page.on{display:block;}
-.dtop{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;}
-.dh{font-size:26px;font-weight:800;letter-spacing:-.6px;color:var(--text);}
+
+/* ══════════════════════════════
+   POWER BI LAYOUT
+   Left: KPIs + Insight (narrow)
+   Right: Charts (wide)
+══════════════════════════════ */
+.pbi-header{margin-bottom:8px;}
+.pbi-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px;flex-wrap:wrap;}
+.dh{font-size:22px;font-weight:800;letter-spacing:-.5px;color:var(--text);}
 .dh span{color:var(--a2);}
 [dir="rtl"] .dh{font-family:'Tajawal',sans-serif;}
-.dsub{font-size:10px;font-weight:600;color:var(--muted);margin-top:5px;letter-spacing:.5px;text-transform:uppercase;}
+.dsub{font-size:10px;font-weight:600;color:var(--muted);margin-top:3px;letter-spacing:.5px;text-transform:uppercase;}
 
-/* INSIGHT */
-.exec-summary{padding:10px 16px;background:linear-gradient(135deg,rgba(91,110,245,0.06),rgba(0,194,209,0.02));border:1px solid rgba(91,110,245,0.12);border-left:3px solid var(--a1);border-radius:0 10px 10px 0;margin-bottom:10px;}
-[dir="rtl"] .exec-summary{border-left:none;border-right:3px solid var(--a1);border-radius:var(--radius) 0 0 var(--radius);}
-.es-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--a2);margin-bottom:7px;}
-.es-body{font-size:12px;line-height:1.7;color:var(--text2);}
+.pbi-filter-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;
+  padding:7px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;}
+.fl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;}
+select{padding:5px 26px 5px 10px;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);font-family:var(--font);font-size:11px;font-weight:500;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath fill='%234a5270' d='M4.5 5L0 0h9z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;min-width:110px;transition:border-color .2s;}
+select:focus{outline:none;border-color:var(--a1);}
+.fsrch{padding:5px 11px;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);font-family:var(--font);font-size:11px;width:160px;transition:all .2s;margin-left:auto;}
+[dir="rtl"] .fsrch{margin-left:0;margin-right:auto;}
+.fsrch:focus{outline:none;border-color:var(--a1);width:200px;}
+.fsrch::placeholder{color:var(--muted);}
+.clr-btn{padding:5px 11px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:var(--radius-sm);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:all .2s;font-family:var(--font);}
+.clr-btn:hover{border-color:var(--red);color:var(--red);}
+
+/* MAIN BODY: left panel + right charts */
+.pbi-body{
+  display:grid;
+  grid-template-columns:220px 1fr;
+  gap:10px;
+  align-items:start;
+  margin-bottom:10px;
+}
+@media(max-width:1000px){.pbi-body{grid-template-columns:1fr;}}
+.pbi-left{display:flex;flex-direction:column;gap:8px;min-width:0;}
+.pbi-right{min-width:0;}
+
+/* EXECUTIVE SUMMARY */
+.exec-summary{
+  padding:10px 12px;
+  background:linear-gradient(135deg,rgba(91,110,245,0.06),rgba(0,194,209,0.02));
+  border:1px solid rgba(91,110,245,0.12);
+  border-left:3px solid var(--a1);
+  border-radius:0 8px 8px 0;
+}
+[dir="rtl"] .exec-summary{border-left:none;border-right:3px solid var(--a1);border-radius:8px 0 0 8px;}
+.es-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--a2);margin-bottom:6px;}
+.es-body{font-size:11px;line-height:1.7;color:var(--text2);}
 .es-body strong{color:var(--text);}
 .es-body .hi{color:var(--a2);}
 .es-body .ok{color:var(--green);}
 .es-body .warn{color:var(--amber);}
 .es-body .bad{color:var(--red);}
 
-/* FILTERS */
-.fbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;}
-.fl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;}
-select{padding:7px 28px 7px 12px;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath fill='%234a5270' d='M4.5 5L0 0h9z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;min-width:120px;transition:border-color .2s;}
-select:focus{outline:none;border-color:var(--a1);}
-.fsrch{padding:7px 13px;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);font-family:var(--font);font-size:12px;width:170px;transition:all .2s;margin-left:auto;}
-[dir="rtl"] .fsrch{margin-left:0;margin-right:auto;}
-.fsrch:focus{outline:none;border-color:var(--a1);width:210px;}
-.fsrch::placeholder{color:var(--muted);}
-.clr-btn{padding:7px 13px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:var(--radius-sm);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:all .2s;font-family:var(--font);}
-.clr-btn:hover{border-color:var(--red);color:var(--red);}
-
-/* KPI GRID */
-.kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:10px;}
-.kpi{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;position:relative;overflow:hidden;transition:all .25s;cursor:default;}
-.kpi::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--kc,var(--a1));transform:scaleX(0);transform-origin:left;transition:transform .5s cubic-bezier(.34,1.56,.64,1);}
+/* ══════════════════════════
+   KPI GRID — Power BI compact
+══════════════════════════ */
+.kgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.kpi{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:10px 11px;
+  position:relative;
+  overflow:hidden;
+  transition:all .25s;
+  cursor:default;
+}
+.kpi::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--kc,var(--a1));transform:scaleX(0);transform-origin:left;transition:transform .45s cubic-bezier(.34,1.56,.64,1);}
 [dir="rtl"] .kpi::after{transform-origin:right;}
 .kpi:hover::after{transform:scaleX(1);}
-.kpi:hover{transform:translateY(-3px);box-shadow:var(--shadow);}
-.kpi-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;}
-.kpi-ico{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-size:18px;background:rgba(255,255,255,0.05);}
-.kbadge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:5px;letter-spacing:.3px;text-transform:uppercase;}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.4);}
+.kpi-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
+.kpi-ico{width:28px;height:28px;border-radius:7px;display:grid;place-items:center;font-size:14px;background:rgba(255,255,255,0.05);}
+.kbadge{font-size:8px;font-weight:700;padding:2px 6px;border-radius:4px;letter-spacing:.3px;text-transform:uppercase;}
 .kbadge.up{background:rgba(15,186,126,.14);color:var(--green);}
 .kbadge.dn{background:rgba(240,62,94,.14);color:var(--red);}
 .kbadge.nt{background:rgba(91,110,245,.14);color:var(--a2);}
 .kbadge.wn{background:rgba(245,166,35,.14);color:var(--amber);}
-.klbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:4px;}
-.kval{font-size:26px;font-weight:800;line-height:1;color:var(--kc,var(--a2));letter-spacing:-1px;}
-.kdesc{font-size:11px;color:var(--text2);margin-top:5px;}
-
-/* ══════ CHART CARD WITH DOWNLOAD BUTTON ══════ */
-/* POWER BI STYLE DENSE GRID */
-.cg{display:grid;grid-template-columns:repeat(24,1fr);gap:8px;margin-bottom:10px;align-items:start;}
-.cc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;transition:all .25s;position:relative;overflow:hidden;}
-/* span classes - 24 column system like Power BI */
-.cc.c3{grid-column:span 6;}   /* 25% */
-.cc.c4{grid-column:span 6;}   /* 25% */
-.cc.c6{grid-column:span 12;}  /* 50% */
-.cc.c8{grid-column:span 16;}  /* 66% */
-.cc.c12{grid-column:span 24;} /* 100% */
-/* compact chart heights */
-.cc-sm{grid-column:span 6;}
-.cc-md{grid-column:span 12;}
-.cc-lg{grid-column:span 16;}
-.cc-xl{grid-column:span 24;}
-.cc:hover{border-color:rgba(255,255,255,0.10);box-shadow:0 6px 24px rgba(0,0,0,.3);}
-[data-theme="light"] .cc:hover{box-shadow:0 4px 18px rgba(0,0,0,.08);}
-.cc-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
-.cc-ttl{font-size:11px;font-weight:700;letter-spacing:-.1px;}
-.cc-sub{font-size:10px;color:var(--text2);margin-top:1px;line-height:1.4;display:none;}
-.cc-actions{display:flex;gap:5px;align-items:center;flex-shrink:0;}
-.cc-tag{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:3px 9px;border-radius:5px;background:var(--a3);color:var(--a2);border:1px solid rgba(91,110,245,0.18);}
-/* Download button on each chart/KPI */
-.dl-btn{width:28px;height:28px;border-radius:7px;background:var(--card2);border:1px solid var(--border2);color:var(--muted);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .22s;flex-shrink:0;position:relative;}
-.dl-btn:hover{border-color:var(--a1);color:var(--a2);background:var(--a3);}
-.dl-btn:active{transform:scale(.93);}
-.dl-menu{position:absolute;right:0;top:34px;background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:6px;z-index:200;min-width:130px;box-shadow:var(--shadow);display:none;}
-.dl-btn:hover .dl-menu,.dl-btn:focus-within .dl-menu{display:block;}
-.dl-opt{display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;border-radius:6px;transition:all .15s;white-space:nowrap;font-family:var(--font);}
-.dl-opt:hover{background:var(--a3);color:var(--a2);}
-.cw{position:relative;}
-.kpi .dl-kpi-btn{position:absolute;top:10px;right:10px;width:26px;height:26px;border-radius:7px;background:var(--card2);border:1px solid var(--border2);color:var(--muted);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .22s;opacity:0;}
+.klbl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:2px;}
+.kval{font-size:20px;font-weight:800;line-height:1;color:var(--kc,var(--a2));letter-spacing:-1px;}
+.kdesc{font-size:10px;color:var(--text2);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.kpi .dl-kpi-btn{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:5px;background:var(--card2);border:1px solid var(--border2);color:var(--muted);font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;opacity:0;font-family:var(--font);}
 .kpi:hover .dl-kpi-btn{opacity:1;}
 .kpi .dl-kpi-btn:hover{border-color:var(--a1);color:var(--a2);}
 
+/* ══════════════════════════
+   CHARTS GRID — 24-col system
+══════════════════════════ */
+.cg{display:grid;grid-template-columns:repeat(24,1fr);gap:8px;align-items:start;}
+.cc{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;transition:all .25s;position:relative;overflow:hidden;}
+.cc.c4{grid-column:span 6;}
+.cc.c6{grid-column:span 12;}
+.cc.c8{grid-column:span 16;}
+.cc.c12{grid-column:span 24;}
+.cc:hover{border-color:rgba(255,255,255,0.09);box-shadow:0 5px 22px rgba(0,0,0,.28);}
+[data-theme="light"] .cc:hover{box-shadow:0 4px 16px rgba(0,0,0,.07);}
+.cc-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;}
+.cc-ttl{font-size:11px;font-weight:700;letter-spacing:-.1px;}
+.cc-actions{display:flex;gap:5px;align-items:center;flex-shrink:0;}
+.cc-tag{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;border-radius:4px;background:var(--a3);color:var(--a2);border:1px solid rgba(91,110,245,0.18);}
+.dl-btn{width:26px;height:26px;border-radius:6px;background:var(--card2);border:1px solid var(--border2);color:var(--muted);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;position:relative;font-family:var(--font);}
+.dl-btn:hover{border-color:var(--a1);color:var(--a2);}
+.dl-menu{position:absolute;right:0;top:30px;background:var(--card2);border:1px solid var(--border2);border-radius:9px;padding:5px;z-index:300;min-width:130px;box-shadow:var(--shadow);display:none;}
+.dl-btn:hover .dl-menu,.dl-btn:focus-within .dl-menu{display:block;}
+.dl-opt{display:flex;align-items:center;gap:8px;padding:6px 10px;font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;border-radius:5px;transition:all .15s;white-space:nowrap;font-family:var(--font);}
+.dl-opt:hover{background:var(--a3);color:var(--a2);}
+.cw{position:relative;}
+
 /* RECOMMENDATIONS */
-.reco-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:13px;margin-bottom:20px;}
-.reco{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;border-left:3px solid var(--rc,var(--a1));transition:all .2s;}
+.reco-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-bottom:14px;}
+.reco{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px;border-left:3px solid var(--rc,var(--a1));transition:all .2s;}
 [dir="rtl"] .reco{border-left:none;border-right:3px solid var(--rc,var(--a1));}
-.reco:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(0,0,0,.22);}
-.reco-ico{font-size:22px;margin-bottom:8px;}
-.reco-ttl{font-size:13px;font-weight:700;margin-bottom:5px;letter-spacing:-.1px;}
-.reco-body{font-size:11px;color:var(--text2);line-height:1.7;}
+.reco:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(0,0,0,.2);}
+.reco-ico{font-size:20px;margin-bottom:7px;}
+.reco-ttl{font-size:12px;font-weight:700;margin-bottom:4px;letter-spacing:-.1px;}
+.reco-body{font-size:11px;color:var(--text2);line-height:1.65;}
+.sect-ttl{font-size:14px;font-weight:800;letter-spacing:-.3px;margin-bottom:10px;color:var(--text);}
+[dir="rtl"] .sect-ttl{font-family:'Tajawal',sans-serif;}
 
 /* TABLE */
-.tcard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:20px;}
-.tcard-top{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
-.tcard-ttl{font-size:13px;font-weight:700;letter-spacing:-.1px;}
+.tcard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:14px;}
+.tcard-top{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+.tcard-ttl{font-size:12px;font-weight:700;}
 .tcard-meta{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
-.tw{overflow-x:auto;max-height:380px;overflow-y:auto;}
+.tw{overflow-x:auto;max-height:340px;overflow-y:auto;}
 table{width:100%;border-collapse:collapse;}
-th{padding:9px 13px;background:var(--surface);text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:2;cursor:pointer;white-space:nowrap;user-select:none;transition:color .2s;}
+th{padding:7px 12px;background:var(--surface);text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:2;cursor:pointer;white-space:nowrap;user-select:none;transition:color .2s;}
 [dir="rtl"] th{text-align:right;}
 th:hover,th.srt{color:var(--a2);}
-td{padding:9px 13px;font-size:12px;font-weight:500;color:var(--text);border-bottom:1px solid rgba(255,255,255,0.025);white-space:nowrap;max-width:170px;overflow:hidden;text-overflow:ellipsis;}
+td{padding:7px 12px;font-size:11px;font-weight:500;color:var(--text);border-bottom:1px solid rgba(255,255,255,0.025);white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis;}
 [data-theme="light"] td{border-bottom:1px solid rgba(0,0,0,0.04);}
 tr:hover td{background:rgba(91,110,245,0.03);}
 .tnum{color:var(--blue);}
-.badge{display:inline-block;padding:2px 8px;border-radius:5px;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
 .bg{background:rgba(15,186,126,.12);color:var(--green);}
 .br{background:rgba(240,62,94,.12);color:var(--red);}
 .ba{background:rgba(245,166,35,.12);color:var(--amber);}
 .bb{background:rgba(59,130,246,.12);color:var(--blue);}
 .bp{background:rgba(162,89,255,.12);color:var(--purple);}
-.sect-ttl{font-size:15px;font-weight:800;letter-spacing:-.3px;margin-bottom:12px;color:var(--text);}
-[dir="rtl"] .sect-ttl{font-family:'Tajawal',sans-serif;}
-.btn-s{padding:7px 14px;background:transparent;border:1px solid var(--border2);color:var(--text2);border-radius:var(--radius-sm);font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;font-family:var(--font);transition:all .2s;}
-.btn-s:hover{border-color:var(--a1);color:var(--a2);}
 
 /* TOAST */
-.toast{position:fixed;bottom:22px;right:22px;background:var(--card2);border:1px solid var(--border2);border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:9px;font-size:12px;font-weight:600;transform:translateY(80px);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);z-index:9000;box-shadow:var(--shadow);max-width:320px;}
-[dir="rtl"] .toast{right:auto;left:22px;}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:11px 15px;display:flex;align-items:center;gap:9px;font-size:12px;font-weight:600;transform:translateY(80px);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);z-index:9000;box-shadow:var(--shadow);max-width:300px;}
+[dir="rtl"] .toast{right:auto;left:20px;}
 .toast.on{transform:translateY(0);opacity:1;}
 .tdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-.version-footer{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:600;letter-spacing:1px;color:var(--muted);z-index:10;opacity:.35;}
+.version-footer{position:fixed;bottom:7px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:600;letter-spacing:1px;color:var(--muted);z-index:10;opacity:.3;}
 
 /* RESPONSIVE */
-@media(max-width:768px){.cc{grid-column:span 24!important;}.cg{grid-template-columns:repeat(24,1fr);}}
-@media(max-width:900px){.kgrid{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:700px){
-  #app{padding:12px 10px;}#hdr{padding:0 14px;height:50px;}
-  #page-nav-bar{top:50px;padding:8px 12px;}
-  .live-pill{display:none;}.pnav-tabs{overflow-x:auto;}
-  .ptab{font-size:11px;padding:7px 13px;}
-  .drop-zone{padding:38px 18px;}.u-h1{font-size:36px;}
+@media(max-width:900px){
+  .cc.c4,.cc.c6,.cc.c8,.cc.c12{grid-column:span 24;}
+  .pbi-body{grid-template-columns:1fr;}
   .kgrid{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:700px){
+  #dash{padding:10px 10px;}
+  #hdr{padding:0 12px;height:50px;--hdr-h:50px;}
+  #page-nav-bar{padding:0 12px;top:50px;}
+  .live-pill{display:none;}
+  .kgrid{grid-template-columns:repeat(2,1fr);}
+  .ptab{font-size:11px;padding:5px 11px;}
+  .upload-hero{padding:32px 20px 24px;}
+  .hero-h1{font-size:36px;}
+  .upload-bottom{padding:20px;}
 }
 @media(max-width:480px){.kgrid{grid-template-columns:1fr;}.hdr-btn span{display:none;}}
 #fi{display:none;}
 
-/* ════ PRINT / PDF EXPORT ════ */
-@media print {
-  #splash,#login-screen,#hdr,#page-nav-bar,.dl-btn,.dl-kpi-btn,#toast,.version-footer,#upload,#loading-screen{display:none!important;}
-  #app{display:block!important;padding:0!important;}
-  #dash{display:block!important;}
+@media print{
+  #splash,#login-screen,#hdr,#page-nav-bar,.dl-btn,.dl-kpi-btn,.toast,.version-footer,#upload,#loading-screen{display:none!important;}
+  #app{display:block!important;}#dash{display:block!important;}
   .page{display:block!important;page-break-after:always;}
   body{background:white!important;color:#000!important;}
-  .pbi-body{grid-template-columns:220px 1fr;}
-  .cc,.kpi,.exec-summary,.fbar{border:1px solid #ddd!important;background:white!important;}
-  .kval,.dh span{color:#1a1a2e!important;}
-  .es-body,.text2,.muted{color:#444!important;}
-  canvas{max-width:100%;}
+  .cc,.kpi,.exec-summary{border:1px solid #ddd!important;background:white!important;}
 }
 </style>
 </head>
@@ -379,35 +477,22 @@ tr:hover td{background:rgba(91,110,245,0.03);}
   <div class="splash-bar"><div class="splash-bar-fill"></div></div>
 </div>
 
-<!-- LOGIN — FULL SCREEN -->
+<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-layout">
-    <!-- Left Visual -->
     <div class="login-visual" style="display:flex;">
       <div class="lv-grid"></div>
       <div class="lv-content">
         <div class="lv-logo">AGB</div>
         <div class="lv-tagline">Intelligence Platform · v4.0</div>
         <div class="lv-stats">
-          <div class="lv-stat">
-            <div class="lv-stat-ico">📊</div>
-            <div><div class="lv-stat-val">∞</div><div class="lv-stat-lbl">Data Sources</div></div>
-          </div>
-          <div class="lv-stat">
-            <div class="lv-stat-ico">⚡</div>
-            <div><div class="lv-stat-val">AI</div><div class="lv-stat-lbl">Powered Insights</div></div>
-          </div>
-          <div class="lv-stat">
-            <div class="lv-stat-ico">🔒</div>
-            <div><div class="lv-stat-val">100%</div><div class="lv-stat-lbl">Secure & Private</div></div>
-          </div>
+          <div class="lv-stat"><div class="lv-stat-ico">📊</div><div><div class="lv-stat-val">∞</div><div class="lv-stat-lbl">Data Sources</div></div></div>
+          <div class="lv-stat"><div class="lv-stat-ico">⚡</div><div><div class="lv-stat-val">AI</div><div class="lv-stat-lbl">Powered Insights</div></div></div>
+          <div class="lv-stat"><div class="lv-stat-ico">🔒</div><div><div class="lv-stat-val">100%</div><div class="lv-stat-lbl">Secure & Private</div></div></div>
         </div>
-        <div class="lv-dots">
-          <div class="lv-dot"></div><div class="lv-dot"></div><div class="lv-dot"></div>
-        </div>
+        <div class="lv-dots"><div class="lv-dot"></div><div class="lv-dot"></div><div class="lv-dot"></div></div>
       </div>
     </div>
-    <!-- Right Form -->
     <div class="login-form-panel">
       <div class="login-card">
         <div class="login-brand">
@@ -418,13 +503,13 @@ tr:hover td{background:rgba(91,110,245,0.03);}
         <div class="login-avatar">
           <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
             <circle cx="22" cy="22" r="22" fill="rgba(91,110,245,0.15)"/>
-            <path d="M22 10C15.373 10 10 15.373 10 22" stroke="var(--a1)" stroke-width="1.6" stroke-linecap="round"/>
-            <path d="M22 13C16.925 13 12.8 17.125 12.8 22.2" stroke="var(--a2)" stroke-width="1.6" stroke-linecap="round"/>
-            <path d="M22 16C18.134 16 15 19.134 15 23C15 24.9 15.6 26.7 16.8 28" stroke="var(--a1)" stroke-width="1.6" stroke-linecap="round"/>
-            <path d="M22 19.5C19.791 19.5 18 21.291 18 23.5" stroke="var(--cyan)" stroke-width="1.6" stroke-linecap="round"/>
-            <path d="M22 10C28.627 10 34 15.373 34 22" stroke="var(--a2)" stroke-width="1.6" stroke-linecap="round"/>
-            <path d="M22 13C27.075 13 31.2 17.125 31.2 22.2" stroke="var(--a1)" stroke-width="1.6" stroke-linecap="round"/>
-            <path d="M22 16C25.866 16 29 19.134 29 23C29 26.5 27 30 22 33" stroke="var(--a2)" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M22 10C15.373 10 10 15.373 10 22" stroke="var(--a1)" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M22 13C16.925 13 12.8 17.125 12.8 22.2" stroke="var(--a2)" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M22 16C18.134 16 15 19.134 15 23C15 24.9 15.6 26.7 16.8 28" stroke="var(--a1)" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M22 19.5C19.791 19.5 18 21.291 18 23.5" stroke="var(--cyan)" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M22 10C28.627 10 34 15.373 34 22" stroke="var(--a2)" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M22 13C27.075 13 31.2 17.125 31.2 22.2" stroke="var(--a1)" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M22 16C25.866 16 29 19.134 29 23C29 26.5 27 30 22 33" stroke="var(--a2)" stroke-width="1.4" stroke-linecap="round"/>
             <circle cx="22" cy="22" r="2.5" fill="var(--a1)"/>
           </svg>
         </div>
@@ -435,24 +520,23 @@ tr:hover td{background:rgba(91,110,245,0.03);}
           <input type="password" id="pw" class="login-input" placeholder="Enter access code"
                  oninput="onPwInput()" onkeydown="if(event.key==='Enter')doLogin()">
           <div class="fp-btn" id="fp-btn" onclick="doLogin()">
-            <svg class="fp-svg" width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <svg class="fp-svg" width="20" height="20" viewBox="0 0 24 24" fill="none">
               <path d="M12 2C9.5 2 7.2 3.1 5.6 4.9" stroke="var(--a2)" stroke-width="1.4" stroke-linecap="round"/>
               <path d="M18.4 4.9C16.8 3.1 14.5 2 12 2" stroke="var(--a2)" stroke-width="1.4" stroke-linecap="round"/>
               <path d="M4.1 8.5C3.4 9.6 3 10.8 3 12.1" stroke="var(--a2)" stroke-width="1.4" stroke-linecap="round"/>
               <path d="M21 12.1C21 10.8 20.6 9.6 19.9 8.5" stroke="var(--a2)" stroke-width="1.4" stroke-linecap="round"/>
               <path d="M7 8.5C7 8.5 6 9.8 6 12C6 15.3 8 18 8 18" stroke="var(--a2)" stroke-width="1.4" stroke-linecap="round"/>
               <path d="M17 8.5C17 8.5 18 9.8 18 12C18 14 17.2 16 16 17.5" stroke="var(--a2)" stroke-width="1.4" stroke-linecap="round"/>
-              <path d="M9 7.2C9 7.2 8.5 8.5 8.5 12C8.5 14 9.5 16 10.5 17.5C11 18.2 11.5 19.5 11.5 21" stroke="var(--a2)" stroke-width="1.4" stroke-linecap="round"/>
-              <path d="M15 7.2C15 7.2 15.5 8.5 15.5 12C15.5 14 14.5 16 13.5 17.5" stroke="var(--a2)" stroke-width="1.4" stroke-linecap="round"/>
               <path d="M11.5 5.5C11.5 5.5 10 7 10 12C10 14.5 11 16.5 12 18" stroke="var(--a2)" stroke-width="1.4" stroke-linecap="round"/>
               <path d="M12.5 5.5C12.5 5.5 14 7 14 12C14 14.5 13 16.5 12 18" stroke="var(--a2)" stroke-width="1.4" stroke-linecap="round"/>
+              <circle cx="12" cy="12" r="1.8" fill="var(--a1)"/>
             </svg>
           </div>
         </div>
         <button class="login-btn" onclick="doLogin()" id="login-btn-txt">Authenticate →</button>
         <div class="login-err" id="lerr">⚠ Unauthorized access detected</div>
         <div class="login-footer">
-          <div class="login-footer-lbl">AGB Analytics · Biometric Ready</div>
+          <div class="login-footer-lbl">AGB Analytics · Restricted Access</div>
           <div class="login-secure">🔒 Encrypted</div>
         </div>
       </div>
@@ -475,16 +559,16 @@ tr:hover td{background:rgba(91,110,245,0.03);}
   </div>
 </div>
 
-<!-- PAGE NAV BAR -->
+<!-- PAGE NAV BAR — sits directly below header -->
 <div id="page-nav-bar">
   <div class="page-nav-inner">
     <div class="pnav-tabs" id="nav-tabs"></div>
     <div class="pnav-right">
       <span class="filter-active-badge" id="filter-badge">⚡ Filtered</span>
       <div id="chart-type-switcher" style="display:flex;gap:4px;"></div>
-      <button class="btn-s" onclick="exportCSV()" id="export-btn" style="display:none;">⬇ <span id="export-lbl">Export CSV</span></button>
-      <button class="btn-s" onclick="printReport()" id="print-btn" style="display:none;">🖨 <span>PDF</span></button>
-      <button class="btn-s" onclick="capturePagePNG()" id="snap-btn" style="display:none;">📷 <span>Screenshot</span></button>
+      <button class="btn-s" onclick="exportCSV()" id="export-btn" style="display:none;">⬇ <span id="export-lbl">Export</span></button>
+      <button class="btn-s" onclick="printReport()" id="print-btn" style="display:none;">🖨 PDF</button>
+      <button class="btn-s" onclick="capturePagePNG()" id="snap-btn" style="display:none;">📷</button>
       <button class="btn-s" onclick="resetAll()" id="newfile-btn" style="display:none;">↺ <span id="newfile-lbl">New</span></button>
     </div>
   </div>
@@ -492,28 +576,65 @@ tr:hover td{background:rgba(91,110,245,0.03);}
 
 <!-- APP -->
 <div id="app">
+
+  <!-- UPLOAD — FULL PROFESSIONAL LANDING PAGE -->
   <div id="upload">
-    <div>
-      <h1 class="u-h1" id="u-h1">Your Data.<br><span class="g">Deep Intelligence.</span></h1>
+    <div class="upload-hero">
+      <div class="hero-inner">
+        <!-- LEFT: copy -->
+        <div class="hero-left">
+          <div class="hero-badge">
+            <div class="hero-badge-dot"></div>
+            <span id="hero-badge-txt">Intelligent Analytics Engine</span>
+          </div>
+          <h1 class="hero-h1" id="u-h1">Your Data.<br><span class="g">Deep Intelligence.</span></h1>
+          <p class="hero-desc" id="u-desc">Upload any dataset — Sales, HR, or Safety. AGB reads your structure, detects the domain, and builds expert Power BI–style dashboards grounded in your actual numbers.</p>
+          <div class="hero-features" id="hero-feats">
+            <div class="feat-item"><div class="feat-check">✓</div><span>Auto-detects columns & domain</span></div>
+            <div class="feat-item"><div class="feat-check">✓</div><span>100K+ rows — no lag</span></div>
+            <div class="feat-item"><div class="feat-check">✓</div><span>Export PNG · CSV · PDF per chart</span></div>
+            <div class="feat-item"><div class="feat-check">✓</div><span>Arabic & English · Dark & Light</span></div>
+          </div>
+          <div class="hero-cta-row">
+            <button class="btn-primary" onclick="document.getElementById('fi').click()">↑ &nbsp;<span id="upload-btn-lbl">Upload Dataset</span></button>
+            <button class="btn-ghost" onclick="loadSample('sales')">Try Sample Data →</button>
+          </div>
+        </div>
+        <!-- RIGHT: drop zone -->
+        <div class="hero-right">
+          <div class="drop-zone-pro" id="drop-zone" onclick="document.getElementById('fi').click()">
+            <span class="dz-icon-pro">◈</span>
+            <div class="dz-ttl-pro" id="dz-ttl">Drop Your Dataset Here</div>
+            <div class="dz-sub-pro" id="dz-sub">CSV · Excel · JSON · TSV — any domain<br>AGB detects structure automatically</div>
+            <button class="dz-btn" onclick="event.stopPropagation();document.getElementById('fi').click()">↑ &nbsp;<span>Browse Files</span></button>
+            <div class="fmts"><span class="fmt">CSV</span><span class="fmt">XLSX</span><span class="fmt">XLS</span><span class="fmt">JSON</span><span class="fmt">TSV</span></div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('fi').click()">
-      <span class="dz-icon">◈</span>
-      <div class="dz-ttl" id="dz-ttl">Drop Your Dataset Here</div>
-      <div class="dz-sub" id="dz-sub">CSV · Excel · JSON · TSV — any domain<br>AGB detects structure & entity type automatically</div>
-      <button class="btn-upload" onclick="event.stopPropagation();document.getElementById('fi').click()">↑ &nbsp;<span id="upload-btn-lbl">Upload Dataset</span></button>
-      <div class="fmts"><span class="fmt">CSV</span><span class="fmt">XLSX</span><span class="fmt">XLS</span><span class="fmt">JSON</span><span class="fmt">TSV</span></div>
-    </div>
-    <div class="sample-wrap">
-      <div class="sample-label" id="sample-lbl">— or load a built-in sample —</div>
-      <div class="sample-btns">
-        <div class="sbtn" onclick="loadSample('sales')">📈 &nbsp;<span class="s1">Sales & Revenue</span></div>
-        <div class="sbtn" onclick="loadSample('hr')">👥 &nbsp;<span class="s2">Human Resources</span></div>
-        <div class="sbtn" onclick="loadSample('safety')">🛡 &nbsp;<span class="s3">HSE Safety Permits</span></div>
+    <!-- BOTTOM: stats + samples -->
+    <div class="upload-bottom">
+      <div class="upload-bottom-inner">
+        <div class="up-stats">
+          <div class="up-stat"><div class="up-stat-val">100K+</div><div class="up-stat-lbl">Rows Supported</div></div>
+          <div class="up-stat"><div class="up-stat-val">3</div><div class="up-stat-lbl">Domains Auto-Detected</div></div>
+          <div class="up-stat"><div class="up-stat-val">∞</div><div class="up-stat-lbl">File Formats</div></div>
+          <div class="up-stat"><div class="up-stat-val">0</div><div class="up-stat-lbl">Data Sent to Cloud</div></div>
+        </div>
+        <div class="sample-col">
+          <div class="sample-label" id="sample-lbl">— or load a built-in sample —</div>
+          <div class="sample-btns">
+            <div class="sbtn" onclick="loadSample('sales')">📈 &nbsp;<span class="s1">Sales & Revenue</span></div>
+            <div class="sbtn" onclick="loadSample('hr')">👥 &nbsp;<span class="s2">Human Resources</span></div>
+            <div class="sbtn" onclick="loadSample('safety')">🛡 &nbsp;<span class="s3">HSE Safety</span></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <div id="loading-screen" style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:24px;min-height:calc(100vh - 56px);">
+  <!-- LOADING -->
+  <div id="loading-screen" style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:22px;min-height:calc(100vh - var(--hdr-h));">
     <div class="ld-rings"><div class="ld-ring"></div><div class="ld-ring"></div></div>
     <div class="ld-lbl" id="ld-lbl">Analyzing Data</div>
     <div class="ld-steps">
@@ -525,8 +646,10 @@ tr:hover td{background:rgba(91,110,245,0.03);}
     </div>
   </div>
 
+  <!-- DASHBOARD -->
   <div id="dash"><div id="pages"></div></div>
-</div>
+
+</div><!-- /app -->
 
 <div class="toast" id="toast"><div class="tdot" id="tdot"></div><span id="tmsg">Done</span></div>
 <input type="file" id="fi" accept=".csv,.xlsx,.xls,.tsv,.json,.txt">
@@ -548,24 +671,14 @@ let DYNAMIC={primaryEntityCol:null,primaryEntityLabel:'Record',primaryEntityLabe
 let CURRENT_FILENAME='';
 
 // ═══════════════════════════════════════════════════
-// SESSION PERSISTENCE — saves data so refresh doesn't kick you out
+// SESSION PERSISTENCE
 // ═══════════════════════════════════════════════════
-function saveSession(){
-  try{
-    const payload=JSON.stringify({RAW,HDR,DOMAIN,DYNAMIC,CURRENT_FILENAME});
-    sessionStorage.setItem(SS_DATA,payload);
-  }catch(e){console.warn('Session save failed (data too large):',e);}
-}
+function saveSession(){try{sessionStorage.setItem(SS_DATA,JSON.stringify({RAW,HDR,DOMAIN,DYNAMIC,CURRENT_FILENAME}));}catch(e){}}
 function loadSession(){
-  try{
-    const s=sessionStorage.getItem(SS_DATA);
-    if(!s)return false;
-    const p=JSON.parse(s);
-    RAW=p.RAW||[];HDR=p.HDR||[];DOMAIN=p.DOMAIN||'general';
+  try{const s=sessionStorage.getItem(SS_DATA);if(!s)return false;
+    const p=JSON.parse(s);RAW=p.RAW||[];HDR=p.HDR||[];DOMAIN=p.DOMAIN||'general';
     DYNAMIC=p.DYNAMIC||{primaryEntityCol:null,primaryEntityLabel:'Record',primaryEntityLabelAr:'سجل',primaryEntityIcon:'📋'};
-    CURRENT_FILENAME=p.CURRENT_FILENAME||'';
-    ALL=[...RAW];
-    return RAW.length>0;
+    CURRENT_FILENAME=p.CURRENT_FILENAME||'';ALL=[...RAW];return RAW.length>0;
   }catch(e){return false;}
 }
 
@@ -583,19 +696,9 @@ function detectPrimaryEntity(){
     {p:['employee','emp','staff','personnel'],l:'Employee',a:'موظف',i:'👤'},
     {p:['inspection','audit','check'],l:'Inspection',a:'تفتيش',i:'🔍'},
     {p:['complaint','ticket','case'],l:'Case',a:'حالة',i:'📝'},
-    {p:['asset','equipment','machine'],l:'Asset',a:'أصل',i:'🔧'},
-    {p:['project','task','job'],l:'Project',a:'مشروع',i:'📊'},
   ];
-  for(const ep of EP){
-    for(const h of hl){
-      if(ep.p.some(p=>h.includes(p))){
-        DYNAMIC={primaryEntityCol:HDR[hl.indexOf(h)],primaryEntityLabel:ep.l,primaryEntityLabelAr:ep.a,primaryEntityIcon:ep.i};
-        return;
-      }
-    }
-  }
-  const firstH=HDR[0]||'Record';
-  const cleaned=firstH.replace(/\s*(id|no|#|num|number|code)\s*$/i,'').trim();
+  for(const ep of EP){for(const h of hl){if(ep.p.some(p=>h.includes(p))){DYNAMIC={primaryEntityCol:HDR[hl.indexOf(h)],primaryEntityLabel:ep.l,primaryEntityLabelAr:ep.a,primaryEntityIcon:ep.i};return;}}}
+  const firstH=HDR[0]||'Record';const cleaned=firstH.replace(/\s*(id|no|#|num|number|code)\s*$/i,'').trim();
   DYNAMIC={primaryEntityCol:firstH,primaryEntityLabel:cleaned||'Record',primaryEntityLabelAr:cleaned||'سجل',primaryEntityIcon:'📋'};
 }
 function eLabel(){return LANG==='ar'?(DYNAMIC.primaryEntityLabelAr||DYNAMIC.primaryEntityLabel):DYNAMIC.primaryEntityLabel;}
@@ -609,14 +712,17 @@ const T={
     upload_btn:'Upload Dataset',drop_ttl:'Drop Your Dataset Here',
     drop_sub:'CSV · Excel · JSON · TSV — any domain\nAGB detects structure automatically',
     sample_lbl:'— or load a built-in sample —',
-    s1:'Sales & Revenue',s2:'Human Resources',s3:'HSE Safety Permits',
+    s1:'Sales & Revenue',s2:'Human Resources',s3:'HSE Safety',
     analyzing:'Analyzing Data',new_file:'New',export:'Export',
     h1:'Your Data.',h1g:'Deep Intelligence.',expert_tag:'Expert Analysis',
     filter:'Filter:',search:'Search records...',clear:'✕ Clear',
     full_data:'Full Dataset',records:'records',recos:'Expert Recommendations',
     lang_btn:'AR',theme_dark:'Dark',theme_light:'Light',live:'Live',
-    dl_png:'Download PNG','dl_csv':'Download CSV',dl_pdf:'Download PDF',
-    access_label:'Access Code',
+    dl_png:'Download PNG',dl_csv:'Download CSV',access_label:'Access Code',
+    hero_badge:'Intelligent Analytics Engine',
+    feat1:'Auto-detects columns & domain',feat2:'100K+ rows — no lag',
+    feat3:'Export PNG · CSV · PDF per chart',feat4:'Arabic & English · Dark & Light',
+    u_desc:'Upload any dataset — Sales, HR, or Safety. AGB reads your structure, detects the domain, and builds expert Power BI–style dashboards grounded in your actual numbers.',
   },
   ar:{access:'دخول المنصة ←',denied:'⚠ وصول مرفوض',logout:'خروج',
     upload_btn:'رفع ملف البيانات',drop_ttl:'أفلت ملف البيانات هنا',
@@ -628,8 +734,11 @@ const T={
     filter:'تصفية:',search:'بحث...',clear:'✕ مسح',
     full_data:'البيانات الكاملة',records:'سجل',recos:'التوصيات التخصصية',
     lang_btn:'EN',theme_dark:'داكن',theme_light:'فاتح',live:'مباشر',
-    dl_png:'تنزيل PNG',dl_csv:'تنزيل CSV',dl_pdf:'تنزيل PDF',
-    access_label:'رمز الوصول',
+    dl_png:'تنزيل PNG',dl_csv:'تنزيل CSV',access_label:'رمز الوصول',
+    hero_badge:'محرك التحليلات الذكية',
+    feat1:'اكتشاف تلقائي للأعمدة والمجال',feat2:'100K+ سطر بدون تأخير',
+    feat3:'تصدير PNG · CSV · PDF لكل مخطط',feat4:'العربية والإنجليزية · داكن وفاتح',
+    u_desc:'ارفع أي ملف — مبيعات، موارد بشرية، أو سلامة. AGB يقرأ البنية ويكتشف المجال ويبني لوحات تحليلية متخصصة.',
   }
 };
 function t(k){return T[LANG][k]||T.en[k]||k;}
@@ -640,43 +749,44 @@ function t(k){return T[LANG][k]||T.en[k]||k;}
 function applyTheme(){
   document.documentElement.setAttribute('data-theme',THEME);
   const btn=document.getElementById('theme-btn');
-  if(btn) btn.innerHTML=(THEME==='dark'?'☀️':'🌙')+' <span id="theme-lbl">'+(THEME==='dark'?t('theme_light'):t('theme_dark'))+'</span>';
-  if(CHARTS.length) recolorCharts();
+  if(btn)btn.innerHTML=(THEME==='dark'?'☀️':'🌙')+' <span id="theme-lbl">'+(THEME==='dark'?t('theme_light'):t('theme_dark'))+'</span>';
+  if(CHARTS.length)recolorCharts();
 }
 function toggleTheme(){THEME=THEME==='dark'?'light':'dark';localStorage.setItem(LS_THEME,THEME);applyTheme();}
 function recolorCharts(){
-  const tc=THEME==='dark'?'#7A86A8':'#4A5270';
-  const gc=THEME==='dark'?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.05)';
+  const tc=THEME==='dark'?'#7A86A8':'#4A5270';const gc=THEME==='dark'?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.05)';
   CHARTS.forEach(c=>{try{if(c.options.scales){Object.values(c.options.scales).forEach(s=>{if(s.grid)s.grid.color=gc;if(s.ticks)s.ticks.color=tc;});}c.update('none');}catch(e){}});
 }
 function applyLang(){
   document.documentElement.setAttribute('lang',LANG);
   document.documentElement.setAttribute('dir',LANG==='ar'?'rtl':'ltr');
   const se=(id,k)=>{const el=document.getElementById(id);if(el)el.textContent=t(k);};
-  se('logout-lbl','logout');se('live-lbl','live');se('dz-ttl','drop_ttl');se('upload-btn-lbl','upload_btn');se('sample-lbl','sample_lbl');se('ld-lbl','analyzing');
+  se('logout-lbl','logout');se('live-lbl','live');se('dz-ttl','drop_ttl');
+  se('upload-btn-lbl','upload_btn');se('sample-lbl','sample_lbl');se('ld-lbl','analyzing');
   se('export-lbl','export');se('newfile-lbl','new_file');se('login-label','access_label');
-  const uh=document.getElementById('u-h1');
-  if(uh) uh.innerHTML=t('h1')+'<br><span class="g">'+t('h1g')+'</span>';
+  se('hero-badge-txt','hero_badge');
+  const uh=document.getElementById('u-h1');if(uh)uh.innerHTML=t('h1')+'<br><span class="g">'+t('h1g')+'</span>';
+  const ud=document.getElementById('u-desc');if(ud)ud.textContent=t('u_desc');
+  const hf=document.getElementById('hero-feats');
+  if(hf)hf.innerHTML=['feat1','feat2','feat3','feat4'].map(k=>`<div class="feat-item"><div class="feat-check">✓</div><span>${t(k)}</span></div>`).join('');
   document.querySelectorAll('.s1').forEach(el=>el.textContent=t('s1'));
   document.querySelectorAll('.s2').forEach(el=>el.textContent=t('s2'));
   document.querySelectorAll('.s3').forEach(el=>el.textContent=t('s3'));
-  const lb=document.getElementById('lang-btn');
-  if(lb){lb.innerHTML='🌐 <span>'+t('lang_btn')+'</span>';lb.onclick=toggleLang;}
+  const lb=document.getElementById('lang-btn');if(lb){lb.innerHTML='🌐 <span>'+t('lang_btn')+'</span>';lb.onclick=toggleLang;}
   const lerr=document.getElementById('lerr');if(lerr)lerr.textContent=t('denied');
   const loginBtn=document.getElementById('login-btn-txt');if(loginBtn)loginBtn.textContent=t('access');
   const pw=document.getElementById('pw');if(pw)pw.placeholder=LANG==='ar'?'أدخل رمز الوصول':'Enter access code';
   const lr=document.getElementById('login-role');if(lr)lr.textContent=LANG==='ar'?'مدير التحليلات':'Analytics Director';
-  if(RAW.length) rebuildDash();
+  if(RAW.length)rebuildDash();
 }
 function toggleLang(){LANG=LANG==='en'?'ar':'en';localStorage.setItem(LS_LANG,LANG);applyLang();}
 
 function onPwInput(){
-  const pw=document.getElementById('pw');
-  const fp=document.getElementById('fp-btn');
+  const pw=document.getElementById('pw'),fp=document.getElementById('fp-btn');
   fp.classList.remove('fp-ok','fp-err');
   if(!pw.value.length)return;
-  if(pw.value===PASS){fp.classList.add('fp-ok');}
-  else if(pw.value.length>=PASS.length){fp.classList.add('fp-err');}
+  if(pw.value===PASS)fp.classList.add('fp-ok');
+  else if(pw.value.length>=PASS.length)fp.classList.add('fp-err');
 }
 
 // ═══════════════════════════════════════════════════
@@ -690,13 +800,9 @@ window.addEventListener('DOMContentLoaded',()=>{
       sp.style.display='none';
       if(localStorage.getItem(LS_AUTH)==='ok'){
         showApp();
-        // Try to restore session
-        if(loadSession()){
-          applyDomainTheme();
-          setTimeout(()=>buildDash(CURRENT_FILENAME||'Restored Session'),100);
-        }
-      }
-      else{document.getElementById('login-screen').style.display='flex';}
+        if(loadSession()){applyDomainTheme();setTimeout(()=>buildDash(CURRENT_FILENAME||'Restored Session'),100);}
+        else showUpload();
+      } else {document.getElementById('login-screen').style.display='flex';}
     },210);
   },2400);
 });
@@ -707,7 +813,7 @@ function doLogin(){
     localStorage.setItem(LS_AUTH,'ok');
     const ls=document.getElementById('login-screen');
     ls.style.transition='opacity .5s ease,transform .5s ease';ls.style.opacity='0';ls.style.transform='scale(0.97)';
-    setTimeout(()=>{ls.style.display='none';showApp();},210);
+    setTimeout(()=>{ls.style.display='none';showApp();showUpload();},210);
   } else {
     fp.classList.remove('fp-ok');fp.classList.add('fp-err');
     pw.classList.add('shake','err');err.classList.add('show');pw.value='';
@@ -715,32 +821,26 @@ function doLogin(){
   }
 }
 function doLogout(){localStorage.removeItem(LS_AUTH);sessionStorage.removeItem(SS_DATA);location.reload();}
-function showApp(){
-  document.getElementById('app').style.display='block';
-  document.getElementById('logout-btn').style.display='flex';
+function showApp(){document.getElementById('app').style.display='block';document.getElementById('logout-btn').style.display='flex';}
+function showUpload(){
+  document.getElementById('loading-screen').style.display='none';
+  document.getElementById('dash').style.display='none';
+  document.getElementById('upload').style.display='flex';
+  document.getElementById('page-nav-bar').style.display='none';
 }
 function capturePagePNG(){
   const activePg=document.querySelector('.page.on');
   if(!activePg||typeof html2canvas==='undefined'){window.print();return;}
   showToast('Capturing page...','amber');
-  html2canvas(activePg,{
-    backgroundColor:THEME==='dark'?'#07090F':'#F0F2FA',
-    scale:2,useCORS:true,logging:false
-  }).then(canvas=>{
-    const a=document.createElement('a');
-    a.download='AGB_Dashboard_Page'+(ACTIVE+1)+'.png';
-    a.href=canvas.toDataURL('image/png');a.click();
+  html2canvas(activePg,{backgroundColor:THEME==='dark'?'#07090F':'#F2F4FB',scale:2,useCORS:true,logging:false}).then(canvas=>{
+    const a=document.createElement('a');a.download='AGB_Dashboard_P'+(ACTIVE+1)+'.png';a.href=canvas.toDataURL('image/png');a.click();
     showToast('Screenshot saved ✓','green');
   }).catch(()=>window.print());
 }
 function printReport(){
-  // Show all pages temporarily for print
   document.querySelectorAll('.page').forEach(p=>p.style.display='block');
   window.print();
-  // Restore after print
-  setTimeout(()=>{
-    document.querySelectorAll('.page').forEach((p,i)=>p.style.display=i===ACTIVE?'block':'none');
-  },1000);
+  setTimeout(()=>{document.querySelectorAll('.page').forEach((p,i)=>p.style.display=i===ACTIVE?'block':'none');},1000);
 }
 
 // ═══════════════════════════════════════════════════
@@ -771,37 +871,23 @@ const DOMAINS={
     c1:'#5B6EF5',c2:'#818cf8',c3:'rgba(91,110,245,0.10)',kw:[]
   }
 };
-
 const FUZZY={
   revenue:['rev','sale','income','turnover','gross','net_sale','total_sale','amount','receipts','billing'],
-  profit:['profit','margin','gain','net','earning','surplus'],
-  discount:['disc','rebate','reduction'],
+  profit:['profit','margin','gain','net','earning','surplus'],discount:['disc','rebate','reduction'],
   salary:['salary','sal','wage','pay','compensation','basic','gross_pay'],
-  absence:['absence','absent','leave_day','sick','miss','lost_work'],
-  training:['train','course','develop','learn','certif'],
-  violations:['viol','breach','infract','nc','non_conform','finding'],
-  workers:['worker','manpower','labor','person','headcount','worker'],
-  duration:['dur','hour','hrs','time','length','period'],
-  status:['status','state','result','outcome','condition','flag','stage','phase'],
+  absence:['absence','absent','leave_day','sick','miss','lost_work'],training:['train','course','develop','learn','certif'],
+  violations:['viol','breach','infract','nc','non_conform','finding'],workers:['worker','manpower','labor','person','headcount'],
+  duration:['dur','hour','hrs','time','length','period'],status:['status','state','result','outcome','condition','flag','stage','phase'],
   region:['region','area','zone','city','location','branch','site','territory','district'],
-  product:['product','item','sku','goods','material','service'],
-  department:['dept','department','division','unit','section','team'],
-  contractor:['contractor','vendor','supplier','subcontract','company','firm'],
-  month:['month','mon','date','year','quarter','week'],
-  gender:['gender','sex'],
-  performance:['perf','appraisal','eval','review','kpi','grade'],
+  product:['product','item','sku','goods','material','service'],department:['dept','department','division','unit','section','team'],
+  contractor:['contractor','vendor','supplier','subcontract','company','firm'],month:['month','mon','date','year','quarter','week'],
+  gender:['gender','sex'],performance:['perf','appraisal','eval','review','kpi','grade'],
   risk:['risk','hazard','severity','danger','level','priority','risk_level'],
-  permit_type:['type','kind','category','class','permit_type','work_type','activity','injury_type'],
-  score:['score','rating','index','grade','mark'],
+  permit_type:['type','kind','category','class','permit_type','work_type','activity','injury_type'],score:['score','rating','index','grade','mark'],
 };
 function fuzzy(key,numOnly=false){
-  const frags=FUZZY[key]||[key];
-  const pool=numOnly?HDR.filter(h=>isNum(h)):HDR;
-  for(const f of frags){
-    const fn=f.replace(/[^a-z0-9]/g,'');
-    const found=pool.find(h=>h.toLowerCase().replace(/[^a-z0-9]/g,'').includes(fn));
-    if(found) return found;
-  }
+  const frags=FUZZY[key]||[key];const pool=numOnly?HDR.filter(h=>isNum(h)):HDR;
+  for(const f of frags){const fn=f.replace(/[^a-z0-9]/g,'');const found=pool.find(h=>h.toLowerCase().replace(/[^a-z0-9]/g,'').includes(fn));if(found)return found;}
   return pool.find(h=>h.toLowerCase().includes(key.split('_')[0]))||null;
 }
 const fc=k=>fuzzy(k,false);
@@ -816,8 +902,7 @@ dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');if
 fi.addEventListener('change',e=>{if(e.target.files[0])processFile(e.target.files[0]);});
 
 function processFile(f){
-  resetState();showLoading();
-  CURRENT_FILENAME=f.name;
+  resetState();showLoading();CURRENT_FILENAME=f.name;
   const reader=new FileReader();
   reader.onload=e=>{
     try{
@@ -833,27 +918,17 @@ function processFile(f){
   if(name.endsWith('.csv')||name.endsWith('.tsv')||name.endsWith('.txt')||name.endsWith('.json'))reader.readAsText(f);
   else reader.readAsArrayBuffer(f);
 }
-
 function processLargeData(data,fileName){
   const CHUNK=5000;let processed=[],idx=0;
   function chunk(){
-    const end=Math.min(idx+CHUNK,data.length);
-    processed=processed.concat(cleanData(data.slice(idx,end)));
-    idx=end;
+    const end=Math.min(idx+CHUNK,data.length);processed=processed.concat(cleanData(data.slice(idx,end)));idx=end;
     if(idx<data.length){setTimeout(chunk,0);}
-    else{
-      RAW=processed;HDR=Object.keys(RAW[0]);ALL=[...RAW];
-      DOMAIN=detectDomain();detectPrimaryEntity();applyDomainTheme();
-      saveSession();
-      setTimeout(()=>buildDash(fileName),2100);
-    }
+    else{RAW=processed;HDR=Object.keys(RAW[0]);ALL=[...RAW];DOMAIN=detectDomain();detectPrimaryEntity();applyDomainTheme();saveSession();setTimeout(()=>buildDash(fileName),2100);}
   }
   chunk();
 }
-
 function parseCSV(txt,sep=','){
-  const lines=txt.trim().split('\n').filter(l=>l.trim());
-  if(lines.length<2)return[];
+  const lines=txt.trim().split('\n').filter(l=>l.trim());if(lines.length<2)return[];
   const hdrs=parseLine(lines[0],sep);
   return lines.slice(1).map(l=>{const v=parseLine(l,sep);return Object.fromEntries(hdrs.map((h,i)=>[h.trim(),v[i]??'']));});
 }
@@ -864,43 +939,26 @@ function parseLine(l,sep){
 }
 function cleanData(data){
   return data.map(row=>{
-    const r={};
-    Object.keys(row).forEach(k=>{
+    const r={};Object.keys(row).forEach(k=>{
       const key=k.trim().replace(/\s+/g,' ');let v=row[k];
-      if(typeof v==='string'){
-        v=v.trim();
-        // Try to parse as number — but be careful with date-like strings
-        if(v!==''&&v.length<20&&!v.match(/^\d{4}[-\/]\d/)){
-          const n=parseFloat(v.replace(/[,$%\s]/g,''));
-          if(!isNaN(n)&&isFinite(n))v=n;
-        }
-      }
-      r[key]=v;
-    });
-    return r;
+      if(typeof v==='string'){v=v.trim();if(v!==''&&v.length<20&&!v.match(/^\d{4}[-\/]\d/)){const n=parseFloat(v.replace(/[,$%\s]/g,''));if(!isNaN(n)&&isFinite(n))v=n;}}
+      r[key]=v;});return r;
   }).filter(r=>Object.values(r).some(v=>v!==''&&v!=null));
 }
 
 // ═══════════════════════════════════════════════════
-// DOMAIN DETECTION — enhanced with incident/safety keywords
+// DOMAIN DETECTION
 // ═══════════════════════════════════════════════════
 function detectDomain(){
   const txt=(HDR.map(h=>h.toLowerCase()).join(' ')+' '+RAW.slice(0,10).map(r=>Object.values(r).join(' ')).join(' ')).toLowerCase();
   let best='general',bestN=0;
-  Object.entries(DOMAINS).forEach(([dom,cfg])=>{
-    if(dom==='general')return;
-    const n=cfg.kw.filter(k=>txt.includes(k)).length;
-    if(n>bestN){bestN=n;best=dom;}
-  });
+  Object.entries(DOMAINS).forEach(([dom,cfg])=>{if(dom==='general')return;const n=cfg.kw.filter(k=>txt.includes(k)).length;if(n>bestN){bestN=n;best=dom;}});
   return best;
 }
 function applyDomainTheme(){
   const d=DOMAINS[DOMAIN];
-  document.documentElement.style.setProperty('--a1',d.c1);
-  document.documentElement.style.setProperty('--a2',d.c2);
-  document.documentElement.style.setProperty('--a3',d.c3);
-  const tag=document.getElementById('domain-tag');
-  if(tag)tag.textContent=d[LANG].label;
+  document.documentElement.style.setProperty('--a1',d.c1);document.documentElement.style.setProperty('--a2',d.c2);document.documentElement.style.setProperty('--a3',d.c3);
+  const tag=document.getElementById('domain-tag');if(tag)tag.textContent=d[LANG].label;
 }
 
 // ═══════════════════════════════════════════════════
@@ -909,159 +967,96 @@ function applyDomainTheme(){
 function isNum(col){const s=RAW.slice(0,30).map(r=>r[col]).filter(v=>v!==''&&v!=null);return s.length&&s.filter(v=>typeof v==='number').length/s.length>0.6;}
 function isCat(col){if(isNum(col))return false;const u=[...new Set(RAW.map(r=>r[col]))].filter(Boolean);return u.length>=2&&u.length<=60;}
 function isStatus(col){return['status','state','result','type','severity','level','grade','risk','gender','performance','risk_level','injury_type'].some(k=>col.toLowerCase().includes(k));}
-const numCols=()=>HDR.filter(isNum);
-const catCols=()=>HDR.filter(isCat);
-const statusCols=()=>HDR.filter(isStatus);
+const numCols=()=>HDR.filter(isNum);const catCols=()=>HDR.filter(isCat);const statusCols=()=>HDR.filter(isStatus);
 function sum(data,col){return data.reduce((a,r)=>a+(typeof r[col]==='number'?r[col]:0),0);}
 function avg(data,col){const v=data.filter(r=>typeof r[col]==='number');return v.length?sum(v,col)/v.length:0;}
 function groupBy(data,grp,val,limit=8){
   const g={};data.forEach(r=>{const k=String(r[grp]||'?');g[k]=(g[k]||0)+(typeof r[val]==='number'?r[val]:0);});
   return Object.entries(g).sort((a,b)=>b[1]-a[1]).slice(0,limit);
 }
-function countBy(data,grp,limit=8){
-  const g={};data.forEach(r=>{const k=String(r[grp]||'?');g[k]=(g[k]||0)+1;});
-  return Object.entries(g).sort((a,b)=>b[1]-a[1]).slice(0,limit);
-}
+function countBy(data,grp,limit=8){const g={};data.forEach(r=>{const k=String(r[grp]||'?');g[k]=(g[k]||0)+1;});return Object.entries(g).sort((a,b)=>b[1]-a[1]).slice(0,limit);}
 function topG(data,grp,val){const e=groupBy(data,grp,val,1);return e.length?e[0][0]:'N/A';}
 function topC(data,grp){const e=countBy(data,grp,1);return e.length?e[0][0]:'N/A';}
-function fmt(n){
-  if(!n&&n!==0)return'-';const a=Math.abs(n);
-  if(a>=1e9)return(n<0?'-':'')+Math.round(a/1e7)/100+'B';
-  if(a>=1e6)return(n<0?'-':'')+Math.round(a/1e4)/100+'M';
-  if(a>=1e3)return(n<0?'-':'')+Math.round(a/100)/10+'K';
-  return Math.round(n).toLocaleString();
-}
+function fmt(n){if(!n&&n!==0)return'-';const a=Math.abs(n);if(a>=1e9)return(n<0?'-':'')+Math.round(a/1e7)/100+'B';if(a>=1e6)return(n<0?'-':'')+Math.round(a/1e4)/100+'M';if(a>=1e3)return(n<0?'-':'')+Math.round(a/100)/10+'K';return Math.round(n).toLocaleString();}
 
 // ═══════════════════════════════════════════════════
 // SCREEN MANAGEMENT
 // ═══════════════════════════════════════════════════
 function showLoading(){
   document.getElementById('upload').style.display='none';
+  document.getElementById('dash').style.display='none';
   const ld=document.getElementById('loading-screen');ld.style.display='flex';
-  const steps=['ls1','ls2','ls3','ls4','ls5'];
-  steps.forEach(id=>document.getElementById(id).className='lstep');
+  const steps=['ls1','ls2','ls3','ls4','ls5'];steps.forEach(id=>document.getElementById(id).className='lstep');
   let i=0;const iv=setInterval(()=>{
     if(i>0)document.getElementById(steps[i-1]).className='lstep dn';
     if(i<steps.length)document.getElementById(steps[i]).className='lstep on';
     i++;if(i>steps.length)clearInterval(iv);
-  },210);
+  },220);
 }
 function hideLoading(){document.getElementById('loading-screen').style.display='none';}
-function showUpload(){document.getElementById('loading-screen').style.display='none';document.getElementById('upload').style.display='flex';}
 function showToast(msg,color='green'){
   const t2=document.getElementById('toast'),d=document.getElementById('tdot'),m=document.getElementById('tmsg');
-  m.textContent=msg;
-  const colors={green:'var(--green)',red:'var(--red)',amber:'var(--amber)'};
+  m.textContent=msg;const colors={green:'var(--green)',red:'var(--red)',amber:'var(--amber)'};
   d.style.background=colors[color]||colors.green;t2.style.borderColor=(colors[color]||colors.green)+'44';
   t2.classList.add('on');setTimeout(()=>t2.classList.remove('on'),4200);
 }
 
 // ═══════════════════════════════════════════════════
-// DOWNLOAD FUNCTIONS — PNG / CSV / PDF per chart
+// DOWNLOAD FUNCTIONS
 // ═══════════════════════════════════════════════════
 function downloadChartPNG(canvasId,title){
-  const canvas=document.getElementById(canvasId);
-  if(!canvas)return;
-  // Create temp canvas with white/dark bg
-  const tmp=document.createElement('canvas');
-  tmp.width=canvas.width;tmp.height=canvas.height;
-  const ctx=tmp.getContext('2d');
-  ctx.fillStyle=THEME==='dark'?'#161B27':'#FFFFFF';
-  ctx.fillRect(0,0,tmp.width,tmp.height);
-  ctx.drawImage(canvas,0,0);
-  const link=document.createElement('a');
-  link.download=(title||'chart').replace(/\s+/g,'_')+'.png';
-  link.href=tmp.toDataURL('image/png');link.click();
+  const canvas=document.getElementById(canvasId);if(!canvas)return;
+  const tmp=document.createElement('canvas');tmp.width=canvas.width;tmp.height=canvas.height;
+  const ctx=tmp.getContext('2d');ctx.fillStyle=THEME==='dark'?'#161B27':'#FFFFFF';ctx.fillRect(0,0,tmp.width,tmp.height);ctx.drawImage(canvas,0,0);
+  const link=document.createElement('a');link.download=(title||'chart').replace(/\s+/g,'_')+'.png';link.href=tmp.toDataURL('image/png');link.click();
   showToast('PNG Downloaded ✓','green');
 }
-
 function downloadChartCSV(canvasId,title){
-  const chart=CHARTS.find(c=>c.canvas&&c.canvas.id===canvasId);
-  if(!chart)return;
-  const labels=chart.data.labels||[];
-  const datasets=chart.data.datasets||[];
+  const chart=CHARTS.find(c=>c.canvas&&c.canvas.id===canvasId);if(!chart)return;
+  const labels=chart.data.labels||[];const datasets=chart.data.datasets||[];
   const rows=[['Label',...datasets.map(d=>d.label||'Value')]];
   labels.forEach((l,i)=>rows.push([l,...datasets.map(d=>d.data[i]??'')]));
   const csv=rows.map(r=>r.map(v=>typeof v==='string'&&v.includes(',')?`"${v}"`:v).join(',')).join('\n');
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download=(title||'chart').replace(/\s+/g,'_')+'.csv';a.click();
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=(title||'chart').replace(/\s+/g,'_')+'.csv';a.click();
   showToast('CSV Downloaded ✓','green');
 }
-
 function downloadKPIImg(kpiEl,label,val){
-  // Create mini canvas from KPI card
-  const tmp=document.createElement('canvas');
-  tmp.width=400;tmp.height=180;
-  const ctx=tmp.getContext('2d');
-  ctx.fillStyle=THEME==='dark'?'#161B27':'#FFFFFF';
-  ctx.fillRect(0,0,400,180);
-  ctx.fillStyle=THEME==='dark'?'#7A86A8':'#4A5270';
-  ctx.font='bold 11px Sora,sans-serif';ctx.fillText(label.toUpperCase(),20,38);
-  ctx.fillStyle=THEME==='dark'?'#E8ECF8':'#0A0E1F';
-  ctx.font='bold 52px Sora,sans-serif';ctx.fillText(val,20,110);
-  ctx.fillStyle='#5B6EF5';ctx.fillRect(0,160,400,3);
-  ctx.fillStyle=THEME==='dark'?'#3D4560':'#9BA3C0';
-  ctx.font='10px Sora,sans-serif';ctx.fillText('AGB Analytics',20,175);
-  const a=document.createElement('a');
-  a.download=label.replace(/\s+/g,'_')+'.png';a.href=tmp.toDataURL('image/png');a.click();
+  const tmp=document.createElement('canvas');tmp.width=380;tmp.height=160;
+  const ctx=tmp.getContext('2d');ctx.fillStyle=THEME==='dark'?'#161B27':'#FFFFFF';ctx.fillRect(0,0,380,160);
+  ctx.fillStyle=THEME==='dark'?'#7A86A8':'#4A5270';ctx.font='bold 10px Sora,sans-serif';ctx.fillText(label.toUpperCase(),18,32);
+  ctx.fillStyle=THEME==='dark'?'#E8ECF8':'#0A0E1F';ctx.font='bold 48px Sora,sans-serif';ctx.fillText(val,18,96);
+  ctx.fillStyle='#5B6EF5';ctx.fillRect(0,148,380,3);
+  ctx.fillStyle=THEME==='dark'?'#3D4560':'#9BA3C0';ctx.font='9px Sora,sans-serif';ctx.fillText('AGB Analytics',18,160);
+  const a=document.createElement('a');a.download=label.replace(/\s+/g,'_')+'.png';a.href=tmp.toDataURL('image/png');a.click();
   showToast('KPI Downloaded ✓','green');
 }
-
 function exportCSV(){
   const rows=[HDR.join(','),...ALL.map(r=>HDR.map(col=>{const v=r[col]||'';return typeof v==='string'&&v.includes(',')?`"${v}"`:v;}).join(','))];
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));a.download='agb_export.csv';a.click();
   showToast(LANG==='ar'?'تم التصدير ✓':'Exported ✓','green');
 }
-
 function resetState(){
-  CHARTS.forEach(c=>{try{c.destroy();}catch(e){}});
-  CHARTS=[];CHART_REFS={};RAW=[];ALL=[];HDR=[];
+  CHARTS.forEach(c=>{try{c.destroy();}catch(e){}});CHARTS=[];CHART_REFS={};RAW=[];ALL=[];HDR=[];
   DYNAMIC={primaryEntityCol:null,primaryEntityLabel:'Record',primaryEntityLabelAr:'سجل',primaryEntityIcon:'📋'};
   GLOBAL_FILTER={col:null,val:null};
   document.getElementById('dash').style.display='none';
   document.getElementById('page-nav-bar').style.display='none';
-  document.getElementById('nav-tabs').innerHTML='';
-  document.getElementById('chart-type-switcher').innerHTML='';
-  document.getElementById('pages').innerHTML='';
-  document.getElementById('export-btn').style.display='none';
-  document.getElementById('newfile-btn').style.display='none';
+  document.getElementById('nav-tabs').innerHTML='';document.getElementById('chart-type-switcher').innerHTML='';document.getElementById('pages').innerHTML='';
+  ['export-btn','print-btn','snap-btn','newfile-btn'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
   SCOL=null;SDIR=1;ACTIVE=0;
 }
-function resetAll(){
-  resetState();sessionStorage.removeItem(SS_DATA);
-  document.getElementById('upload').style.display='flex';
-  document.getElementById('domain-tag').textContent='Ready';
-  const d=DOMAINS.general;
-  document.documentElement.style.setProperty('--a1',d.c1);
-  document.documentElement.style.setProperty('--a2',d.c2);
-  document.documentElement.style.setProperty('--a3',d.c3);
-  fi.value='';
-}
+function resetAll(){resetState();sessionStorage.removeItem(SS_DATA);showUpload();document.getElementById('domain-tag').textContent='Ready';const d=DOMAINS.general;document.documentElement.style.setProperty('--a1',d.c1);document.documentElement.style.setProperty('--a2',d.c2);document.documentElement.style.setProperty('--a3',d.c3);fi.value='';}
 
 // ═══════════════════════════════════════════════════
 // CROSS-FILTER
 // ═══════════════════════════════════════════════════
 function applyCrossFilter(col,val){
-  if(GLOBAL_FILTER.col===col&&GLOBAL_FILTER.val===val){
-    GLOBAL_FILTER={col:null,val:null};
-    ALL=[...RAW];
-    document.getElementById('filter-badge').classList.remove('show');
-  } else {
-    GLOBAL_FILTER={col,val};
-    ALL=RAW.filter(r=>String(r[col]||'')==String(val));
-    const badge=document.getElementById('filter-badge');
-    badge.textContent=`⚡ ${col}: ${val}`;badge.classList.add('show');
-  }
-  rebuildDash();
-  showToast(GLOBAL_FILTER.col?`Filtered: ${val}`:'Filter cleared','amber');
+  if(GLOBAL_FILTER.col===col&&GLOBAL_FILTER.val===val){GLOBAL_FILTER={col:null,val:null};ALL=[...RAW];document.getElementById('filter-badge').classList.remove('show');}
+  else{GLOBAL_FILTER={col,val};ALL=RAW.filter(r=>String(r[col]||'')==String(val));const badge=document.getElementById('filter-badge');badge.textContent=`⚡ ${col}: ${val}`;badge.classList.add('show');}
+  rebuildDash();showToast(GLOBAL_FILTER.col?`Filtered: ${val}`:'Filter cleared','amber');
 }
 function rebuildDash(){
-  for(let i=0;i<3;i++){
-    const pg=document.getElementById('pg'+i);if(!pg)continue;
-    renderPage(pg,i,ALL);
-    if(i===0)buildTable(i,ALL);
-  }
+  for(let i=0;i<3;i++){const pg=document.getElementById('pg'+i);if(!pg)continue;renderPage(pg,i,ALL);if(i===0)buildTable(i,ALL);}
   buildPageNavTabs();
 }
 
@@ -1103,8 +1098,7 @@ function loadSample(type){
       data.push({'Permit No':`PTW-2024-${String(i).padStart(4,'0')}`,'Permit Type':types[~~(Math.random()*types.length)],'Status':sr>.55?'Closed':sr>.38?'Open':sr>.25?'Overdue':sr>.15?'Pending Approval':'Rejected','Area':areas[~~(Math.random()*areas.length)],'Contractor':contractors[~~(Math.random()*contractors.length)],'Risk Level':risks[rr],'Workers Count':~~(Math.random()*22)+1,'Duration (hrs)':~~(Math.random()*9)+1,'Violations':Math.random()>.7?~~(Math.random()*4):0,'HSE Officer':officers[~~(Math.random()*officers.length)],'Month':months[~~(Math.random()*12)],'Inspection Score':~~(Math.random()*40)+60});
     }
   }
-  RAW=cleanData(data);HDR=Object.keys(RAW[0]);ALL=[...RAW];
-  detectPrimaryEntity();saveSession();
+  RAW=cleanData(data);HDR=Object.keys(RAW[0]);ALL=[...RAW];detectPrimaryEntity();saveSession();
   setTimeout(()=>buildDash(CURRENT_FILENAME),2100);
 }
 
@@ -1116,97 +1110,70 @@ function buildDash(fileName){
   document.getElementById('upload').style.display='none';
   document.getElementById('dash').style.display='block';
   document.getElementById('page-nav-bar').style.display='block';
-  document.getElementById('export-btn').style.display='flex';
-  document.getElementById('print-btn').style.display='flex';
-  document.getElementById('snap-btn').style.display='flex';
-  document.getElementById('newfile-btn').style.display='flex';
+  ['export-btn','print-btn','snap-btn','newfile-btn'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='flex';});
   CHARTS.forEach(c=>{try{c.destroy();}catch(e){}});CHARTS=[];CHART_REFS={};
   const container=document.getElementById('pages');container.innerHTML='';
   const d=DOMAINS[DOMAIN];
   d[LANG].pages.forEach((name,i)=>{
-    const pg=document.createElement('div');pg.className='page'+(i===0?' on':'');pg.id='pg'+i;
-    container.appendChild(pg);buildPage(pg,i);
+    const pg=document.createElement('div');pg.className='page'+(i===0?' on':'');pg.id='pg'+i;container.appendChild(pg);buildPage(pg,i);
   });
-  ACTIVE=0;
-  buildPageNavTabs();
-  buildChartTypeSwitcher();
+  ACTIVE=0;buildPageNavTabs();buildChartTypeSwitcher();
   showToast(`✓ ${RAW.length.toLocaleString()} ${LANG==='ar'?'سجل — جاهز':'records analyzed'}`, 'green');
 }
-
 function buildPageNavTabs(){
-  const nav=document.getElementById('nav-tabs');nav.innerHTML='';
-  const d=DOMAINS[DOMAIN];
+  const nav=document.getElementById('nav-tabs');nav.innerHTML='';const d=DOMAINS[DOMAIN];
   d[LANG].pages.forEach((name,i)=>{
-    const btn=document.createElement('button');
-    btn.className='ptab'+(i===ACTIVE?' on':'');
-    btn.textContent=name;btn.onclick=()=>switchPage(i);
-    nav.appendChild(btn);
+    const btn=document.createElement('button');btn.className='ptab'+(i===ACTIVE?' on':'');btn.textContent=name;btn.onclick=()=>switchPage(i);nav.appendChild(btn);
   });
 }
-
 function buildChartTypeSwitcher(){
   const sw=document.getElementById('chart-type-switcher');sw.innerHTML='';
-  const types=[{k:'bar',icon:'▦'},{k:'line',icon:'∿'},{k:'pie',icon:'◉'}];
-  types.forEach(({k,icon})=>{
-    const btn=document.createElement('button');
-    btn.className='chart-type-btn'+(CHART_MODE===k?' active':'');
+  [{k:'bar',icon:'▦'},{k:'line',icon:'∿'},{k:'pie',icon:'◉'}].forEach(({k,icon})=>{
+    const btn=document.createElement('button');btn.className='chart-type-btn'+(CHART_MODE===k?' active':'');
     btn.textContent=icon;btn.title='Switch to '+k;
     btn.onclick=()=>{CHART_MODE=k;buildChartTypeSwitcher();rebuildDash();};
     sw.appendChild(btn);
   });
 }
-
-function switchPage(i){
-  ACTIVE=i;
-  document.querySelectorAll('.page').forEach((p,j)=>p.classList.toggle('on',j===i));
-  buildPageNavTabs();
-}
+function switchPage(i){ACTIVE=i;document.querySelectorAll('.page').forEach((p,j)=>p.classList.toggle('on',j===i));buildPageNavTabs();}
 
 // ═══════════════════════════════════════════════════
-// PAGE BUILDER
+// PAGE BUILDER — Power BI layout
 // ═══════════════════════════════════════════════════
 function buildPage(container,pi){
   const d=DOMAINS[DOMAIN];
   container.innerHTML=`
     <div class="pbi-header">
       <div class="pbi-title-row">
-        <div>
-          <div class="dh"><span>${d[LANG].pages[pi]}</span></div>
-          <div class="dsub">${RAW.length.toLocaleString()} ${t('records')} · ${HDR.length} cols · ${d[LANG].label}</div>
-        </div>
-        <div class="pbi-filter-row">
-          <div id="fsel${pi}" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;"></div>
-          <input type="text" class="fsrch" id="fsrch${pi}" placeholder="${t('search')}" oninput="applyFilters(${pi})">
-          <button class="clr-btn" onclick="clearFilters(${pi})">${t('clear')}</button>
-        </div>
+        <div><div class="dh"><span>${d[LANG].pages[pi]}</span></div><div class="dsub">${RAW.length.toLocaleString()} ${t('records')} · ${HDR.length} cols · ${d[LANG].label}</div></div>
+      </div>
+      <div class="pbi-filter-row">
+        <span class="fl">${t('filter')}</span>
+        <div id="fsel${pi}" style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;"></div>
+        <input type="text" class="fsrch" id="fsrch${pi}" placeholder="${t('search')}" oninput="applyFilters(${pi})">
+        <button class="clr-btn" onclick="clearFilters(${pi})">${t('clear')}</button>
       </div>
     </div>
     <div class="pbi-body">
       <div class="pbi-left">
-        <div class="exec-summary" style="margin-bottom:8px;">
+        <div class="exec-summary">
           <div class="es-tag">${t('expert_tag')}</div>
           <div class="es-body" id="es${pi}">...</div>
         </div>
-        <div class="kgrid" id="kg${pi}" style="grid-template-columns:repeat(2,1fr);"></div>
+        <div class="kgrid" id="kg${pi}"></div>
       </div>
       <div class="pbi-right">
         <div class="cg" id="cg${pi}"></div>
       </div>
     </div>
     <div id="reco${pi}"></div>
-    ${pi===0?`<div class="tcard" style="margin-top:10px;"><div class="tcard-top"><div class="tcard-ttl">${t('full_data')}</div><div class="tcard-meta" id="tmeta${pi}">${RAW.length.toLocaleString()} ${t('records')}</div></div><div class="tw"><table><thead id="th${pi}"></thead><tbody id="tb${pi}"></tbody></table></div></div>`:''}
+    ${pi===0?`<div class="tcard"><div class="tcard-top"><div class="tcard-ttl">${t('full_data')}</div><div class="tcard-meta" id="tmeta${pi}">${RAW.length.toLocaleString()} ${t('records')}</div></div><div class="tw"><table><thead id="th${pi}"></thead><tbody id="tb${pi}"></tbody></table></div></div>`:''}
   `;
   buildFilters(pi,catCols());
   renderPage(container,pi,ALL);
   if(pi===0)buildTable(pi,ALL);
 }
-
-function renderPage(container,pi,data){
-  buildKPIs(pi,data);
-  buildInsight(pi,data);
-  buildCharts(pi,data);
-  buildRecos(pi,data);
-}
+function renderPage(container,pi,data){buildKPIs(pi,data);buildInsight(pi,data);buildCharts(pi,data);buildRecos(pi,data);}
 
 // ═══════════════════════════════════════════════════
 // FILTERS
@@ -1215,59 +1182,36 @@ function buildFilters(pi,cc){
   const fsel=document.getElementById('fsel'+pi);if(!fsel)return;
   const cols=[...cc.filter(c=>!isStatus(c)).slice(0,3),...statusCols().slice(0,2)];
   cols.forEach(col=>{
-    const sel=document.createElement('select');
-    const vals=[...new Set(RAW.map(r=>r[col]))].filter(Boolean).sort();
+    const sel=document.createElement('select');const vals=[...new Set(RAW.map(r=>r[col]))].filter(Boolean).sort();
     sel.innerHTML=`<option value="">All ${col}</option>`+vals.map(v=>`<option value="${v}">${v}</option>`).join('');
     if(GLOBAL_FILTER.col===col)sel.value=GLOBAL_FILTER.val||'';
-    sel.onchange=()=>applyFilters(pi);
-    sel.id=`fsel_${pi}_${col.replace(/\W/g,'_')}`;
-    fsel.appendChild(sel);
+    sel.onchange=()=>applyFilters(pi);sel.id=`fsel_${pi}_${col.replace(/\W/g,'_')}`;fsel.appendChild(sel);
   });
 }
-
 function getFilteredData(pi){
   const filters={};
-  document.querySelectorAll(`#fsel${pi} select`).forEach(sel=>{
-    const col=sel.id.replace(`fsel_${pi}_`,'').replace(/_/g,' ');
-    if(sel.value)filters[col]=sel.value;
-  });
+  document.querySelectorAll(`#fsel${pi} select`).forEach(sel=>{const col=sel.id.replace(`fsel_${pi}_`,'').replace(/_/g,' ');if(sel.value)filters[col]=sel.value;});
   const srch=(document.getElementById('fsrch'+pi)||{}).value||'';
   let d=GLOBAL_FILTER.col?RAW.filter(r=>String(r[GLOBAL_FILTER.col]||'')==String(GLOBAL_FILTER.val)):[...RAW];
   Object.entries(filters).forEach(([col,val])=>{d=d.filter(r=>String(r[col]||'')==val);});
   if(srch)d=d.filter(r=>Object.values(r).some(v=>String(v).toLowerCase().includes(srch.toLowerCase())));
   return d;
 }
-
 function applyFilters(pi){
-  const d=getFilteredData(pi);
-  ALL=d;
-  renderPage(null,pi,d);
-  if(pi===0)buildTable(pi,d);
-  for(let i=0;i<3;i++){
-    if(i===pi)continue;
-    const pg=document.getElementById('pg'+i);if(!pg)continue;
-    renderPage(pg,i,d);
-    if(i===0)buildTable(i,d);
-  }
+  const d=getFilteredData(pi);ALL=d;
+  for(let i=0;i<3;i++){const pg=document.getElementById('pg'+i);if(!pg)continue;renderPage(pg,i,d);if(i===0)buildTable(i,d);}
 }
 function clearFilters(pi){
-  document.querySelectorAll(`#fsel${pi} select`).forEach(s=>s.value='');
-  const si=document.getElementById('fsrch'+pi);if(si)si.value='';
-  GLOBAL_FILTER={col:null,val:null};
-  document.getElementById('filter-badge').classList.remove('show');
-  ALL=[...RAW];
-  for(let i=0;i<3;i++){
-    const pg=document.getElementById('pg'+i);if(!pg)continue;
-    renderPage(pg,i,ALL);if(i===0)buildTable(i,ALL);
-  }
+  document.querySelectorAll(`#fsel${pi} select`).forEach(s=>s.value='');const si=document.getElementById('fsrch'+pi);if(si)si.value='';
+  GLOBAL_FILTER={col:null,val:null};document.getElementById('filter-badge').classList.remove('show');ALL=[...RAW];
+  for(let i=0;i<3;i++){const pg=document.getElementById('pg'+i);if(!pg)continue;renderPage(pg,i,ALL);if(i===0)buildTable(i,ALL);}
 }
 
 // ═══════════════════════════════════════════════════
-// KPIs — FULLY DYNAMIC
+// KPIs — COMPACT POWER BI STYLE
 // ═══════════════════════════════════════════════════
 function buildKPIs(pi,data){
-  const row=document.getElementById('kg'+pi);if(!row)return;
-  row.innerHTML='';
+  const row=document.getElementById('kg'+pi);if(!row)return;row.innerHTML='';
   const kpis=computeKPIs(pi,data);
   kpis.forEach(k=>{
     if(k.skip)return;
@@ -1275,15 +1219,8 @@ function buildKPIs(pi,data){
     if(val===null||val===undefined)return;
     if(val===0&&k.hideZero)return;
     const disp=k.pct?Math.round(val)+'%':k.money?fmt(val):typeof val==='number'?Math.round(val).toLocaleString():val;
-    const kpiEl=document.createElement('div');
-    kpiEl.className='kpi';kpiEl.style.setProperty('--kc',k.color);
-    kpiEl.innerHTML=`
-      <div class="kpi-top"><div class="kpi-ico">${k.ico}</div><span class="kbadge ${k.bc}">${k.badge}</span></div>
-      <div class="klbl">${k.lbl}</div>
-      <div class="kval">${disp}</div>
-      <div class="kdesc">${k.desc||''}</div>
-      <button class="dl-kpi-btn" title="Download" onclick="downloadKPIImg(this.closest('.kpi'),'${k.lbl.replace(/'/g,"'")}','${disp}')">↓</button>
-    `;
+    const kpiEl=document.createElement('div');kpiEl.className='kpi';kpiEl.style.setProperty('--kc',k.color);
+    kpiEl.innerHTML=`<div class="kpi-top"><div class="kpi-ico">${k.ico}</div><span class="kbadge ${k.bc}">${k.badge}</span></div><div class="klbl">${k.lbl}</div><div class="kval">${disp}</div><div class="kdesc">${k.desc||''}</div><button class="dl-kpi-btn" title="Download" onclick="downloadKPIImg(this.closest('.kpi'),'${k.lbl.replace(/'/g,"\\'")}','${disp}')">↓</button>`;
     row.appendChild(kpiEl);
   });
   if(!row.innerHTML.trim())row.innerHTML=`<div class="kpi"><div class="klbl">${LANG==='ar'?'البيانات':'Records'}</div><div class="kval" style="color:var(--a2)">${data.length.toLocaleString()}</div></div>`;
@@ -1291,196 +1228,143 @@ function buildKPIs(pi,data){
 
 function computeKPIs(pi,data){
   const nc=numCols(),cc=catCols(),sc=statusCols();
-  const el=eLabel(),ei=eIcon();
-  const isAr=LANG==='ar';
-
+  const el=eLabel(),ei=eIcon(),isAr=LANG==='ar';
   if(DOMAIN==='sales'){
     const rv=fc('revenue')||nc[0],pr=fc('profit')||nc[1],dc=fc('discount');
     const stc=fc('status')||sc[0],regc=fc('region')||cc[0],prodc=fc('product')||cc[1];
     const chc=cc.find(c=>c.toLowerCase().includes('channel'));
     const totalRev=rv?sum(data,rv):0,totalProfit=pr?sum(data,pr):0;
     const margin=totalRev?Math.round(totalProfit/totalRev*100):0;
-    const topReg=regc?topG(data,regc,rv):'N/A';
-    const topProd=prodc?topG(data,prodc,rv):'N/A';
-    const avgDisc=dc?Math.round(avg(data,dc)):0;
-    const uniqueReg=regc?new Set(data.map(r=>r[regc])).size:0;
-    const uniqueCh=chc?new Set(data.map(r=>r[chc])).size:0;
+    const topReg=regc?topG(data,regc,rv):'N/A',topProd=prodc?topG(data,prodc,rv):'N/A';
+    const uniqueReg=regc?new Set(data.map(r=>r[regc])).size:0,uniqueCh=chc?new Set(data.map(r=>r[chc])).size:0;
     const sets=[
-      [{ico:'💰',lbl:isAr?'إجمالي الإيرادات':'Total Revenue',val:d=>rv?sum(d,rv):0,color:'var(--green)',badge:'Revenue',bc:'up',money:true,desc:''},
+      [{ico:'💰',lbl:isAr?'الإيرادات':'Revenue',val:d=>rv?sum(d,rv):0,color:'var(--green)',badge:'Rev',bc:'up',money:true},
        {ico:ei,lbl:(isAr?'إجمالي ':'Total ')+el+'s',val:d=>d.length,color:'var(--a1)',badge:el+'s',bc:'nt'},
-       ...(pr?[{ico:'📈',lbl:isAr?'إجمالي الأرباح':'Gross Profit',val:d=>sum(d,pr),color:'var(--a2)',badge:'Profit',bc:totalProfit>0?'up':'dn',money:true}]:[]),
-       ...(rv&&pr?[{ico:'🎯',lbl:isAr?'هامش الربح':'Profit Margin',val:d=>{const r=sum(d,rv);return r?sum(d,pr)/r*100:0;},color:'var(--cyan)',badge:'Margin',bc:margin>20?'up':margin>10?'nt':'dn',pct:true}]:[]),
+       ...(pr?[{ico:'📈',lbl:isAr?'الأرباح':'Profit',val:d=>sum(d,pr),color:'var(--a2)',badge:'P&L',bc:totalProfit>0?'up':'dn',money:true}]:[]),
+       ...(rv&&pr?[{ico:'🎯',lbl:isAr?'الهامش':'Margin',val:d=>{const r=sum(d,rv);return r?sum(d,pr)/r*100:0;},color:'var(--cyan)',badge:'%',bc:margin>20?'up':margin>10?'nt':'dn',pct:true}]:[]),
        ...(uniqueReg>0?[{ico:'🌐',lbl:isAr?'المناطق':'Regions',val:d=>regc?new Set(d.map(r=>r[regc])).size:0,color:'var(--cyan)',badge:'Geo',bc:'nt',desc:topReg}]:[]),
-       ...(uniqueCh>0?[{ico:'📡',lbl:isAr?'القنوات':'Channels',val:d=>chc?new Set(d.map(r=>r[chc])).size:0,color:'var(--purple)',badge:'Ch',bc:'nt'}]:[]),
       ],
-      [{ico:'↩️',lbl:isAr?'مُعاد':'Returned',val:d=>stc?d.filter(r=>String(r[stc]||'').match(/return/i)).length:0,color:'var(--red)',badge:'Return',bc:'dn'},
-       {ico:'⏳',lbl:isAr?'معلق':'Pending',val:d=>stc?d.filter(r=>String(r[stc]||'').match(/pend/i)).length:0,color:'var(--amber)',badge:'Pending',bc:'wn'},
-       {ico:'❌',lbl:isAr?'ملغى':'Cancelled',val:d=>stc?d.filter(r=>String(r[stc]||'').match(/cancel/i)).length:0,color:'var(--red)',badge:'Cncl',bc:'dn',hideZero:true},
-       ...(dc?[{ico:'🔻',lbl:isAr?'متوسط الخصم':'Avg Discount',val:d=>avg(d,dc),color:'var(--amber)',badge:'Disc',bc:'wn',pct:true}]:[]),
-       ...(rv&&stc?[{ico:'📉',lbl:isAr?'إيرادات في خطر':'Revenue at Risk',val:d=>{const lost=d.filter(r=>String(r[stc]||'').match(/return|cancel/i));return rv?sum(lost,rv):0;},color:'var(--red)',badge:'Risk',bc:'dn',money:true}]:[]),
+      [{ico:'↩️',lbl:isAr?'مُعاد':'Returned',val:d=>stc?d.filter(r=>String(r[stc]||'').match(/return/i)).length:0,color:'var(--red)',badge:'Ret',bc:'dn'},
+       {ico:'⏳',lbl:isAr?'معلق':'Pending',val:d=>stc?d.filter(r=>String(r[stc]||'').match(/pend/i)).length:0,color:'var(--amber)',badge:'Pend',bc:'wn'},
+       ...(dc?[{ico:'🔻',lbl:isAr?'الخصم':'Avg Disc',val:d=>avg(d,dc),color:'var(--amber)',badge:'Disc',bc:'wn',pct:true}]:[]),
+       ...(rv&&stc?[{ico:'📉',lbl:isAr?'إيرادات في خطر':'At Risk',val:d=>{const lost=d.filter(r=>String(r[stc]||'').match(/return|cancel/i));return rv?sum(lost,rv):0;},color:'var(--red)',badge:'Risk',bc:'dn',money:true}]:[]),
       ],
       [{ico:'🏆',lbl:isAr?'أعلى منطقة':'Top Region',val:d=>{const g=groupBy(d,regc||'',rv||'',1);return g.length?g[0][1]:0;},color:'var(--green)',badge:'Best',bc:'up',money:true,desc:topReg},
        ...(prodc&&rv?[{ico:'⭐',lbl:isAr?'أفضل منتج':'Top Product',val:d=>{const g=groupBy(d,prodc,rv,1);return g.length?g[0][1]:0;},color:'var(--a2)',badge:'Star',bc:'up',money:true,desc:topProd}]:[]),
        {ico:'✅',lbl:isAr?'مكتملة':'Completed',val:d=>stc?d.filter(r=>String(r[stc]||'').match(/complet/i)).length:0,color:'var(--green)',badge:'Done',bc:'up'},
       ]
-    ];
-    return (sets[pi]||sets[0]).map(k=>({...k,val:typeof k.val==='function'?k.val(data):k.val}));
+    ];return(sets[pi]||sets[0]).map(k=>({...k,val:typeof k.val==='function'?k.val(data):k.val}));
   }
-
   if(DOMAIN==='hr'){
     const sal=fc('salary')||nc[0],abs=fc('absence'),trn=fc('training');
     const stc=fc('status')||sc[0],perf=fc('performance')||sc.find(c=>c.toLowerCase().includes('perf'));
     const dept=fc('department')||cc[0],gend=fc('gender')||cc.find(c=>c.toLowerCase().includes('gender'));
-    const ot=nc.find(c=>c.toLowerCase().includes('over'));
     const femPct=gend?Math.round(data.filter(r=>String(r[gend]||'').match(/female|f$/i)).length/Math.max(1,data.length)*100):null;
     const sets=[
-      [{ico:'👥',lbl:isAr?'إجمالي الموظفين':'Total Headcount',val:d=>d.length,color:'var(--a1)',badge:'Staff',bc:'nt'},
-       ...(sal?[{ico:'💰',lbl:isAr?'إجمالي الرواتب':'Total Payroll',val:d=>sum(d,sal),color:'var(--green)',badge:'Payroll',bc:'up',money:true}]:[]),
+      [{ico:'👥',lbl:isAr?'الموظفون':'Headcount',val:d=>d.length,color:'var(--a1)',badge:'Staff',bc:'nt'},
+       ...(sal?[{ico:'💰',lbl:isAr?'الرواتب':'Payroll',val:d=>sum(d,sal),color:'var(--green)',badge:'Pay',bc:'up',money:true}]:[]),
        ...(sal?[{ico:'📊',lbl:isAr?'متوسط الراتب':'Avg Salary',val:d=>avg(d,sal),color:'var(--a2)',badge:'Avg',bc:'nt',money:true}]:[]),
        ...(dept?[{ico:'🏢',lbl:isAr?'الأقسام':'Depts',val:d=>new Set(d.map(r=>r[dept])).size,color:'var(--cyan)',badge:'Depts',bc:'nt'}]:[]),
-       ...(femPct!==null?[{ico:'👩',lbl:isAr?'نسبة الإناث':'Female %',val:()=>femPct,color:'var(--purple)',badge:'F%',bc:'nt',pct:true}]:[]),
       ],
-      [{ico:'🚪',lbl:isAr?'استقال/أنهيت':'Resigned',val:d=>stc?d.filter(r=>String(r[stc]||'').match(/resign|termin/i)).length:0,color:'var(--red)',badge:'⚠',bc:'dn'},
-       {ico:'📌',lbl:isAr?'معدل الاستنزاف':'Attrition %',val:d=>{const l=stc?d.filter(r=>String(r[stc]||'').match(/resign|termin/i)).length:0;return d.length?l/d.length*100:0;},color:'var(--red)',badge:'Churn',bc:'dn',pct:true},
+      [{ico:'🚪',lbl:isAr?'استقال':'Resigned',val:d=>stc?d.filter(r=>String(r[stc]||'').match(/resign|termin/i)).length:0,color:'var(--red)',badge:'⚠',bc:'dn'},
+       {ico:'📌',lbl:isAr?'الاستنزاف':'Attrition',val:d=>{const l=stc?d.filter(r=>String(r[stc]||'').match(/resign|termin/i)).length:0;return d.length?l/d.length*100:0;},color:'var(--red)',badge:'%',bc:'dn',pct:true},
        {ico:'✅',lbl:isAr?'نشطون':'Active',val:d=>stc?d.filter(r=>String(r[stc]||'').match(/active/i)).length:0,color:'var(--green)',badge:'Active',bc:'up'},
-       ...(abs?[{ico:'📅',lbl:isAr?'متوسط الغياب':'Avg Absence',val:d=>avg(d,abs),color:'var(--amber)',badge:'Days',bc:'wn'}]:[]),
-       ...(ot?[{ico:'⏰',lbl:isAr?'متوسط إضافي':'Avg Overtime',val:d=>avg(d,ot),color:'var(--amber)',badge:'OT',bc:'wn'}]:[]),
+       ...(abs?[{ico:'📅',lbl:isAr?'الغياب':'Absence',val:d=>avg(d,abs),color:'var(--amber)',badge:'Days',bc:'wn'}]:[]),
       ],
-      [{ico:'🏆',lbl:isAr?'متميزون':'Top Performers',val:d=>perf?d.filter(r=>String(r[perf]||'').match(/except|excell/i)).length:0,color:'var(--green)',badge:'Top',bc:'up'},
-       ...(trn?[{ico:'📚',lbl:isAr?'متوسط التدريب':'Avg Training',val:d=>avg(d,trn),color:'var(--a2)',badge:'Hrs',bc:'nt'}]:[]),
-       ...(sal?[{ico:'💸',lbl:isAr?'أعلى راتب':'Max Salary',val:d=>Math.max(...d.map(r=>r[sal]||0)),color:'var(--cyan)',badge:'Max',bc:'nt',money:true}]:[]),
-       ...(sal?[{ico:'💵',lbl:isAr?'أدنى راتب':'Min Salary',val:d=>Math.min(...d.filter(r=>r[sal]>0).map(r=>r[sal]||0)),color:'var(--muted)',badge:'Min',bc:'nt',money:true}]:[]),
+      [{ico:'🏆',lbl:isAr?'متميزون':'Top Perf',val:d=>perf?d.filter(r=>String(r[perf]||'').match(/except|excell/i)).length:0,color:'var(--green)',badge:'Top',bc:'up'},
+       ...(trn?[{ico:'📚',lbl:isAr?'التدريب':'Training',val:d=>avg(d,trn),color:'var(--a2)',badge:'Hrs',bc:'nt'}]:[]),
+       ...(sal?[{ico:'💸',lbl:isAr?'أعلى راتب':'Max Pay',val:d=>Math.max(...d.map(r=>r[sal]||0)),color:'var(--cyan)',badge:'Max',bc:'nt',money:true}]:[]),
+       ...(femPct!==null?[{ico:'👩',lbl:isAr?'نسبة الإناث':'Female %',val:()=>femPct,color:'var(--purple)',badge:'F%',bc:'nt',pct:true}]:[]),
       ]
-    ];
-    return (sets[pi]||sets[0]).map(k=>({...k,val:typeof k.val==='function'?k.val(data):k.val}));
+    ];return(sets[pi]||sets[0]).map(k=>({...k,val:typeof k.val==='function'?k.val(data):k.val}));
   }
-
   if(DOMAIN==='safety'){
     const stc=fc('status')||sc[0];
-    const risk=fc('risk')||sc.find(c=>c.toLowerCase().includes('risk')||c.toLowerCase().includes('severity'));
+    const risk=HDR.find(h=>h.toLowerCase().includes('risk_level'))||HDR.find(h=>h.toLowerCase().includes('risk'))||sc.find(c=>c.toLowerCase().includes('risk'));
     const area=fc('region')||cc.find(c=>['area','zone','location','department','dept'].some(k=>c.toLowerCase().includes(k)));
     const ctr=fc('contractor')||cc.find(c=>c.toLowerCase().includes('contractor'));
     const viol=fc('violations')||nc.find(c=>c.toLowerCase().includes('viol'));
-    const wrkr=fc('workers');const dur=fc('duration');const score=fc('score');
-    const abs=fc('absence'); // for lost work days
-    const injType=fc('permit_type'); // injury type or permit type
-    const total=data.length||1;
-    const closed=stc?data.filter(r=>String(r[stc]||'').match(/close|closed/i)).length:0;
-    const open=stc?data.filter(r=>String(r[stc]||'').match(/open|pend|investigat/i)).length:0;
-    const overdue=stc?data.filter(r=>String(r[stc]||'').match(/overdue/i)).length:0;
-    const highRisk=risk?data.filter(r=>String(r[risk]||'').match(/high|critical/i)).length:0;
-    const totalViol=viol?Math.round(sum(data,viol)):0;
+    const wrkr=fc('workers'),dur=fc('duration'),score=fc('score');
+    const abs=fc('absence');
+    const total=data.length||1,closed=stc?data.filter(r=>String(r[stc]||'').match(/close/i)).length:0;
     const compliance=Math.round(closed/total*100);
-    const totalLabel=isAr?('إجمالي '+(DYNAMIC.primaryEntityLabelAr||'الحوادث')):('Total '+eLabel()+'s');
-    const avgSeverity=nc.find(c=>c.toLowerCase().includes('severity'))?avg(data,nc.find(c=>c.toLowerCase().includes('severity'))):null;
-    const totalLostDays=abs?Math.round(sum(data,abs)):null;
     const sets=[
-      [{ico:ei,lbl:totalLabel,val:d=>d.length,color:'var(--a1)',badge:'All',bc:'nt'},
-       {ico:'🔓',lbl:isAr?'مفتوح/جارٍ':'Open/Under Investigation',val:d=>stc?d.filter(r=>String(r[stc]||'').match(/open|pend|investigat/i)).length:0,color:'var(--amber)',badge:'Open',bc:'wn'},
-       {ico:'✅',lbl:isAr?'مغلق':'Closed',val:d=>stc?d.filter(r=>String(r[stc]||'').match(/close/i)).length:0,color:'var(--green)',badge:'Done',bc:'up',desc:`${compliance}% closure`},
+      [{ico:ei,lbl:(isAr?'إجمالي ':'Total ')+eLabel()+'s',val:d=>d.length,color:'var(--a1)',badge:'All',bc:'nt'},
+       {ico:'🔓',lbl:isAr?'مفتوح/جارٍ':'Open',val:d=>stc?d.filter(r=>String(r[stc]||'').match(/open|pend|investigat/i)).length:0,color:'var(--amber)',badge:'Open',bc:'wn'},
+       {ico:'✅',lbl:isAr?'مغلق':'Closed',val:d=>stc?d.filter(r=>String(r[stc]||'').match(/close/i)).length:0,color:'var(--green)',badge:'Done',bc:'up'},
        {ico:'🚨',lbl:isAr?'متأخر':'Overdue',val:d=>stc?d.filter(r=>String(r[stc]||'').match(/overdue/i)).length:0,color:'var(--red)',badge:'OD',bc:'dn'},
-       ...(risk?[{ico:'🔥',lbl:isAr?'مخاطر عالية/حرجة':'High/Critical Risk',val:d=>risk?d.filter(r=>String(r[risk]||'').match(/high|critical/i)).length:0,color:'var(--red)',badge:'High',bc:'dn'}]:[]),
-       ...(ctr?[{ico:'🏗️',lbl:isAr?'مقاولون':'Contractors',val:d=>new Set(d.map(r=>r[ctr])).size,color:'var(--a1)',badge:'CTR',bc:'nt'}]:[]),
+       ...(risk?[{ico:'🔥',lbl:isAr?'خطر عالٍ':'High Risk',val:d=>risk?d.filter(r=>String(r[risk]||'').match(/high|critical/i)).length:0,color:'var(--red)',badge:'High',bc:'dn'}]:[]),
       ],
-      [{ico:'⚡',lbl:isAr?'إجمالي المخالفات/الحوادث الشديدة':'Total Violations / High Severity',val:d=>viol?sum(d,viol):d.filter(r=>String(r[risk]||'').match(/high|critical/i)).length,color:'var(--red)',badge:'Sev',bc:'dn'},
-       ...(totalLostDays!==null?[{ico:'📅',lbl:isAr?'أيام عمل مفقودة':'Lost Work Days',val:d=>abs?sum(d,abs):0,color:'var(--red)',badge:'LWD',bc:'dn'}]:[]),
-       ...(avgSeverity!==null?[{ico:'📊',lbl:isAr?'متوسط الشدة':'Avg Severity',val:d=>{const sc2=nc.find(c=>c.toLowerCase().includes('severity'));return sc2?avg(d,sc2):0;},color:'var(--amber)',badge:'Sev',bc:'wn'}]:[]),
-       ...(wrkr?[{ico:'👷',lbl:isAr?'إجمالي العمال':'Workers',val:d=>sum(d,wrkr),color:'var(--amber)',badge:'Crew',bc:'wn'}]:[]),
-       ...(dur?[{ico:'🕐',lbl:isAr?'متوسط المدة':'Avg Duration',val:d=>avg(d,dur),color:'var(--cyan)',badge:'Hrs',bc:'nt'}]:[]),
+      [{ico:'⚡',lbl:isAr?'المخالفات':'Violations',val:d=>viol?sum(d,viol):d.filter(r=>String(r[risk]||'').match(/high|critical/i)).length,color:'var(--red)',badge:'Viol',bc:'dn'},
+       ...(abs?[{ico:'📅',lbl:isAr?'أيام مفقودة':'Lost Days',val:d=>abs?sum(d,abs):0,color:'var(--red)',badge:'LWD',bc:'dn'}]:[]),
+       ...(wrkr?[{ico:'👷',lbl:isAr?'العمال':'Workers',val:d=>sum(d,wrkr),color:'var(--amber)',badge:'Crew',bc:'wn'}]:[]),
+       ...(dur?[{ico:'🕐',lbl:isAr?'متوسط المدة':'Avg Hrs',val:d=>avg(d,dur),color:'var(--cyan)',badge:'Hrs',bc:'nt'}]:[]),
       ],
-      [{ico:'📊',lbl:isAr?'معدل الإغلاق':'Closure Rate',val:d=>{const cl=stc?d.filter(r=>String(r[stc]||'').match(/close/i)).length:0;return d.length?cl/d.length*100:0;},color:compliance>85?'var(--green)':'var(--red)',badge:'%',bc:compliance>85?'up':'dn',pct:true},
-       ...(score?[{ico:'🏅',lbl:isAr?'متوسط نتيجة التفتيش':'Avg Inspection Score',val:d=>avg(d,score),color:'var(--a2)',badge:'Score',bc:'nt'}]:[]),
+      [{ico:'📊',lbl:isAr?'الامتثال':'Compliance',val:d=>{const cl=stc?d.filter(r=>String(r[stc]||'').match(/close/i)).length:0;return d.length?cl/d.length*100:0;},color:compliance>85?'var(--green)':'var(--red)',badge:'%',bc:compliance>85?'up':'dn',pct:true},
+       ...(score?[{ico:'🏅',lbl:isAr?'نتيجة التفتيش':'Inspection',val:d=>avg(d,score),color:'var(--a2)',badge:'Score',bc:'nt'}]:[]),
        {ico:'✅',lbl:isAr?'مغلق':'Closed',val:d=>stc?d.filter(r=>String(r[stc]||'').match(/close/i)).length:0,color:'var(--green)',badge:'Done',bc:'up'},
        {ico:'🔓',lbl:isAr?'لا يزال مفتوحاً':'Still Open',val:d=>stc?d.filter(r=>String(r[stc]||'').match(/open|pend|investigat/i)).length:0,color:'var(--amber)',badge:'Open',bc:'wn'},
       ]
-    ];
-    return (sets[pi]||sets[0]).map(k=>({...k,val:typeof k.val==='function'?k.val(data):k.val}));
+    ];return(sets[pi]||sets[0]).map(k=>({...k,val:typeof k.val==='function'?k.val(data):k.val}));
   }
-
-  // GENERAL
   const kpis=[{ico:ei,lbl:(isAr?'إجمالي ':'Total ')+eLabel()+'s',val:data.length,color:'var(--a1)',badge:'Total',bc:'nt'}];
-  numCols().slice(0,3).forEach((col,i)=>{
-    const s=sum(data,col);if(s===0)return;
-    kpis.push({ico:['📊','📈','💡'][i],lbl:'Total '+col,val:s,color:['var(--green)','var(--a2)','var(--cyan)'][i],badge:col.substring(0,5),bc:'nt',money:true});
-  });
+  numCols().slice(0,3).forEach((col,i)=>{const s=sum(data,col);if(s===0)return;kpis.push({ico:['📊','📈','💡'][i],lbl:'Total '+col,val:s,color:['var(--green)','var(--a2)','var(--cyan)'][i],badge:col.substring(0,5),bc:'nt',money:true});});
   return kpis;
 }
 
 // ═══════════════════════════════════════════════════
 // INSIGHT
 // ═══════════════════════════════════════════════════
-function buildInsight(pi,data){
-  const el=document.getElementById('es'+pi);if(!el)return;
-  el.innerHTML=getInsight(pi,data);
-}
+function buildInsight(pi,data){const el=document.getElementById('es'+pi);if(!el)return;el.innerHTML=getInsight(pi,data);}
 function getInsight(pi,data){
-  const n=data.length;const el=eLabel();const isAr=LANG==='ar';
+  const n=data.length,el=eLabel(),isAr=LANG==='ar';
   if(!n)return isAr?'لا توجد سجلات مطابقة.':'No records match current filters.';
   const nc=numCols(),cc=catCols(),sc=statusCols();
-
   if(DOMAIN==='sales'){
     const rv=fc('revenue')||nc[0],pr=fc('profit')||nc[1],dc=fc('discount');
     const stc=fc('status')||sc[0],regc=fc('region')||cc[0],prodc=fc('product')||cc[1];
-    const totalRev=rv?sum(data,rv):0,totalProfit=pr?sum(data,pr):0;
-    const margin=totalRev?Math.round(totalProfit/totalRev*100):0;
-    const returned=stc?data.filter(r=>String(r[stc]||'').match(/return/i)).length:0;
-    const pending=stc?data.filter(r=>String(r[stc]||'').match(/pend/i)).length:0;
-    const topReg=regc?topG(data,regc,rv):'N/A',topProd=prodc?topG(data,prodc,rv):'N/A';
-    const avgDisc=dc?Math.round(avg(data,dc)):0;
-    if(isAr)return[`البيانات تغطي <strong>${n.toLocaleString()} ${el}</strong> بإيرادات <span class="hi">${fmt(totalRev)}</span>. ربح: <span class="${margin>20?'ok':margin>10?'hi':'bad'}">${fmt(totalProfit)} (${margin}%)</span>. المنطقة الأولى: <strong>${topReg}</strong>. المنتج الأول: <strong>${topProd}</strong>.`,`<span class="bad">${returned} ${el} (${Math.round(returned/n*100)}%) مُعاد أو ملغى.</span> <strong>${pending} معلق</strong>. متوسط الخصم: <span class="${avgDisc>15?'bad':'warn'}">${avgDisc}%</span>.`,`توسيع أقوى المنتجات في أضعف المناطق هو المحرك الأعلى نمواً.`][pi]||'';
-    return[`Dataset covers <strong>${n.toLocaleString()} ${el}s</strong> with revenue <span class="hi">${fmt(totalRev)}</span>. Profit: <span class="${margin>20?'ok':margin>10?'hi':'bad'}">${fmt(totalProfit)} (${margin}% margin)</span>. Top region: <strong>${topReg}</strong>. Top product: <strong>${topProd}</strong>.`,`<span class="bad">${returned} ${el}s (${Math.round(returned/n*100)}%) returned or cancelled.</span> <strong>${pending} pending</strong>. Avg discount: <span class="${avgDisc>15?'bad':'warn'}">${avgDisc}%</span>.`,`Expanding top products to weak regions is the highest-leverage growth move.`][pi]||'';
+    const totalRev=rv?sum(data,rv):0,totalProfit=pr?sum(data,pr):0,margin=totalRev?Math.round(totalProfit/totalRev*100):0;
+    const returned=stc?data.filter(r=>String(r[stc]||'').match(/return/i)).length:0,pending=stc?data.filter(r=>String(r[stc]||'').match(/pend/i)).length:0;
+    const topReg=regc?topG(data,regc,rv):'N/A',topProd=prodc?topG(data,prodc,rv):'N/A',avgDisc=dc?Math.round(avg(data,dc)):0;
+    if(isAr)return[`البيانات: <strong>${n.toLocaleString()} ${el}</strong>، إيرادات <span class="hi">${fmt(totalRev)}</span>، ربح <span class="${margin>20?'ok':margin>10?'hi':'bad'}">${fmt(totalProfit)} (${margin}%)</span>. المنطقة الأولى: <strong>${topReg}</strong>.`,`<span class="bad">${returned} (${Math.round(returned/n*100)}%) مُعاد.</span> <strong>${pending} معلق.</strong> خصم: <span class="${avgDisc>15?'bad':'warn'}">${avgDisc}%</span>.`,`توسيع أقوى المنتجات في أضعف المناطق هو الرهان الأعلى نمواً.`][pi]||'';
+    return[`<strong>${n.toLocaleString()} ${el}s</strong> · Revenue <span class="hi">${fmt(totalRev)}</span> · Profit <span class="${margin>20?'ok':margin>10?'hi':'bad'}">${margin}%</span> · Top: <strong>${topReg}</strong> / <strong>${topProd}</strong>`,`<span class="bad">${returned} (${Math.round(returned/n*100)}%) returned.</span> <strong>${pending} pending.</strong> Avg disc: <span class="${avgDisc>15?'bad':'warn'}">${avgDisc}%</span>.`,`Expand top products to weak regions — highest-leverage growth move.`][pi]||'';
   }
-
   if(DOMAIN==='hr'){
     const sal=fc('salary')||nc[0],abs=fc('absence'),trn=fc('training');
     const stc=fc('status')||sc[0],perf=fc('performance')||sc.find(c=>c.toLowerCase().includes('perf'));
     const dept=fc('department')||cc[0],gend=fc('gender')||cc.find(c=>c.toLowerCase().includes('gender'));
-    const totalPayroll=sal?sum(data,sal):0,avgSal=sal?Math.round(avg(data,sal)):0;
-    const resigned=stc?data.filter(r=>String(r[stc]||'').match(/resign|termin/i)).length:0;
+    const totalPayroll=sal?sum(data,sal):0,resigned=stc?data.filter(r=>String(r[stc]||'').match(/resign|termin/i)).length:0;
     const attrRate=Math.round(resigned/n*100),active=stc?data.filter(r=>String(r[stc]||'').match(/active/i)).length:0;
-    const topDept=dept?topC(data,dept):'N/A';
-    const avgAbs=abs?Math.round(avg(data,abs)):0,avgTrn=trn?Math.round(avg(data,trn)):0;
+    const topDept=dept?topC(data,dept):'N/A',avgAbs=abs?Math.round(avg(data,abs)):0,avgTrn=trn?Math.round(avg(data,trn)):0;
     const topPerf=perf?data.filter(r=>String(r[perf]||'').match(/except|excell/i)).length:0;
     const femPct=gend?Math.round(data.filter(r=>String(r[gend]||'').match(/female|f$/i)).length/n*100):0;
-    if(isAr)return[`القوى العاملة: <strong>${n.toLocaleString()} ${el}</strong>، رواتب <span class="hi">${fmt(totalPayroll)}</span>. <strong>${active} نشط</strong>. أكبر قسم: <strong>${topDept}</strong>. نسبة الإناث: <span class="${femPct<25?'bad':femPct<35?'warn':'ok'}">${femPct}%</span>.`,`<span class="bad">استنزاف ${attrRate}%</span> — ${attrRate>15?'خطير جداً.':attrRate>8?'مرتفع.':'مقبول.'} متوسط الغياب: <span class="${avgAbs>8?'bad':avgAbs>5?'warn':'ok'}">${avgAbs} يوم</span>.`,`<strong>${topPerf} ${el} متميز (${Math.round(topPerf/n*100)}%)</strong>. متوسط التدريب: <span class="${avgTrn<20?'bad':'ok'}">${avgTrn} ساعة</span>.`][pi]||'';
-    return[`Workforce: <strong>${n.toLocaleString()} ${el}s</strong>, payroll <span class="hi">${fmt(totalPayroll)}</span>. <strong>${active} active</strong>. Largest dept: <strong>${topDept}</strong>. Female: <span class="${femPct<25?'bad':femPct<35?'warn':'ok'}">${femPct}%</span>.`,`<span class="bad">Attrition ${attrRate}%</span> — ${attrRate>15?'critically high.':attrRate>8?'elevated.':'manageable.'} Avg absence: <span class="${avgAbs>8?'bad':avgAbs>5?'warn':'ok'}">${avgAbs} days</span>.`,`<strong>${topPerf} exceptional ${el}s (${Math.round(topPerf/n*100)}%)</strong>. Avg training: <span class="${avgTrn<20?'bad':'ok'}">${avgTrn} hrs</span>.`][pi]||'';
+    if(isAr)return[`<strong>${n.toLocaleString()} موظف</strong>، رواتب <span class="hi">${fmt(totalPayroll)}</span>. <strong>${active} نشط.</strong> أكبر قسم: <strong>${topDept}</strong>. الإناث: <span class="${femPct<25?'bad':'ok'}">${femPct}%</span>.`,`<span class="bad">استنزاف ${attrRate}%</span> — ${attrRate>15?'خطير.':attrRate>8?'مرتفع.':'مقبول.'} غياب: <span class="${avgAbs>8?'bad':avgAbs>5?'warn':'ok'}">${avgAbs} يوم</span>.`,`<strong>${topPerf} متميز (${Math.round(topPerf/n*100)}%)</strong>. تدريب: <span class="${avgTrn<20?'bad':'ok'}">${avgTrn} ساعة</span>.`][pi]||'';
+    return[`<strong>${n.toLocaleString()} ${el}s</strong> · Payroll <span class="hi">${fmt(totalPayroll)}</span> · Active: <strong>${active}</strong> · Dept: <strong>${topDept}</strong> · Female: <span class="${femPct<25?'bad':'ok'}">${femPct}%</span>`,`<span class="bad">Attrition ${attrRate}%</span> — ${attrRate>15?'critically high.':attrRate>8?'elevated.':'manageable.'} Absence: <span class="${avgAbs>8?'bad':avgAbs>5?'warn':'ok'}">${avgAbs} days</span>.`,`<strong>${topPerf} exceptional (${Math.round(topPerf/n*100)}%)</strong>. Avg training: <span class="${avgTrn<20?'bad':'ok'}">${avgTrn} hrs</span>.`][pi]||'';
   }
-
   if(DOMAIN==='safety'){
     const stc=fc('status')||sc[0];
-    const risk=fc('risk')||sc.find(c=>c.toLowerCase().includes('risk')||c.toLowerCase().includes('severity'));
+    const risk=HDR.find(h=>h.toLowerCase().includes('risk_level'))||HDR.find(h=>h.toLowerCase().includes('risk'));
     const area=fc('region')||cc.find(c=>['area','zone','location','department','dept'].some(k=>c.toLowerCase().includes(k)));
-    const ctr=fc('contractor');
-    const viol=fc('violations');
-    const abs=fc('absence');
+    const ctr=fc('contractor'),viol=fc('violations'),abs=fc('absence');
     const open=stc?data.filter(r=>String(r[stc]||'').match(/open|pend|investigat/i)).length:0;
     const closed=stc?data.filter(r=>String(r[stc]||'').match(/close/i)).length:0;
     const overdue=stc?data.filter(r=>String(r[stc]||'').match(/overdue/i)).length:0;
     const highRisk=risk?data.filter(r=>String(r[risk]||'').match(/high|critical/i)).length:0;
-    const totalViol=viol?Math.round(sum(data,viol)):0;
-    const totalLost=abs?Math.round(sum(data,abs)):null;
-    const compliance=n?Math.round(closed/n*100):0;
-    const topArea=area?topC(data,area):'N/A';
-    const topCtr=ctr?topC(data,ctr):'N/A';
-    if(isAr)return[`<strong>${n.toLocaleString()} ${el}</strong>. معدل الإغلاق: <span class="${compliance>90?'ok':compliance>80?'warn':'bad'}">${compliance}%</span>. <span class="warn">${open} مفتوح/جارٍ</span> — <span class="bad">${overdue} متأخر</span>. أكثر القسم/المنطقة نشاطاً: <strong>${topArea}</strong>.${totalLost!==null?` إجمالي أيام العمل المفقودة: <span class="bad">${totalLost}</span>.`:''}`,`<span class="bad">${highRisk} حادثة/تصريح عالي/حرج</span>. ${totalViol?`إجمالي المخالفات: <span class="bad">${totalViol}</span>.`:''} ${topCtr&&topCtr!=='N/A'?`المقاول الأكثر نشاطاً: <strong>${topCtr}</strong>.`:''}`,`امتثال <strong>${compliance}%</strong>. ${topCtr&&topCtr!=='N/A'?`المقاول: <strong>${topCtr}</strong>.`:''} <span class="ok">بطاقة أداء شهرية تحسّن الالتزام دون إجراءات تنفيذية.</span>`][pi]||'';
-    return[`<strong>${n.toLocaleString()} ${el}s</strong>. Closure: <span class="${compliance>90?'ok':compliance>80?'warn':'bad'}">${compliance}%</span>. <span class="warn">${open} open/under investigation</span> — <span class="bad">${overdue} overdue</span>. Top area/dept: <strong>${topArea}</strong>.${totalLost!==null?` Total lost work days: <span class="bad">${totalLost}</span>.`:''}`,`<span class="bad">${highRisk} high/critical ${el}s.</span> ${totalViol?`Total violations: <span class="bad">${totalViol}</span>.`:''} ${topCtr&&topCtr!=='N/A'?`Most active contractor: <strong>${topCtr}</strong>.`:''}`,`Compliance: <strong>${compliance}%</strong>. <span class="ok">Monthly scorecard</span> improves behavior without enforcement action.`][pi]||'';
+    const totalViol=viol?Math.round(sum(data,viol)):0,totalLost=abs?Math.round(sum(data,abs)):null;
+    const compliance=n?Math.round(closed/n*100):0,topArea=area?topC(data,area):'N/A',topCtr=ctr?topC(data,ctr):'N/A';
+    if(isAr)return[`<strong>${n.toLocaleString()} ${el}</strong>. إغلاق: <span class="${compliance>90?'ok':compliance>80?'warn':'bad'}">${compliance}%</span>. <span class="warn">${open} مفتوح</span> — <span class="bad">${overdue} متأخر</span>. الأعلى: <strong>${topArea}</strong>.${totalLost!==null?` أيام مفقودة: <span class="bad">${totalLost}</span>.`:''}`,`<span class="bad">${highRisk} عالٍ/حرج.</span> ${totalViol?`مخالفات: <span class="bad">${totalViol}</span>.`:''} ${topCtr!=='N/A'?`مقاول: <strong>${topCtr}</strong>.`:''}`,`امتثال <strong>${compliance}%</strong>. <span class="ok">بطاقة أداء شهرية</span> تحسّن الالتزام.`][pi]||'';
+    return[`<strong>${n.toLocaleString()} ${el}s</strong> · Closure <span class="${compliance>90?'ok':compliance>80?'warn':'bad'}">${compliance}%</span> · <span class="warn">${open} open</span> / <span class="bad">${overdue} overdue</span> · Top: <strong>${topArea}</strong>${totalLost!==null?` · Lost days: <span class="bad">${totalLost}</span>`:''}`,`<span class="bad">${highRisk} high/critical.</span> ${totalViol?`Violations: <span class="bad">${totalViol}</span>.`:''} ${topCtr!=='N/A'?`Contractor: <strong>${topCtr}</strong>.`:''}`,`Compliance: <strong>${compliance}%</strong>. <span class="ok">Monthly scorecard</span> improves behavior without enforcement.`][pi]||'';
   }
-
-  const topCat=cc[0]?topC(data,cc[0]):'N/A';
-  const topVal=nc[0]?fmt(sum(data,nc[0])):n;
-  return `<strong>${n.toLocaleString()} ${el}s</strong> across <strong>${HDR.length} columns</strong>. ${nc[0]?`Total <em>${nc[0]}</em>: <span class="hi">${topVal}</span>.`:''} ${cc[0]?`Top <em>${cc[0]}</em>: <strong>${topCat}</strong>.`:''}`;
+  const topCat=catCols()[0]?topC(data,catCols()[0]):'N/A',topVal=numCols()[0]?fmt(sum(data,numCols()[0])):n;
+  return`<strong>${n.toLocaleString()} ${el}s</strong> · ${numCols()[0]?`Total <em>${numCols()[0]}</em>: <span class="hi">${topVal}</span>`:''} · ${catCols()[0]?`Top <em>${catCols()[0]}</em>: <strong>${topCat}</strong>`:''}`;
 }
 
 // ═══════════════════════════════════════════════════
-// CHARTS — with download button on each card
+// CHARTS
 // ═══════════════════════════════════════════════════
-const PAL=['#5B6EF5','#00C2D1','#0FBA7E','#F97316','#A259FF','#F03E5E','#F5A623','#3B82F6','#14B8A6','#EC4899','#84CC16','#FB7185'];
-const PAL2=PAL.map(c=>c+'28');
-
-function getChartColors(){
-  const isDark=THEME==='dark';
-  return{text:isDark?'#7A86A8':'#4A5270',grid:isDark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.05)'};
-}
+const PAL=['#5B6EF5','#00C2D1','#0FBA7E','#F97316','#A259FF','#F03E5E','#F5A623','#3B82F6','#14B8A6','#EC4899'];
+const PAL2=PAL.map(c=>c+'26');
+function getC(){const isDark=THEME==='dark';return{text:isDark?'#7A86A8':'#4A5270',grid:isDark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.05)'};}
 
 function buildCharts(pi,data){
   const grid=document.getElementById('cg'+pi);if(!grid)return;
@@ -1493,263 +1377,67 @@ function buildCharts(pi,data){
   else buildGeneralCharts(grid,pi,data);
 }
 
-function makeCard(grid,title,sub,tag,cls='c6',h=200){
+function makeCard(grid,title,tag,cls='c6',h=195){
   const id='ch'+Math.random().toString(36).slice(2,9);
   const el=document.createElement('div');el.className='cc '+cls;
-  el.innerHTML=`
-    <div class="cc-head">
-      <div><div class="cc-ttl">${title}</div><div class="cc-sub">${sub}</div></div>
-      <div class="cc-actions">
-        <div class="cc-tag">${tag}</div>
-        <div class="dl-btn" tabindex="0" title="${t('dl_png')}">
-          ↓
-          <div class="dl-menu">
-            <div class="dl-opt" onclick="downloadChartPNG('${id}','${title.replace(/'/g,"'")}')">🖼 ${t('dl_png')}</div>
-            <div class="dl-opt" onclick="downloadChartCSV('${id}','${title.replace(/'/g,"'")}')">📊 ${t('dl_csv')}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="cw" style="height:${h}px"><canvas id="${id}"></canvas></div>`;
+  el.innerHTML=`<div class="cc-head"><div class="cc-ttl">${title}</div><div class="cc-actions"><div class="cc-tag">${tag}</div><div class="dl-btn" tabindex="0">↓<div class="dl-menu"><div class="dl-opt" onclick="downloadChartPNG('${id}','${title.replace(/'/g,"'")}')">🖼 ${t('dl_png')}</div><div class="dl-opt" onclick="downloadChartCSV('${id}','${title.replace(/'/g,"'")}')">📊 ${t('dl_csv')}</div></div></div></div></div><div class="cw" style="height:${h}px"><canvas id="${id}"></canvas></div>`;
   grid.appendChild(el);return id;
 }
 
-function chartDefaults(col,grp){
-  const{text,grid}=getChartColors();
-  return{
-    responsive:true,maintainAspectRatio:false,
+function chartBase(grp){
+  const{text,grid}=getC();
+  return{responsive:true,maintainAspectRatio:false,
     plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>' '+fmt(v.raw)}}},
-    onClick:(evt,els,chart)=>{
-      if(!els.length||!grp||!col)return;
-      const idx=els[0].index;
-      applyCrossFilter(grp,String(chart.data.labels[idx]));
-    },
-    scales:{
-      x:{grid:{color:grid},ticks:{color:text,font:{size:10,family:'Sora'},maxRotation:35,autoSkip:true,maxTicksLimit:8}},
-      y:{grid:{color:grid},ticks:{color:text,font:{size:10,family:'Sora'},callback:v=>fmt(v)}}
-    }
-  };
+    onClick:(evt,els,chart)=>{if(!els.length||!grp)return;applyCrossFilter(grp,String(chart.data.labels[els[0].index]));},
+    scales:{x:{grid:{color:grid},ticks:{color:text,font:{size:9,family:'Sora'},maxRotation:35,autoSkip:true,maxTicksLimit:8}},y:{grid:{color:grid},ticks:{color:text,font:{size:9,family:'Sora'},callback:v=>fmt(v)}}}};
 }
 
-function renderAsType(type,labels,values,label,colors,id,grp,col,h){
+function renderChart(id,labels,values,label,colors,grp){
   const ctx=document.getElementById(id);if(!ctx)return;
-  const{text,grid}=getChartColors();
-  const clickHandler=(evt,els,chart)=>{
-    if(!els.length||!grp)return;
-    applyCrossFilter(grp,String(labels[els[0].index]));
-  };
+  const{text,grid}=getC();
+  const click=(evt,els,chart)=>{if(!els.length||!grp)return;applyCrossFilter(grp,String(labels[els[0].index]));};
   let cfg;
-  const effectiveType=type==='pie'?'doughnut':type;
-  if(effectiveType==='doughnut'){
+  const mode=CHART_MODE==='pie'?'doughnut':CHART_MODE;
+  if(mode==='doughnut'){
     cfg={type:'doughnut',data:{labels,datasets:[{data:values,backgroundColor:PAL.slice(0,values.length),borderWidth:2,borderColor:'var(--card)'}]},
-      options:{responsive:true,maintainAspectRatio:false,cutout:'55%',onClick:clickHandler,
-        plugins:{legend:{position:'right',labels:{color:text,font:{size:11,family:'Sora'},boxWidth:10,padding:10}},tooltip:{callbacks:{label:v=>' '+fmt(v.raw)}}}}};
-  } else if(effectiveType==='line'){
-    cfg={type:'line',data:{labels,datasets:[{label,data:values,borderColor:Array.isArray(colors)?PAL[0]:colors,backgroundColor:(Array.isArray(colors)?PAL[0]:colors)+'28',fill:true,tension:.35,pointRadius:4,pointBackgroundColor:Array.isArray(colors)?PAL[0]:colors}]},
-      options:{responsive:true,maintainAspectRatio:false,onClick:clickHandler,
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>' '+fmt(v.raw)}}},
-        scales:{x:{grid:{color:getChartColors().grid},ticks:{color:text,font:{size:10},maxRotation:35}},y:{grid:{color:getChartColors().grid},ticks:{color:text,font:{size:10},callback:v=>fmt(v)}}}}};
+      options:{responsive:true,maintainAspectRatio:false,cutout:'58%',onClick:click,plugins:{legend:{position:'right',labels:{color:text,font:{size:10,family:'Sora'},boxWidth:9,padding:9}},tooltip:{callbacks:{label:v=>' '+fmt(v.raw)}}}}};
+  } else if(mode==='line'){
+    cfg={type:'line',data:{labels,datasets:[{label,data:values,borderColor:Array.isArray(colors)?PAL[0]:colors||PAL[0],backgroundColor:(Array.isArray(colors)?PAL[0]:colors||PAL[0])+'26',fill:true,tension:.35,pointRadius:3,pointBackgroundColor:Array.isArray(colors)?PAL[0]:colors||PAL[0]}]},
+      options:{responsive:true,maintainAspectRatio:false,onClick:click,plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>' '+fmt(v.raw)}}},
+        scales:{x:{grid:{color:getC().grid},ticks:{color:getC().text,font:{size:9},maxRotation:35}},y:{grid:{color:getC().grid},ticks:{color:getC().text,font:{size:9},callback:v=>fmt(v)}}}}};
   } else {
-    const horiz=values.length>6;
-    const opts=chartDefaults(col,grp);opts.indexAxis=horiz?'y':'x';
+    const horiz=labels.length>6;const opts=chartBase(grp);opts.indexAxis=horiz?'y':'x';
     if(horiz){opts.scales.x.ticks.callback=v=>fmt(v);opts.scales.y.ticks.callback=undefined;}
-    opts.onClick=clickHandler;
-    cfg={type:'bar',data:{labels,datasets:[{label,data:values,backgroundColor:colors||PAL[0],borderRadius:6,borderSkipped:false}]},options:opts};
+    opts.onClick=click;
+    cfg={type:'bar',data:{labels,datasets:[{label,data:values,backgroundColor:colors||PAL[0],borderRadius:5,borderSkipped:false}]},options:opts};
   }
   const chart=new Chart(ctx,cfg);CHARTS.push(chart);
 }
 
-function smartChart(id,labels,values,label,colors,grp,col){
-  renderAsType(CHART_MODE,labels,values,label,colors,id,grp,col);
-}
-
 function multiBar(id,labels,datasets,grp){
-  const ctx=document.getElementById(id);if(!ctx)return;
-  const{text,grid}=getChartColors();
-  const chart=new Chart(ctx,{type:'bar',data:{labels,datasets:datasets.map((ds,i)=>({...ds,backgroundColor:PAL[i],borderRadius:5,borderSkipped:false}))},
-    options:{responsive:true,maintainAspectRatio:false,
-      onClick:(evt,els,c)=>{if(!els.length||!grp)return;applyCrossFilter(grp,String(labels[els[0].index]));},
-      plugins:{legend:{display:true,labels:{color:text,font:{size:11,family:'Sora'},boxWidth:10,padding:12}},tooltip:{callbacks:{label:v=>' '+fmt(v.raw)}}},
-      scales:{x:{grid:{color:grid},ticks:{color:text,font:{size:10},maxRotation:35,autoSkip:true}},y:{grid:{color:grid},ticks:{color:text,font:{size:10},callback:v=>fmt(v)}}}}});
+  const ctx=document.getElementById(id);if(!ctx)return;const{text,grid}=getC();
+  const chart=new Chart(ctx,{type:'bar',data:{labels,datasets:datasets.map((ds,i)=>({...ds,backgroundColor:PAL[i],borderRadius:4,borderSkipped:false}))},
+    options:{responsive:true,maintainAspectRatio:false,onClick:(evt,els,c)=>{if(!els.length||!grp)return;applyCrossFilter(grp,String(labels[els[0].index]));},
+      plugins:{legend:{display:true,labels:{color:text,font:{size:10,family:'Sora'},boxWidth:9,padding:10}},tooltip:{callbacks:{label:v=>' '+fmt(v.raw)}}},
+      scales:{x:{grid:{color:grid},ticks:{color:text,font:{size:9},maxRotation:35,autoSkip:true}},y:{grid:{color:grid},ticks:{color:text,font:{size:9},callback:v=>fmt(v)}}}}});
   CHARTS.push(chart);
 }
-
 function lineChart(id,labels,datasets){
-  const ctx=document.getElementById(id);if(!ctx)return;
-  const{text,grid}=getChartColors();
+  const ctx=document.getElementById(id);if(!ctx)return;const{text,grid}=getC();
   const chart=new Chart(ctx,{type:'line',data:{labels,datasets:datasets.map((ds,i)=>({...ds,borderColor:PAL[i],backgroundColor:PAL2[i],fill:true,tension:.35,pointRadius:3,pointBackgroundColor:PAL[i]}))},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:true,labels:{color:text,font:{size:11,family:'Sora'},boxWidth:10,padding:12}},tooltip:{callbacks:{label:v=>' '+fmt(v.raw)}}},
-      scales:{x:{grid:{color:grid},ticks:{color:text,font:{size:10}}},y:{grid:{color:grid},ticks:{color:text,font:{size:10},callback:v=>fmt(v)}}}}});
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{color:text,font:{size:10,family:'Sora'},boxWidth:9,padding:10}},tooltip:{callbacks:{label:v=>' '+fmt(v.raw)}}},
+      scales:{x:{grid:{color:grid},ticks:{color:text,font:{size:9}}},y:{grid:{color:grid},ticks:{color:text,font:{size:9},callback:v=>fmt(v)}}}}});
   CHARTS.push(chart);
 }
-
-function stacked(id,labels,datasets){
-  const ctx=document.getElementById(id);if(!ctx)return;
-  const{text,grid}=getChartColors();
+function stackedBar(id,labels,datasets){
+  const ctx=document.getElementById(id);if(!ctx)return;const{text,grid}=getC();
   const chart=new Chart(ctx,{type:'bar',data:{labels,datasets:datasets.map((ds,i)=>({...ds,backgroundColor:PAL[i],borderSkipped:false}))},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:true,labels:{color:text,font:{size:11,family:'Sora'},boxWidth:10,padding:12}}},
-      scales:{x:{stacked:true,grid:{color:grid},ticks:{color:text,font:{size:10},maxRotation:35}},y:{stacked:true,grid:{color:grid},ticks:{color:text,font:{size:10},callback:v=>fmt(v)}}}}});
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{color:text,font:{size:10,family:'Sora'},boxWidth:9,padding:10}}},
+      scales:{x:{stacked:true,grid:{color:grid},ticks:{color:text,font:{size:9},maxRotation:35}},y:{stacked:true,grid:{color:grid},ticks:{color:text,font:{size:9},callback:v=>fmt(v)}}}}});
   CHARTS.push(chart);
 }
 
-// ═══════════════════════════════════════════════════
-// SAFETY CHARTS — COMPLETELY REBUILT for real incident data
-// Works with: Incident_ID, Date, Department, Employee_ID,
-//             Injury_Type, Severity, Lost_Work_Days, Risk_Level, Status
-// ═══════════════════════════════════════════════════
-function buildSafetyCharts(grid,pi,data){
-  const nc=numCols(),cc=catCols(),sc=statusCols();
-  const stc=fc('status')||sc[0];
-  const risk=HDR.find(h=>h.toLowerCase().includes('risk_level'))||HDR.find(h=>h.toLowerCase().includes('risk'))||sc.find(c=>c.toLowerCase().includes('risk')||c.toLowerCase().includes('severity'));
-  const severityCol=nc.find(c=>c.toLowerCase().includes('severity'));
-  const lostDaysCol=nc.find(c=>c.toLowerCase().includes('lost')||c.toLowerCase().includes('absence'));
-  const injuryType=HDR.find(h=>h.toLowerCase().includes('injury_type'))||HDR.find(h=>h.toLowerCase().includes('type'));
-  const area=HDR.find(h=>h.toLowerCase().includes('department'))||HDR.find(h=>h.toLowerCase().includes('area'))||HDR.find(h=>h.toLowerCase().includes('zone'));
-  const ctr=HDR.find(h=>h.toLowerCase().includes('contractor'));
-  const violCol=nc.find(c=>c.toLowerCase().includes('viol'));
-  const mc=HDR.find(h=>h.toLowerCase().includes('month'));
-  const dateCol=HDR.find(h=>h.toLowerCase().includes('date'));
-  const isAr=LANG==='ar';
-  const el=eLabel();
-
-  // Try to extract year/month from date if month col not present
-  function getMonthLabel(row){
-    if(mc) return String(row[mc]||'');
-    if(dateCol){
-      const d=String(row[dateCol]||'');
-      const m=d.match(/(\d{4})/);
-      return m?m[1]:'';
-    }
-    return '';
-  }
-
-  if(pi===0){
-    // Status distribution
-    if(stc){
-      const e=countBy(data,stc);
-      const id=makeCard(grid,isAr?'حالة الحوادث/التصاريح':`${el} Status`,'Click to filter','Status','c4',185);
-      renderAsType('pie',e.map(x=>x[0]),e.map(x=>x[1]),el,null,id,stc,null,185);
-    }
-    // By department/area
-    if(area){
-      const e=countBy(data,area,8);
-      const id=makeCard(grid,isAr?'حسب القسم/المنطقة':`${el}s by Area/Dept`,'','Zones','c8',195);
-      smartChart(id,e.map(x=>x[0]),e.map(x=>x[1]),'Count',e.map((_,i)=>PAL[i%PAL.length]),area,null);
-    }
-    // Risk distribution
-    if(risk){
-      const e=countBy(data,risk);
-      const id=makeCard(grid,isAr?'توزيع مستوى المخاطر':'Risk Level Distribution','','Risk','c4',185);
-      renderAsType('pie',e.map(x=>x[0]),e.map(x=>x[1]),'Risk',null,id,risk,null,185);
-    }
-    // Injury/permit type
-    if(injuryType&&injuryType!==risk){
-      const e=countBy(data,injuryType,8);
-      const id=makeCard(grid,isAr?'حسب نوع الحادثة/التصريح':'By Injury/Work Type','','Type','c4',195);
-      smartChart(id,e.map(x=>x[0]),e.map(x=>x[1]),'Count',PAL[2],injuryType,null);
-    }
-    // Year or month trend
-    const yearGroups={};
-    data.forEach(r=>{
-      const lbl=getMonthLabel(r);
-      if(lbl){yearGroups[lbl]=(yearGroups[lbl]||0)+1;}
-    });
-    const sortedKeys=Object.keys(yearGroups).sort();
-    if(sortedKeys.length>1){
-      const id=makeCard(grid,isAr?'الاتجاه الزمني':'Incident Trend Over Time','','Trend','c12',200);
-      lineChart(id,sortedKeys,[{label:el+'s',data:sortedKeys.map(k=>yearGroups[k])}]);
-    }
-  }
-
-  else if(pi===1){
-    // Severity by area
-    if(area&&severityCol){
-      const e=groupBy(data,area,severityCol,8);
-      const id=makeCard(grid,isAr?'متوسط الشدة حسب القسم':'Avg Severity by Dept','','Severity','c6',200);
-      smartChart(id,e.map(x=>x[0]),e.map(x=>{const cnt=countBy(data,area).find(d=>d[0]===x[0]);return Math.round(x[1]/Math.max(1,cnt?.[1]||1)*10)/10;}),
-        'Avg Severity',e.map(x=>x[1]>avg(data,severityCol)*1.2?'#F03E5E':PAL[0]),area,severityCol);
-    }
-    // Lost work days by area
-    if(area&&lostDaysCol){
-      const e=groupBy(data,area,lostDaysCol,8);
-      const id=makeCard(grid,isAr?'أيام العمل المفقودة حسب القسم':'Lost Work Days by Area','','LWD','c4',200);
-      smartChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),'Lost Days',PAL[5],area,lostDaysCol);
-    }
-    // Risk vs injury type
-    if(risk&&injuryType&&risk!==injuryType){
-      const types=[...new Set(data.map(r=>r[injuryType]))].filter(Boolean).slice(0,6);
-      const riskLevels=[...new Set(data.map(r=>r[risk]))].filter(Boolean).slice(0,4);
-      const id=makeCard(grid,isAr?'نوع الحادثة مقابل مستوى الخطر':'Injury Type vs Risk Level','','Matrix','c8',200);
-      stacked(id,types,riskLevels.map(rl=>({label:rl,data:types.map(tp=>data.filter(r=>r[injuryType]===tp&&r[risk]===rl).length)})));
-    }
-    // Severity distribution histogram
-    if(severityCol){
-      const bins={};
-      data.forEach(r=>{const v=r[severityCol];if(typeof v==='number'){const b=Math.floor(v)+'-'+(Math.floor(v)+1);bins[b]=(bins[b]||0)+1;}});
-      const sortedBins=Object.entries(bins).sort((a,b)=>parseInt(a[0])-parseInt(b[0]));
-      if(sortedBins.length>1){
-        const id=makeCard(grid,isAr?'توزيع درجة الشدة':'Severity Score Distribution','','Hist','c4',200);
-        smartChart(id,sortedBins.map(x=>x[0]),sortedBins.map(x=>x[1]),'Count',sortedBins.map(x=>x[1]>5?'#F03E5E':PAL[0]),null,null);
-      }
-    }
-    // Status vs risk
-    if(stc&&risk&&stc!==risk){
-      const statuses=[...new Set(data.map(r=>r[stc]))].filter(Boolean).slice(0,5);
-      const riskLevels=[...new Set(data.map(r=>r[risk]))].filter(Boolean).slice(0,4);
-      const id=makeCard(grid,isAr?'الحالة مقابل مستوى الخطر':'Status vs Risk Level','','Cross','c12',200);
-      stacked(id,statuses,riskLevels.map(rl=>({label:rl,data:statuses.map(s=>data.filter(r=>r[stc]===s&&r[risk]===rl).length)})));
-    }
-  }
-
-  else { // pi===2 — compliance & integrity
-    // Time trend: closed vs open vs overdue
-    const yearGrouped={};
-    data.forEach(r=>{
-      const lbl=getMonthLabel(r);
-      if(!lbl)return;
-      if(!yearGrouped[lbl])yearGrouped[lbl]={closed:0,open:0,overdue:0};
-      const s=String(r[stc]||'').toLowerCase();
-      if(s.match(/close/))yearGrouped[lbl].closed++;
-      else if(s.match(/overdue/))yearGrouped[lbl].overdue++;
-      else yearGrouped[lbl].open++;
-    });
-    const sortedKeys=Object.keys(yearGrouped).sort();
-    if(sortedKeys.length>1){
-      const id=makeCard(grid,isAr?'الاتجاه الزمني للحالات':'Incident Status Over Time','','Trend','c12',200);
-      lineChart(id,sortedKeys,[
-        {label:'Closed',data:sortedKeys.map(k=>yearGrouped[k].closed)},
-        {label:'Open/Pending',data:sortedKeys.map(k=>yearGrouped[k].open)},
-        {label:'Overdue',data:sortedKeys.map(k=>yearGrouped[k].overdue)},
-      ]);
-    }
-    // Closure rate by area
-    if(area&&stc){
-      const areas=[...new Set(data.map(r=>r[area]))].filter(Boolean).slice(0,8);
-      const rates=areas.map(a=>{const tot=data.filter(r=>r[area]===a).length;const cl=data.filter(r=>r[area]===a&&String(r[stc]||'').match(/close/i)).length;return tot?Math.round(cl/tot*100):0;});
-      const id=makeCard(grid,isAr?'معدل الإغلاق حسب القسم/المنطقة':'Closure Rate by Dept/Zone','','Compliance','c6',200);
-      smartChart(id,areas,rates,'Closure %',rates.map(r=>r>80?'#0FBA7E':r>60?'#F5A623':'#F03E5E'),area,null);
-    }
-    // Risk heat by area
-    if(area&&risk){
-      const areas=[...new Set(data.map(r=>r[area]))].filter(Boolean).slice(0,7);
-      const hR=areas.map(a=>data.filter(r=>r[area]===a&&String(r[risk]||'').match(/high|critical/i)).length);
-      const id=makeCard(grid,isAr?'توزيع المخاطر العالية':'High Risk by Dept/Zone','','Heat','c6',200);
-      smartChart(id,areas,hR,'High/Critical',PAL[5],area,null);
-    }
-    // Contractor if present
-    if(ctr&&stc){
-      const ctrs=[...new Set(data.map(r=>r[ctr]))].filter(Boolean).slice(0,7);
-      if(ctrs.length>1){
-        const rates=ctrs.map(c=>{const tot=data.filter(r=>r[ctr]===c).length;const cl=data.filter(r=>r[ctr]===c&&String(r[stc]||'').match(/close/i)).length;return tot?Math.round(cl/tot*100):0;});
-        const id=makeCard(grid,isAr?'أداء المقاولين':'Contractor Closure Rate','','CTR','c12',200);
-        smartChart(id,ctrs,rates,'Closure %',rates.map(r=>r>85?'#0FBA7E':r>70?'#F5A623':'#F03E5E'),ctr,null);
-      }
-    }
-  }
-}
-
+// ─── SALES CHARTS ───
 function buildSalesCharts(grid,pi,data){
   const nc=numCols(),cc=catCols(),sc=statusCols();
   const rv=fc('revenue')||nc[0],pr=fc('profit')||nc[1];
@@ -1758,25 +1446,25 @@ function buildSalesCharts(grid,pi,data){
   const mc=fc('month')||cc.find(c=>c.toLowerCase().includes('month'));
   const mOrder=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const isAr=LANG==='ar';
-
   if(pi===0){
-    if(regc&&rv){const e=groupBy(data,regc,rv);const id=makeCard(grid,isAr?'الإيرادات حسب المنطقة':'Revenue by Region','Click to filter','Geo','c6',195);smartChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),'Revenue',e.map((_,i)=>PAL[i%PAL.length]),regc,rv);}
-    if(prodc&&rv){const e=groupBy(data,prodc,rv,8);const id=makeCard(grid,isAr?'أفضل المنتجات':'Top Products','','Products','c6',195);smartChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),'Revenue',PAL[1],prodc,rv);}
-    if(stc){const e=countBy(data,stc);const id=makeCard(grid,isAr?'حالة الطلبات':'Order Status','','Status','c4',185);renderAsType('pie',e.map(x=>x[0]),e.map(x=>x[1]),'Status',null,id,stc,null,185);}
-    if(chc&&rv&&pr){const labels=[...new Set(data.map(r=>r[chc]))].filter(Boolean).slice(0,7);const rvD=labels.map(l=>Math.round(sum(data.filter(r=>r[chc]===l),rv)));const prD=labels.map(l=>Math.round(sum(data.filter(r=>r[chc]===l),pr)));const id=makeCard(grid,isAr?'الإيرادات مقابل الأرباح':'Revenue vs Profit by Channel','','P&L','c8',195);multiBar(id,labels,[{label:'Revenue',data:rvD},{label:'Profit',data:prD}],chc);}
-    if(mc&&rv){const sorted=mOrder.filter(m=>data.some(r=>r[mc]===m));const rvD=sorted.map(m=>Math.round(sum(data.filter(r=>r[mc]===m),rv)));const prD=pr?sorted.map(m=>Math.round(sum(data.filter(r=>r[mc]===m),pr))):[];const id=makeCard(grid,isAr?'الاتجاه الشهري':'Monthly Trend','','Trend','c12',200);lineChart(id,sorted,[{label:'Revenue',data:rvD},...(pr?[{label:'Profit',data:prD}]:[])]);}
+    if(regc&&rv){const e=groupBy(data,regc,rv);const id=makeCard(grid,isAr?'الإيرادات حسب المنطقة':'Revenue by Region','Geo','c6',195);renderChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),'Revenue',e.map((_,i)=>PAL[i%PAL.length]),regc);}
+    if(prodc&&rv){const e=groupBy(data,prodc,rv,8);const id=makeCard(grid,isAr?'أفضل المنتجات':'Top Products','Products','c6',195);renderChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),'Revenue',PAL[1],prodc);}
+    if(stc){const e=countBy(data,stc);const id=makeCard(grid,isAr?'حالة الطلبات':'Order Status','Status','c4',185);renderChart(id,e.map(x=>x[0]),e.map(x=>x[1]),'Status',null,stc);}
+    if(chc&&rv&&pr){const labels=[...new Set(data.map(r=>r[chc]))].filter(Boolean).slice(0,7);const rvD=labels.map(l=>Math.round(sum(data.filter(r=>r[chc]===l),rv)));const prD=labels.map(l=>Math.round(sum(data.filter(r=>r[chc]===l),pr)));const id=makeCard(grid,isAr?'الإيرادات مقابل الأرباح':'Revenue vs Profit','P&L','c8',195);multiBar(id,labels,[{label:'Revenue',data:rvD},{label:'Profit',data:prD}],chc);}
+    if(mc&&rv){const sorted=mOrder.filter(m=>data.some(r=>r[mc]===m));const rvD=sorted.map(m=>Math.round(sum(data.filter(r=>r[mc]===m),rv)));const prD=pr?sorted.map(m=>Math.round(sum(data.filter(r=>r[mc]===m),pr))):[];const id=makeCard(grid,isAr?'الاتجاه الشهري':'Monthly Trend','Trend','c12',200);lineChart(id,sorted,[{label:'Revenue',data:rvD},...(pr?[{label:'Profit',data:prD}]:[])]);}
   } else if(pi===1){
-    if(stc){const e=countBy(data,stc);const id=makeCard(grid,isAr?'إشارات الخسارة':'Loss Signals','','Returns','c4',185);renderAsType('pie',e.map(x=>x[0]),e.map(x=>x[1]),'Status',null,id,stc,null,185);}
-    if(regc&&pr){const e=groupBy(data,regc,pr);const cols=e.map(x=>x[1]>=0?'#0FBA7E':'#F03E5E');const id=makeCard(grid,isAr?'الربح حسب المنطقة':'Profit by Region','','Profit','c8',195);smartChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),'Profit',cols,regc,pr);}
-    if(prodc&&pr){const e=groupBy(data,prodc,pr,10);const cols=e.map(x=>x[1]>=0?PAL[0]:'#F03E5E');const id=makeCard(grid,isAr?'ربحية المنتجات':'Product Profitability','','Margin','c12',210);smartChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),'Profit',cols,prodc,pr);}
-    if(chc){const e=countBy(data,chc);const id=makeCard(grid,isAr?'توزيع القنوات':'Channel Mix','','Mix','c4',185);renderAsType('pie',e.map(x=>x[0]),e.map(x=>x[1]),'Channel',null,id,chc,null,185);}
+    if(stc){const e=countBy(data,stc);const id=makeCard(grid,isAr?'إشارات الخسارة':'Loss Signals','Returns','c4',185);renderChart(id,e.map(x=>x[0]),e.map(x=>x[1]),'Status',null,stc);}
+    if(regc&&pr){const e=groupBy(data,regc,pr);const cols=e.map(x=>x[1]>=0?'#0FBA7E':'#F03E5E');const id=makeCard(grid,isAr?'الربح حسب المنطقة':'Profit by Region','Profit','c8',195);renderChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),'Profit',cols,regc);}
+    if(prodc&&pr){const e=groupBy(data,prodc,pr,10);const cols=e.map(x=>x[1]>=0?PAL[0]:'#F03E5E');const id=makeCard(grid,isAr?'ربحية المنتجات':'Product Profitability','Margin','c12',205);renderChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),'Profit',cols,prodc);}
+    if(chc){const e=countBy(data,chc);const id=makeCard(grid,isAr?'توزيع القنوات':'Channel Mix','Mix','c4',185);renderChart(id,e.map(x=>x[0]),e.map(x=>x[1]),'Channel',null,chc);}
   } else {
-    if(mc&&rv){const sorted=mOrder.filter(m=>data.some(r=>r[mc]===m));const rvD=sorted.map(m=>Math.round(sum(data.filter(r=>r[mc]===m),rv)));const prD=pr?sorted.map(m=>Math.round(sum(data.filter(r=>r[mc]===m),pr))):[];const id=makeCard(grid,isAr?'الاتجاه الشهري':'Monthly Trend','','Series','c12',200);lineChart(id,sorted,[{label:'Revenue',data:rvD},...(pr?[{label:'Profit',data:prD}]:[])]);}
-    if(regc&&rv&&mc){const topR=groupBy(data,regc,rv,4).map(x=>x[0]);const sorted=mOrder.filter(m=>data.some(r=>r[mc]===m));const id=makeCard(grid,isAr?'إيرادات المناطق':'Regional Revenue Breakdown','','Regional','c8',200);lineChart(id,sorted,topR.map((reg)=>({label:reg,data:sorted.map(m=>Math.round(sum(data.filter(r=>r[regc]===reg&&r[mc]===m),rv)))})));}
-    if(prodc&&rv){const e=groupBy(data,prodc,rv,6);const id=makeCard(grid,isAr?'حصة المنتجات':'Product Share','','Share','c4',200);renderAsType('pie',e.map(x=>x[0]),e.map(x=>Math.round(x[1])),'Revenue',null,id,prodc,rv,200);}
+    if(mc&&rv){const sorted=mOrder.filter(m=>data.some(r=>r[mc]===m));const rvD=sorted.map(m=>Math.round(sum(data.filter(r=>r[mc]===m),rv)));const prD=pr?sorted.map(m=>Math.round(sum(data.filter(r=>r[mc]===m),pr))):[];const id=makeCard(grid,isAr?'الاتجاه الشهري':'Monthly Trend','Series','c12',200);lineChart(id,sorted,[{label:'Revenue',data:rvD},...(pr?[{label:'Profit',data:prD}]:[])]);}
+    if(regc&&rv&&mc){const topR=groupBy(data,regc,rv,4).map(x=>x[0]);const sorted=mOrder.filter(m=>data.some(r=>r[mc]===m));const id=makeCard(grid,isAr?'إيرادات المناطق':'Regional Revenue','Regional','c8',200);lineChart(id,sorted,topR.map(reg=>({label:reg,data:sorted.map(m=>Math.round(sum(data.filter(r=>r[regc]===reg&&r[mc]===m),rv)))})));}
+    if(prodc&&rv){const e=groupBy(data,prodc,rv,6);const id=makeCard(grid,isAr?'حصة المنتجات':'Product Share','Share','c4',200);renderChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),'Revenue',null,prodc);}
   }
 }
 
+// ─── HR CHARTS ───
 function buildHRCharts(grid,pi,data){
   const nc=numCols(),cc=catCols(),sc=statusCols();
   const sal=fc('salary')||nc[0],abs=fc('absence'),trn=fc('training');
@@ -1784,30 +1472,67 @@ function buildHRCharts(grid,pi,data){
   const dept=fc('department')||cc[0],gend=fc('gender')||cc.find(c=>c.toLowerCase().includes('gender'));
   const pos=cc.find(c=>['pos','role','title','position'].some(k=>c.toLowerCase().includes(k)));
   const isAr=LANG==='ar';
-
   if(pi===0){
-    if(dept){const e=countBy(data,dept);const id=makeCard(grid,isAr?'الموظفون حسب القسم':'Headcount by Dept','','Org','c8',200);smartChart(id,e.map(x=>x[0]),e.map(x=>x[1]),'Employees',e.map((_,i)=>PAL[i%PAL.length]),dept,null);}
-    if(gend){const e=countBy(data,gend);const id=makeCard(grid,isAr?'توزيع الجنس':'Gender','','Diversity','c4',185);renderAsType('pie',e.map(x=>x[0]),e.map(x=>x[1]),'Gender',null,id,gend,null,185);}
-    if(dept&&sal){const e=groupBy(data,dept,sal);const id=makeCard(grid,isAr?'الرواتب حسب القسم':'Payroll by Dept','','Payroll','c8',200);smartChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),'Payroll',PAL[2],dept,sal);}
-    if(pos){const e=countBy(data,pos,7);const id=makeCard(grid,isAr?'حسب المنصب':'By Position','','Seniority','c4',200);renderAsType('pie',e.map(x=>x[0]),e.map(x=>x[1]),'Position',null,id,pos,null,200);}
+    if(dept){const e=countBy(data,dept);const id=makeCard(grid,isAr?'الموظفون حسب القسم':'Headcount by Dept','Org','c8',200);renderChart(id,e.map(x=>x[0]),e.map(x=>x[1]),'Employees',e.map((_,i)=>PAL[i%PAL.length]),dept);}
+    if(gend){const e=countBy(data,gend);const id=makeCard(grid,isAr?'توزيع الجنس':'Gender','Diversity','c4',185);renderChart(id,e.map(x=>x[0]),e.map(x=>x[1]),'Gender',null,gend);}
+    if(dept&&sal){const e=groupBy(data,dept,sal);const id=makeCard(grid,isAr?'الرواتب حسب القسم':'Payroll by Dept','Payroll','c8',200);renderChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),'Payroll',PAL[2],dept);}
+    if(pos){const e=countBy(data,pos,7);const id=makeCard(grid,isAr?'حسب المنصب':'By Position','Seniority','c4',200);renderChart(id,e.map(x=>x[0]),e.map(x=>x[1]),'Position',null,pos);}
   } else if(pi===1){
-    if(stc){const e=countBy(data,stc);const id=makeCard(grid,isAr?'حالة التوظيف':'Employment Status','','Attrition','c4',185);renderAsType('pie',e.map(x=>x[0]),e.map(x=>x[1]),'Status',null,id,stc,null,185);}
-    if(dept&&stc){const depts=[...new Set(data.map(r=>r[dept]))].filter(Boolean).slice(0,7);const left=depts.map(d=>data.filter(r=>r[dept]===d&&String(r[stc]||'').match(/resign|termin/i)).length);const active=depts.map(d=>data.filter(r=>r[dept]===d&&String(r[stc]||'').match(/active/i)).length);const id=makeCard(grid,isAr?'الاستنزاف مقابل النشطين':'Attrition vs Active','','Dept','c8',200);multiBar(id,depts,[{label:'Active',data:active},{label:'Resigned',data:left}],dept);}
-    if(dept&&abs){const e=groupBy(data,dept,abs);const avgD=e.map(x=>{const cnt=countBy(data,dept).find(d=>d[0]===x[0]);return Math.round(x[1]/Math.max(1,cnt?.[1]||1));});const id=makeCard(grid,isAr?'الغياب حسب القسم':'Absence by Dept','','Absence','c6',195);smartChart(id,e.map(x=>x[0]),avgD,'Avg Absence',PAL[3],dept,abs);}
-    if(sal&&stc){const statuses=[...new Set(data.map(r=>r[stc]))].filter(Boolean).slice(0,5);const avgs=statuses.map(s=>Math.round(avg(data.filter(r=>r[stc]===s),sal)));const id=makeCard(grid,isAr?'الراتب حسب الحالة':'Salary by Status','','Salary','c6',195);smartChart(id,statuses,avgs,'Avg Salary',PAL[4],stc,sal);}
+    if(stc){const e=countBy(data,stc);const id=makeCard(grid,isAr?'حالة التوظيف':'Employment Status','Attrition','c4',185);renderChart(id,e.map(x=>x[0]),e.map(x=>x[1]),'Status',null,stc);}
+    if(dept&&stc){const depts=[...new Set(data.map(r=>r[dept]))].filter(Boolean).slice(0,7);const left=depts.map(d=>data.filter(r=>r[dept]===d&&String(r[stc]||'').match(/resign|termin/i)).length);const active=depts.map(d=>data.filter(r=>r[dept]===d&&String(r[stc]||'').match(/active/i)).length);const id=makeCard(grid,isAr?'الاستنزاف مقابل النشطين':'Attrition vs Active','Dept','c8',200);multiBar(id,depts,[{label:'Active',data:active},{label:'Resigned',data:left}],dept);}
+    if(dept&&abs){const e=groupBy(data,dept,abs);const avgD=e.map(x=>{const cnt=countBy(data,dept).find(d=>d[0]===x[0]);return Math.round(x[1]/Math.max(1,cnt?.[1]||1));});const id=makeCard(grid,isAr?'الغياب حسب القسم':'Absence by Dept','Absence','c6',195);renderChart(id,e.map(x=>x[0]),avgD,'Avg Absence',PAL[3],dept);}
+    if(sal&&stc){const statuses=[...new Set(data.map(r=>r[stc]))].filter(Boolean).slice(0,5);const avgs=statuses.map(s=>Math.round(avg(data.filter(r=>r[stc]===s),sal)));const id=makeCard(grid,isAr?'الراتب حسب الحالة':'Salary by Status','Salary','c6',195);renderChart(id,statuses,avgs,'Avg Salary',PAL[4],stc);}
   } else {
-    if(perf){const e=countBy(data,perf);const id=makeCard(grid,isAr?'توزيع الأداء':'Performance Dist.','','Perf','c4',185);renderAsType('pie',e.map(x=>x[0]),e.map(x=>x[1]),'Perf',null,id,perf,null,185);}
-    if(dept&&perf){const depts=[...new Set(data.map(r=>r[dept]))].filter(Boolean).slice(0,7);const perfLevels=[...new Set(data.map(r=>r[perf]))].filter(Boolean).slice(0,4);const id=makeCard(grid,isAr?'الأداء حسب القسم':'Performance by Dept','','Matrix','c8',200);stacked(id,depts,perfLevels.map(p=>({label:p,data:depts.map(d=>data.filter(r=>r[dept]===d&&r[perf]===p).length)})));}
-    if(dept&&trn&&sal){const depts=[...new Set(data.map(r=>r[dept]))].filter(Boolean).slice(0,6);const tD=depts.map(d=>Math.round(avg(data.filter(r=>r[dept]===d),trn)));const sD=depts.map(d=>Math.round(avg(data.filter(r=>r[dept]===d),sal)/1000));const id=makeCard(grid,isAr?'التدريب مقابل الراتب':'Training vs Salary','','Align','c12',200);multiBar(id,depts,[{label:'Avg Training Hrs',data:tD},{label:'Avg Salary K',data:sD}],dept);}
+    if(perf){const e=countBy(data,perf);const id=makeCard(grid,isAr?'توزيع الأداء':'Performance Dist.','Perf','c4',185);renderChart(id,e.map(x=>x[0]),e.map(x=>x[1]),'Perf',null,perf);}
+    if(dept&&perf){const depts=[...new Set(data.map(r=>r[dept]))].filter(Boolean).slice(0,7);const perfLevels=[...new Set(data.map(r=>r[perf]))].filter(Boolean).slice(0,4);const id=makeCard(grid,isAr?'الأداء حسب القسم':'Performance by Dept','Matrix','c8',200);stackedBar(id,depts,perfLevels.map(p=>({label:p,data:depts.map(d=>data.filter(r=>r[dept]===d&&r[perf]===p).length)})));}
+    if(dept&&trn&&sal){const depts=[...new Set(data.map(r=>r[dept]))].filter(Boolean).slice(0,6);const tD=depts.map(d=>Math.round(avg(data.filter(r=>r[dept]===d),trn)));const sD=depts.map(d=>Math.round(avg(data.filter(r=>r[dept]===d),sal)/1000));const id=makeCard(grid,isAr?'التدريب مقابل الراتب':'Training vs Salary','Align','c12',200);multiBar(id,depts,[{label:'Avg Training Hrs',data:tD},{label:'Avg Salary K',data:sD}],dept);}
   }
 }
 
+// ─── SAFETY CHARTS ───
+function buildSafetyCharts(grid,pi,data){
+  const nc=numCols(),cc=catCols(),sc=statusCols();
+  const stc=fc('status')||sc[0];
+  const risk=HDR.find(h=>h.toLowerCase().includes('risk_level'))||HDR.find(h=>h.toLowerCase().includes('risk'))||sc.find(c=>c.toLowerCase().includes('risk'));
+  const area=HDR.find(h=>h.toLowerCase().includes('department'))||HDR.find(h=>h.toLowerCase().includes('area'))||HDR.find(h=>h.toLowerCase().includes('zone'));
+  const ctr=HDR.find(h=>h.toLowerCase().includes('contractor'));
+  const injuryType=HDR.find(h=>h.toLowerCase().includes('injury_type'))||HDR.find(h=>h.toLowerCase().includes('type'));
+  const severityCol=nc.find(c=>c.toLowerCase().includes('severity'));
+  const lostDaysCol=nc.find(c=>c.toLowerCase().includes('lost')||c.toLowerCase().includes('absence'));
+  const mc=HDR.find(h=>h.toLowerCase().includes('month'));
+  const dateCol=HDR.find(h=>h.toLowerCase().includes('date'));
+  const violCol=nc.find(c=>c.toLowerCase().includes('viol'));
+  const isAr=LANG==='ar';const el=eLabel();
+  function getMonthLabel(row){if(mc)return String(row[mc]||'');if(dateCol){const d=String(row[dateCol]||'');const m=d.match(/(\d{4})/);return m?m[1]:'';} return '';}
+
+  if(pi===0){
+    if(stc){const e=countBy(data,stc);const id=makeCard(grid,isAr?'حالة الحوادث/التصاريح':`${el} Status`,'Status','c4',185);renderChart(id,e.map(x=>x[0]),e.map(x=>x[1]),el,null,stc);}
+    if(area){const e=countBy(data,area,8);const id=makeCard(grid,isAr?'حسب القسم/المنطقة':'By Area/Dept','Zones','c8',200);renderChart(id,e.map(x=>x[0]),e.map(x=>x[1]),'Count',e.map((_,i)=>PAL[i%PAL.length]),area);}
+    if(risk){const e=countBy(data,risk);const id=makeCard(grid,isAr?'توزيع المخاطر':'Risk Distribution','Risk','c4',185);renderChart(id,e.map(x=>x[0]),e.map(x=>x[1]),'Risk',null,risk);}
+    if(injuryType&&injuryType!==risk){const e=countBy(data,injuryType,7);const id=makeCard(grid,isAr?'نوع الحادثة':'Injury/Work Type','Type','c4',195);renderChart(id,e.map(x=>x[0]),e.map(x=>x[1]),'Count',PAL[2],injuryType);}
+    const yearGroups={};data.forEach(r=>{const lbl=getMonthLabel(r);if(lbl){yearGroups[lbl]=(yearGroups[lbl]||0)+1;}});
+    const sortedKeys=Object.keys(yearGroups).sort();
+    if(sortedKeys.length>1){const id=makeCard(grid,isAr?'الاتجاه الزمني':'Trend Over Time','Trend','c12',200);lineChart(id,sortedKeys,[{label:el+'s',data:sortedKeys.map(k=>yearGroups[k])}]);}
+  } else if(pi===1){
+    if(area&&severityCol){const e=groupBy(data,area,severityCol,8);const id=makeCard(grid,isAr?'متوسط الشدة حسب القسم':'Avg Severity by Dept','Severity','c6',200);renderChart(id,e.map(x=>x[0]),e.map(x=>{const cnt=countBy(data,area).find(d=>d[0]===x[0]);return Math.round(x[1]/Math.max(1,cnt?.[1]||1)*10)/10;}),isAr?'الشدة':'Severity',e.map(x=>x[1]>avg(data,severityCol)*1.2?'#F03E5E':PAL[0]),area);}
+    if(area&&lostDaysCol){const e=groupBy(data,area,lostDaysCol,8);const id=makeCard(grid,isAr?'أيام العمل المفقودة':'Lost Work Days','LWD','c4',200);renderChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),'Lost Days',PAL[5],area);}
+    if(risk&&injuryType&&risk!==injuryType){const types=[...new Set(data.map(r=>r[injuryType]))].filter(Boolean).slice(0,6);const riskLevels=[...new Set(data.map(r=>r[risk]))].filter(Boolean).slice(0,4);const id=makeCard(grid,isAr?'نوع الحادثة مقابل الخطر':'Injury Type vs Risk','Matrix','c8',200);stackedBar(id,types,riskLevels.map(rl=>({label:rl,data:types.map(tp=>data.filter(r=>r[injuryType]===tp&&r[risk]===rl).length)})));}
+    if(stc&&risk&&stc!==risk){const statuses=[...new Set(data.map(r=>r[stc]))].filter(Boolean).slice(0,5);const riskLevels=[...new Set(data.map(r=>r[risk]))].filter(Boolean).slice(0,4);const id=makeCard(grid,isAr?'الحالة مقابل الخطر':'Status vs Risk','Cross','c12',200);stackedBar(id,statuses,riskLevels.map(rl=>({label:rl,data:statuses.map(s=>data.filter(r=>r[stc]===s&&r[risk]===rl).length)})));}
+  } else {
+    const yearGrouped={};data.forEach(r=>{const lbl=getMonthLabel(r);if(!lbl)return;if(!yearGrouped[lbl])yearGrouped[lbl]={closed:0,open:0,overdue:0};const s=String(r[stc]||'').toLowerCase();if(s.match(/close/))yearGrouped[lbl].closed++;else if(s.match(/overdue/))yearGrouped[lbl].overdue++;else yearGrouped[lbl].open++;});
+    const sortedKeys=Object.keys(yearGrouped).sort();
+    if(sortedKeys.length>1){const id=makeCard(grid,isAr?'الاتجاه الزمني للحالات':'Status Over Time','Trend','c12',200);lineChart(id,sortedKeys,[{label:'Closed',data:sortedKeys.map(k=>yearGrouped[k].closed)},{label:'Open/Pending',data:sortedKeys.map(k=>yearGrouped[k].open)},{label:'Overdue',data:sortedKeys.map(k=>yearGrouped[k].overdue)}]);}
+    if(area&&stc){const areas=[...new Set(data.map(r=>r[area]))].filter(Boolean).slice(0,8);const rates=areas.map(a=>{const tot=data.filter(r=>r[area]===a).length;const cl=data.filter(r=>r[area]===a&&String(r[stc]||'').match(/close/i)).length;return tot?Math.round(cl/tot*100):0;});const id=makeCard(grid,isAr?'معدل الإغلاق حسب القسم':'Closure Rate by Zone','Compliance','c6',200);renderChart(id,areas,rates,'Closure %',rates.map(r=>r>80?'#0FBA7E':r>60?'#F5A623':'#F03E5E'),area);}
+    if(ctr&&stc){const ctrs=[...new Set(data.map(r=>r[ctr]))].filter(Boolean).slice(0,7);if(ctrs.length>1){const tot=ctrs.map(c=>data.filter(r=>r[ctr]===c).length);const cl=ctrs.map(c=>data.filter(r=>r[ctr]===c&&String(r[stc]||'').match(/close/i)).length);const rates=ctrs.map((c,i)=>tot[i]?Math.round(cl[i]/tot[i]*100):0);const id=makeCard(grid,isAr?'أداء المقاولين':'Contractor Rates','CTR','c6',200);renderChart(id,ctrs,rates,'Closure %',rates.map(r=>r>85?'#0FBA7E':r>70?'#F5A623':'#F03E5E'),ctr);}}
+  }
+}
+
+// ─── GENERAL CHARTS ───
 function buildGeneralCharts(grid,pi,data){
   const nc=numCols(),cc=catCols(),sc=statusCols();
-  if(cc[0]&&nc[0]){const e=groupBy(data,cc[0],nc[0]);const id=makeCard(grid,`${nc[0]} by ${cc[0]}`,'','Primary','c8',195);smartChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),nc[0],e.map((_,i)=>PAL[i%PAL.length]),cc[0],nc[0]);}
-  if(sc[0]){const e=countBy(data,sc[0]);const id=makeCard(grid,sc[0]+' Distribution','','Status','c4',185);renderAsType('pie',e.map(x=>x[0]),e.map(x=>x[1]),'Status',null,id,sc[0],null,185);}
-  if(cc[1]&&nc[0]){const e=groupBy(data,cc[1],nc[0]);const id=makeCard(grid,`${nc[0]} by ${cc[1]}`,'','Secondary','c12',200);smartChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),nc[0],PAL[1],cc[1],nc[0]);}
-  if(nc[1]&&cc[0]){const e=groupBy(data,cc[0],nc[1]);const id=makeCard(grid,`${nc[1]} by ${cc[0]}`,'','Third','c6',195);smartChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),nc[1],PAL[2],cc[0],nc[1]);}
+  if(cc[0]&&nc[0]){const e=groupBy(data,cc[0],nc[0]);const id=makeCard(grid,`${nc[0]} by ${cc[0]}`,'Primary','c8',200);renderChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),nc[0],e.map((_,i)=>PAL[i%PAL.length]),cc[0]);}
+  if(sc[0]){const e=countBy(data,sc[0]);const id=makeCard(grid,sc[0]+' Distribution','Status','c4',185);renderChart(id,e.map(x=>x[0]),e.map(x=>x[1]),'Status',null,sc[0]);}
+  if(cc[1]&&nc[0]){const e=groupBy(data,cc[1],nc[0]);const id=makeCard(grid,`${nc[0]} by ${cc[1]}`,'Secondary','c12',200);renderChart(id,e.map(x=>x[0]),e.map(x=>Math.round(x[1])),nc[0],PAL[1],cc[1]);}
 }
 
 // ═══════════════════════════════════════════════════
@@ -1818,30 +1543,26 @@ function buildRecos(pi,data){
   const recos=getRecos(pi,data);if(!recos.length)return;
   const ttl=document.createElement('div');ttl.className='sect-ttl';ttl.textContent=t('recos');el.appendChild(ttl);
   const grid=document.createElement('div');grid.className='reco-grid';el.appendChild(grid);
-  recos.forEach(r=>{
-    const div=document.createElement('div');div.className='reco';div.style.setProperty('--rc',r.c||'var(--a1)');
-    div.innerHTML=`<div class="reco-ico">${r.ico}</div><div class="reco-ttl">${r.ttl}</div><div class="reco-body">${r.body}</div>`;
-    grid.appendChild(div);
-  });
+  recos.forEach(r=>{const div=document.createElement('div');div.className='reco';div.style.setProperty('--rc',r.c||'var(--a1)');div.innerHTML=`<div class="reco-ico">${r.ico}</div><div class="reco-ttl">${r.ttl}</div><div class="reco-body">${r.body}</div>`;grid.appendChild(div);});
 }
 function getRecos(pi,data){
   const isAr=LANG==='ar';const el=eLabel();
   if(DOMAIN==='sales'){
-    const s=[[{ico:'🎯',ttl:isAr?'ركز على أفضل 3 محركات':'Focus Top 3 Revenue Drivers',body:isAr?'خصص 70% من ميزانية المبيعات للمنتجات والمناطق الأعلى إيراداً.':'Allocate 70% of budget to top 3 product-region combos.',c:'var(--green)'},{ico:'📊',ttl:isAr?'تتبع الربحية على مستوى القناة':'Channel-Level P&L Tracking',body:isAr?'الإيرادات بدون سياق الهامش مضللة.':'Revenue without margin context is misleading.',c:'var(--a1)'},{ico:'⚡',ttl:isAr?'سياسة الخصم الصارمة':'Hard Discount Policy',body:isAr?'خصم فوق 10% يحتاج موافقة مدير.':'Discount >10% needs manager sign-off.',c:'var(--amber)'}],
-    [{ico:'🔍',ttl:isAr?'تحليل جذر مشكلة الإرجاع':'Returns Root Cause Analysis',body:isAr?'صنف الإرجاعات حسب المنتج والمنطقة.':'Group returns by product and region. A pattern will emerge.',c:'var(--red)'},{ico:'💡',ttl:isAr?'المنتجات الخاسرة':'Loss-Making Products',body:isAr?'أي منتج بمساهمة سالبة يجب مراجعته.':'Negative contribution margin products need immediate review.',c:'var(--red)'},{ico:'📋',ttl:isAr?'تقرير استرداد أسبوعي':'Weekly Recovery Report',body:isAr?'أي طلب معلق أكثر من 14 يوماً يجب متابعته.':'Orders pending 14+ days need outreach.',c:'var(--amber)'}],
-    [{ico:'🚀',ttl:isAr?'توسيع أفضل المنتجات':'Expand Top Products',body:isAr?'قيّم أقوى منتجاتك في مقابل أضعف مناطقك.':'Map best products against weakest regions.',c:'var(--green)'},{ico:'🤝',ttl:isAr?'عزز القناة الأعلى هامشاً':'Strengthen Top-Margin Channel',body:isAr?'القناة ذات أفضل هامش تستحق خدمة أسرع.':'The highest-margin channel deserves priority fulfillment.',c:'var(--cyan)'},{ico:'📈',ttl:isAr?'أهداف على مستوى المنطقة':'Region-Level Targets',body:isAr?'الأهداف الإجمالية تخفي ضعف الأداء.':'Aggregate targets mask underperformance.',c:'var(--a2)'}]];
+    const s=[[{ico:'🎯',ttl:isAr?'ركز على أفضل 3 محركات':'Focus Top 3 Revenue Drivers',body:isAr?'خصص 70% من الميزانية للمنتجات والمناطق الأعلى إيراداً.':'Allocate 70% of budget to top 3 product-region combos.',c:'var(--green)'},{ico:'📊',ttl:isAr?'تتبع ربحية القناة':'Channel-Level P&L',body:isAr?'الإيرادات بدون هامش مضللة.':'Revenue without margin context is misleading.',c:'var(--a1)'},{ico:'⚡',ttl:isAr?'سياسة الخصم الصارمة':'Hard Discount Policy',body:isAr?'خصم فوق 10% يحتاج موافقة.':'Discount >10% needs manager sign-off.',c:'var(--amber)'}],
+    [{ico:'🔍',ttl:isAr?'تحليل الإرجاعات':'Returns Root Cause',body:isAr?'صنف الإرجاعات حسب المنتج والمنطقة.':'Group returns by product and region.',c:'var(--red)'},{ico:'💡',ttl:isAr?'المنتجات الخاسرة':'Loss-Making Products',body:isAr?'أي منتج بمساهمة سالبة يجب مراجعته.':'Negative margin products need immediate review.',c:'var(--red)'},{ico:'📋',ttl:isAr?'تقرير الاسترداد الأسبوعي':'Weekly Recovery Report',body:isAr?'طلبات معلقة أكثر من 14 يوماً تحتاج متابعة.':'Orders pending 14+ days need outreach.',c:'var(--amber)'}],
+    [{ico:'🚀',ttl:isAr?'توسيع أفضل المنتجات':'Expand Top Products',body:isAr?'قيّم أقوى منتجاتك في أضعف مناطقك.':'Map best products against weakest regions.',c:'var(--green)'},{ico:'🤝',ttl:isAr?'عزز القناة الأعلى هامشاً':'Strengthen Top Channel',body:isAr?'القناة ذات أفضل هامش تستحق خدمة أسرع.':'Best-margin channel deserves priority fulfillment.',c:'var(--cyan)'},{ico:'📈',ttl:isAr?'أهداف على مستوى المنطقة':'Region-Level Targets',body:isAr?'الأهداف الإجمالية تخفي ضعف الأداء.':'Aggregate targets mask underperformance.',c:'var(--a2)'}]];
     return s[pi]||[];
   }
   if(DOMAIN==='hr'){
-    const s=[[{ico:'🔍',ttl:isAr?'مراجعة تمثيل الجنس':'Audit Gender by Dept',body:isAr?'النسبة الكلية قد تخفي اختلالات في أقسام بعينها.':'Org-wide ratio masks department-specific imbalances.',c:'var(--purple)'},{ico:'💰',ttl:isAr?'مقارنة الرواتب بالسوق':'Benchmark Salaries',body:isAr?'الموظفون أقل من سعر السوق بـ15%+ في خطر الاستقالة.':'Employees 15%+ below market are flight risks.',c:'var(--green)'},{ico:'🏢',ttl:isAr?'تحديد الأقسام المثقلة':'Identify Overloaded Depts',body:isAr?'أكثر من 10 مرؤوسين لكل مدير يرتبط باحتراق وظيفي.':'10+ direct reports correlates with burnout.',c:'var(--a1)'}],
-    [{ico:'🚨',ttl:isAr?'برامج استبقاء مستهدفة':'Targeted Retention Programs',body:isAr?'في أقسام الاستنزاف الأعلى، أجر مقابلات استمرار.':'Conduct stay interviews in highest-attrition departments.',c:'var(--red)'},{ico:'📅',ttl:isAr?'التحقيق في الغياب العالي':'Investigate High Absence',body:isAr?'الغياب المرتفع عَرَض — المرض إدارة سيئة.':'High absence is a symptom of poor management.',c:'var(--amber)'},{ico:'📋',ttl:isAr?'بروتوكول مقابلة الخروج':'Exit Interview Protocol',body:isAr?'قابل كل موظف مغادر.':'Interview all departing staff.',c:'var(--amber)'}],
-    [{ico:'🏆',ttl:isAr?'حماية الموظفين المتميزين':'Protect Top Performers',body:isAr?'المنافسون يستهدفونهم الآن.':'Competitors are recruiting your stars right now.',c:'var(--green)'},{ico:'📚',ttl:isAr?'سد فجوة التدريب':'Close Training Gap',body:isAr?'الأقسام ذات التدريب المنخفض تحتاج خططاً إلزامية.':'Low-training departments need mandatory development plans.',c:'var(--cyan)'},{ico:'📊',ttl:isAr?'ربط التعويض بالأداء':'Performance-Pay Alignment',body:isAr?'الموظفون المتميزون بمرتبات متوسطة سيغادرون.':'Exceptional employees at average pay will leave.',c:'var(--a2)'}]];
+    const s=[[{ico:'🔍',ttl:isAr?'مراجعة تمثيل الجنس':'Audit Gender by Dept',body:isAr?'النسبة الكلية قد تخفي اختلالات.':'Org-wide ratio masks department-specific imbalances.',c:'var(--purple)'},{ico:'💰',ttl:isAr?'مقارنة الرواتب':'Benchmark Salaries',body:isAr?'أقل من السوق بـ15% = خطر استقالة.':'15%+ below market = flight risk.',c:'var(--green)'},{ico:'🏢',ttl:isAr?'تحديد الأقسام المثقلة':'Overloaded Depts',body:isAr?'أكثر من 10 مرؤوسين = احتراق وظيفي.':'10+ direct reports = burnout risk.',c:'var(--a1)'}],
+    [{ico:'🚨',ttl:isAr?'برامج استبقاء مستهدفة':'Targeted Retention',body:isAr?'أجر مقابلات استمرار في أقسام الاستنزاف الأعلى.':'Conduct stay interviews in highest-attrition departments.',c:'var(--red)'},{ico:'📅',ttl:isAr?'التحقيق في الغياب العالي':'Investigate Absence',body:isAr?'الغياب المرتفع عَرَض — المرض إدارة سيئة.':'High absence is a symptom of poor management.',c:'var(--amber)'},{ico:'📋',ttl:isAr?'مقابلة الخروج':'Exit Interview',body:isAr?'قابل كل موظف مغادر.':'Interview all departing staff.',c:'var(--amber)'}],
+    [{ico:'🏆',ttl:isAr?'حماية الموظفين المتميزين':'Protect Top Performers',body:isAr?'المنافسون يستهدفونهم الآن.':'Competitors are recruiting your stars now.',c:'var(--green)'},{ico:'📚',ttl:isAr?'سد فجوة التدريب':'Close Training Gap',body:isAr?'الأقسام ذات التدريب المنخفض تحتاج خططاً إلزامية.':'Low-training departments need mandatory development plans.',c:'var(--cyan)'},{ico:'📊',ttl:isAr?'ربط التعويض بالأداء':'Performance-Pay Alignment',body:isAr?'المتميزون بمرتبات متوسطة سيغادرون.':'Exceptional employees at average pay will leave.',c:'var(--a2)'}]];
     return s[pi]||[];
   }
   if(DOMAIN==='safety'){
-    const s=[[{ico:'🚨',ttl:isAr?'تصعيم فوري للحوادث العالية':'Escalate High-Severity Incidents',body:isAr?'كل حادثة عالية/حرجة تحتاج تحقيقاً في 24 ساعة.':('Every critical '+el+' needs 24h investigation. No exceptions.'),c:'var(--red)'},{ico:'📋',ttl:isAr?'جولات يومية حسب القسم':'Daily Dept Walkdowns',body:isAr?'أعلى الأقسام نشاطاً تحتاج جولة HSE موثقة.':'Highest-incident departments need one documented HSE walkdown per shift.',c:'var(--amber)'},{ico:'📊',ttl:isAr?'لوحة تتبع رقمية':'Real-Time Incident Dashboard',body:isAr?'السجل الورقي دائماً متأخر.':'Paper records always lag. Digitize with automatic alerts.',c:'var(--a1)'}],
-    [{ico:'🔍',ttl:isAr?'تحليل نمط الحوادث':'Incident Pattern Analysis',body:isAr?'3 حوادث من نفس النوع = فشل تدريب.':'3+ incidents of the same type = training failure, not individual error.',c:'var(--red)'},{ico:'⚠️',ttl:isAr?'إجراء التحقيق الجذري':'Root Cause Investigation',body:isAr?'الحوادث عالية الشدة تتطلب تقرير 5-WHY.':'High-severity incidents need documented 5-Why analysis.',c:'var(--amber)'},{ico:'👷',ttl:isAr?'تدريب مكثف للأقسام عالية الخطر':'Targeted Safety Training',body:isAr?'الأقسام الأكثر حوادث تحتاج تدريباً مكثفاً.':'Highest-incident departments need intensive refresher training this quarter.',c:'var(--red)'}],
-    [{ico:'📈',ttl:isAr?'أهداف امتثال شهرية':'Monthly Compliance Targets',body:isAr?'التتبع العلني يخلق الإلحاح.':'Public tracking creates urgency without enforcement.',c:'var(--green)'},{ico:'✅',ttl:isAr?'معايير الإغلاق':'Closure Criteria',body:isAr?'كل حادثة مفتوحة أكثر من 30 يوم = خطر تنظيمي.':'Any incident open 30+ days = regulatory violation risk.',c:'var(--cyan)'},{ico:'📚',ttl:isAr?'تحريض السلامة الإلزامي':'Mandatory Safety Induction',body:isAr?'معظم الحوادث في أول 3 أيام من نشاط جديد.':'Most incidents occur in first 3 days of new activity.',c:'var(--a2)'}]];
+    const s=[[{ico:'🚨',ttl:isAr?'تصعيد الحوادث العالية':'Escalate High-Severity',body:isAr?'كل حادثة عالية تحتاج تحقيقاً في 24 ساعة.':'Every critical '+el+' needs 24h investigation.',c:'var(--red)'},{ico:'📋',ttl:isAr?'جولات يومية':'Daily Walkdowns',body:isAr?'الأقسام الأعلى نشاطاً تحتاج جولة HSE موثقة.':'Highest-incident departments need documented walkdowns per shift.',c:'var(--amber)'},{ico:'📊',ttl:isAr?'لوحة تتبع رقمية':'Real-Time Dashboard',body:isAr?'السجل الورقي دائماً متأخر.':'Paper records always lag. Digitize with alerts.',c:'var(--a1)'}],
+    [{ico:'🔍',ttl:isAr?'تحليل نمط الحوادث':'Pattern Analysis',body:isAr?'3 حوادث من نفس النوع = فشل تدريب.':'3+ same-type incidents = training failure.',c:'var(--red)'},{ico:'⚠️',ttl:isAr?'تحليل السبب الجذري':'Root Cause Analysis',body:isAr?'الحوادث عالية الشدة تتطلب تقرير 5-WHY.':'High-severity incidents need documented 5-Why.',c:'var(--amber)'},{ico:'👷',ttl:isAr?'تدريب مستهدف':'Targeted Training',body:isAr?'الأقسام الأكثر حوادث تحتاج تدريباً مكثفاً.':'Highest-incident departments need intensive refresher training.',c:'var(--red)'}],
+    [{ico:'📈',ttl:isAr?'أهداف امتثال شهرية':'Monthly Targets',body:isAr?'التتبع العلني يخلق الإلحاح.':'Public tracking creates urgency without enforcement.',c:'var(--green)'},{ico:'✅',ttl:isAr?'معايير الإغلاق':'Closure Criteria',body:isAr?'مفتوح أكثر من 30 يوم = خطر تنظيمي.':'Open 30+ days = regulatory violation risk.',c:'var(--cyan)'},{ico:'📚',ttl:isAr?'تحريض السلامة الإلزامي':'Mandatory Induction',body:isAr?'معظم الحوادث في أول 3 أيام من نشاط جديد.':'Most incidents occur in first 3 days of new activity.',c:'var(--a2)'}]];
     return s[pi]||[];
   }
   return[];
@@ -1852,16 +1573,13 @@ function getRecos(pi,data){
 // ═══════════════════════════════════════════════════
 function buildTable(pi,data){
   const thead=document.getElementById('th'+pi),tbody=document.getElementById('tb'+pi);
-  const meta=document.getElementById('tmeta'+pi);
-  if(!thead||!tbody)return;
+  const meta=document.getElementById('tmeta'+pi);if(!thead||!tbody)return;
   if(meta)meta.textContent=data.length.toLocaleString()+' '+t('records');
   const cols=HDR.slice(0,12);
   thead.innerHTML='<tr>'+cols.map(h=>`<th onclick="sortTbl('${h}',${pi})" class="${SCOL===h?'srt':''}">${h}${SCOL===h?(SDIR===1?' ↑':' ↓'):''}</th>`).join('')+'</tr>';
   tbody.innerHTML=data.slice(0,250).map(row=>'<tr>'+cols.map(h=>{
-    const v=row[h]??'';
-    if(typeof v==='number')return`<td class="tnum">${v.toLocaleString()}</td>`;
-    const s=String(v),lc=s.toLowerCase();
-    let bc='';
+    const v=row[h]??'';if(typeof v==='number')return`<td class="tnum">${v.toLocaleString()}</td>`;
+    const s=String(v),lc=s.toLowerCase();let bc='';
     if(lc.match(/complet|close|active|done|pass|excell|exceptional|within/i))bc='bg';
     else if(lc.match(/return|cancel|overdue|terminat|reject|critical|bad/i))bc='br';
     else if(lc.match(/pend|leave|medium|needs|average|investigat/i))bc='ba';
@@ -1876,3 +1594,5 @@ function sortTbl(col,pi){
   buildTable(pi,ALL);
 }
 </script>
+</body>
+</html>

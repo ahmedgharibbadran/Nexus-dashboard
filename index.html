@@ -1750,25 +1750,48 @@ function stackedBar(id,labels,datasets){
 
 // AI Command Handler - المُحرك الجديد لاستقبال الأوامر
 function handleAICommand(command) {
-    // استخراج البيانات بمرونة (سواء كانت مباشرة أو جوه .data)
-    const labels = command.labels || (command.data ? command.data.labels : []);
-    const datasets = command.datasets || (command.data ? command.data.datasets : []);
+    // 1. التعامل مع التنسيق الجديد (الذي يرسله المساعد الآن)
+    if (command.chart_1) {
+        command = command.chart_1;
+        command.id = 'chart_1'; 
+    }
 
-    switch(command.type) {
-        case 'lineChart':
-            lineChart(command.id, labels, datasets);
-            break;
-        case 'barChart':
-        case 'bar': // إضافة النوع الجديد هنا
-            multiBar(command.id, labels, datasets);
-            break;
-        case 'stackedBar':
-            stackedBar(command.id, labels, datasets);
-            break;
-        default:
-            console.warn("AI Command Type Unknown:", command.type);
+    // 2. التحقق مما إذا كانت البيانات بالتنسيق الجديد (Series & Keys)
+    if (command.series && command.data && command.xAxis) {
+        const labels = command.data.map(item => item[command.xAxis.key]);
+        const datasets = command.series.map(s => ({
+            label: s.name,
+            data: command.data.map(item => item[s.key]),
+            backgroundColor: s.color
+        }));
+
+        // توجيه البيانات للدالة المناسبة حسب النوع
+        switch(command.type) {
+            case 'line': case 'lineChart':
+                lineChart(command.id, labels, datasets);
+                break;
+            case 'bar': case 'barChart':
+                multiBar(command.id, labels, datasets);
+                break;
+            case 'stackedBar':
+                stackedBar(command.id, labels, datasets);
+                break;
+        }
+    } 
+    // 3. التعامل مع التنسيق القديم (للرجوع للخلف إذا لزم الأمر)
+    else {
+        const labels = command.labels || (command.data ? command.data.labels : []);
+        const datasets = command.datasets || (command.data ? command.data.datasets : []);
+        
+        switch(command.type) {
+            case 'lineChart': lineChart(command.id, labels, datasets); break;
+            case 'barChart': case 'bar': multiBar(command.id, labels, datasets); break;
+            case 'stackedBar': stackedBar(command.id, labels, datasets); break;
+            default: console.warn("AI Command Type Unknown:", command.type);
+        }
     }
 }
+
 
 /* ── SALES CHARTS ── */
 function buildSalesCharts(grid,pi,data){

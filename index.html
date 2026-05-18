@@ -922,28 +922,33 @@ async function callClaude(systemPrompt, messages, onChunk) {
   
   // --- التعديل هنا: محاولة كشف الأوامر ---
     // --- التعديل هنا: محاولة كشف الأوامر بدقة ---
+    // الكود بعد التعديل لضمان قبول نوع 'bar'
+    // هذا الجزء هو "المستشعر" الذي يلتقط الـ JSON من كلام المساعد
   try {
-      // استخراج الـ JSON فقط من النص
+      // البحث عن أول '{' وآخر '}' في النص بالكامل
       const start = text.indexOf('{');
       const end = text.lastIndexOf('}');
+      
       if (start !== -1 && end !== -1) {
           const jsonString = text.substring(start, end + 1);
           const command = JSON.parse(jsonString);
           
-          // التأكد أن الأمر يحتوي على type ونوع صالح
-          if (command && command.type && ['lineChart', 'barChart', 'stackedBar'].includes(command.type)) {
+          // التأكد من أن الأمر يحتوي على type ونوع مسموح به
+          if (command && command.type && ['lineChart', 'barChart', 'stackedBar', 'bar'].includes(command.type)) {
+              console.log("تم استلام أمر رسم بنجاح:", command);
               handleAICommand(command);
           }
       }
   } catch (e) {
-      console.log("الرد نصي فقط (لا توجد أوامر برمجية).");
+      // لا تمسح هذا الجزء، هو مهم جداً لمنع توقف الموقع إذا المساعد أرسل نصاً عادياً
+      console.log("الرد نصي فقط (لا توجد أوامر برمجية) أو هناك خطأ في تنسيق الـ JSON:", e.message);
   }
 
   // ------------------------------------
 
   if(onChunk) onChunk(text);
   return text;
-}
+
 
 /* Full-page AI Analysis */
 async function runFullAIAnalysis(){
@@ -1743,22 +1748,25 @@ function stackedBar(id,labels,datasets){
 
 // AI Command Handler - المُحرك الجديد لاستقبال الأوامر
 function handleAICommand(command) {
-    // command: { type: "lineChart" | "barChart" | "stackedBar", id: "...", labels: [...], datasets: [...] }
+    // استخراج البيانات بمرونة (سواء كانت مباشرة أو جوه .data)
+    const labels = command.labels || (command.data ? command.data.labels : []);
+    const datasets = command.datasets || (command.data ? command.data.datasets : []);
+
     switch(command.type) {
         case 'lineChart':
-            lineChart(command.id, command.labels, command.datasets);
+            lineChart(command.id, labels, datasets);
             break;
         case 'barChart':
-            multiBar(command.id, command.labels, command.datasets);
+        case 'bar': // إضافة النوع الجديد هنا
+            multiBar(command.id, labels, datasets);
             break;
         case 'stackedBar':
-            stackedBar(command.id, command.labels, command.datasets);
+            stackedBar(command.id, labels, datasets);
             break;
         default:
             console.warn("AI Command Type Unknown:", command.type);
     }
 }
-
 
 /* ── SALES CHARTS ── */
 function buildSalesCharts(grid,pi,data){

@@ -924,8 +924,7 @@ async function callClaude(systemPrompt, messages, onChunk) {
     // --- التعديل هنا: محاولة كشف الأوامر بدقة ---
     // الكود بعد التعديل لضمان قبول نوع 'bar'
     // هذا الجزء هو "المستشعر" الذي يلتقط الـ JSON من كلام المساعد
-  try {
-      // البحث عن أول '{' وآخر '}' في النص بالكامل
+   try {
       const start = text.indexOf('{');
       const end = text.lastIndexOf('}');
       
@@ -933,22 +932,20 @@ async function callClaude(systemPrompt, messages, onChunk) {
           const jsonString = text.substring(start, end + 1);
           const command = JSON.parse(jsonString);
           
-          // التأكد من أن الأمر يحتوي على type ونوع مسموح به
           if (command && command.type && ['lineChart', 'barChart', 'stackedBar', 'bar'].includes(command.type)) {
               console.log("تم استلام أمر رسم بنجاح:", command);
               handleAICommand(command);
           }
       }
   } catch (e) {
-      // لا تمسح هذا الجزء، هو مهم جداً لمنع توقف الموقع إذا المساعد أرسل نصاً عادياً
-      console.log("الرد نصي فقط (لا توجد أوامر برمجية) أو هناك خطأ في تنسيق الـ JSON:", e.message);
+      console.log("الرد نصي فقط أو هناك خطأ في تنسيق الـ JSON:", e.message);
   }
 
-  // ------------------------------------
-
-  if(onChunk) onChunk(text);
+  // التأكد من أن هذه الأسطر موجودة خارج الـ try-catch
+  if (typeof onChunk === 'function') {
+      onChunk(text);
+  }
   return text;
-
 
 /* Full-page AI Analysis */
 async function runFullAIAnalysis(){

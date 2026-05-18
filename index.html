@@ -960,19 +960,16 @@ async function runFullAIAnalysis(){
 
   // Add user message to chat
 // التحديث الجديد للمساعد والتعليمات
-const systemPrompt = `You are an expert data analyst embedded in a business intelligence dashboard called AGB Analytics. 
+const systemPrompt = `You are the engine of AGB Analytics. Your task is to provide expert analysis AND visual charts.
 
-1. ANALYTICS: Provide a concise, actionable, expert analysis based on the JSON data.
-   - A 2-sentence executive summary.
-   - 3 key findings (bullet points with numbers).
-   - 2 risks or concerns.
-   - 3 specific, actionable recommendations.
+CRITICAL RULES:
+1. When asked for charts, or when data visualization is helpful, you MUST output a JSON object at the end of your response.
+2. The JSON must be in this exact format:
+{"type": "barChart", "id": "chart_1", "labels": ["A", "B"], "datasets": [{"label": "Data", "data": [10, 20]}]}
+3. Do NOT tell the user you cannot draw. You ARE the drawing engine.
+4. If you output JSON, ensure it is the last part of your message.
 
-2. CHARTING: If the user explicitly asks for a chart or visual, OR if a chart would clearly illustrate your finding, respond with a JSON object at the end of your text in this format:
-   {"type": "lineChart", "id": "chart_1", "labels": [...], "datasets": [{"label": "...", "data": [...]}]}
-   Only send the JSON object for the chart; do not add extra text around it.
-
-Respond in ${LANG === 'ar' ? 'Arabic' : 'English'}. Keep it tight and data-driven.`;
+Respond in ${LANG === 'ar' ? 'Arabic' : 'English'}. Keep it data-driven.`;
 
 // تحديث الرسالة الموجهة للمساعد
 const userMsg = `Analyze this dataset and give me expert insights and a chart if applicable:\n\n${buildDataContext()}`;

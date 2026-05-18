@@ -1750,29 +1750,31 @@ function stackedBar(id,labels,datasets){
 
 // AI Command Handler - المُحرك الجديد لاستقبال الأوامر
 function handleAICommand(command) {
-    // 1. استخراج الأساس بمرونة تامة
+    // استخراج الأساس (يدعم chart أو المباشر)
     const base = command.chart || command;
-    const type = base.type || 'bar';
+    const type = base.type || base.chartType || 'bar';
     const id = base.id || 'chart_1';
     
-    // 2. استخراج الـ Labels والـ Data (بتغطي التنسيق القديم والجديد)
-    const labels = base.categories || []; 
-    const datasets = base.series ? base.series.map(s => ({
+    // استخراج الـ Labels (يدعم categories أو xAxis أو labels)
+    const labels = base.categories || base.labels || (base.xAxis ? base.xAxis.labels : []);
+    
+    // استخراج الـ Datasets (يدعم series)
+    const datasets = (base.series || []).map(s => ({
         label: s.name,
-        // لو الـ data مصفوفة قيم مباشرة أو مصفوفة أوبجكتس، الكود هيفهمها
-        data: Array.isArray(s.data) ? s.data : [s.data], 
+        data: s.data,
         backgroundColor: s.color || '#3B82F6'
-    })) : [];
+    }));
 
-    // 3. التنفيذ
-    switch(type) {
-        case 'line': case 'lineChart': lineChart(id, labels, datasets); break;
-        case 'bar': case 'barChart': multiBar(id, labels, datasets); break;
-        case 'stackedBar': stackedBar(id, labels, datasets); break;
-        default: console.warn("Unknown Chart Type:", type);
-    }
+    // التنفيذ
+    const ctx = document.getElementById(id)?.getContext('2d');
+    if (!ctx) return;
+
+    new Chart(ctx, {
+        type: type.toLowerCase().replace('chart', ''), // يحول BarChart لـ bar
+        data: { labels, datasets },
+        options: { responsive: true }
+    });
 }
-
 
     // 3. التعامل مع التنسيق القديم (للرجوع للخلف إذا لزم الأمر)
     else {

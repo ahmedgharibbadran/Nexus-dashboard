@@ -920,11 +920,10 @@ async function callClaude(systemPrompt, messages, onChunk) {
   const data = await resp.json();
   const text = (data.content||[]).map(b=>b.type==='text'?b.text:'').join('');
   
-  // --- التعديل هنا: محاولة كشف الأوامر ---
-    // --- التعديل هنا: محاولة كشف الأوامر بدقة ---
-    // الكود بعد التعديل لضمان قبول نوع 'bar'
-    // هذا الجزء هو "المستشعر" الذي يلتقط الـ JSON من كلام المساعد
-   try {
+  /* ══════════════════════════════════════════
+     كود التقاط أوامر الرسم (Chart Integration)
+  ══════════════════════════════════════════ */
+  try {
       const start = text.indexOf('{');
       const end = text.lastIndexOf('}');
       
@@ -932,20 +931,26 @@ async function callClaude(systemPrompt, messages, onChunk) {
           const jsonString = text.substring(start, end + 1);
           const command = JSON.parse(jsonString);
           
-          if (command && command.type && ['lineChart', 'barChart', 'stackedBar', 'bar'].includes(command.type)) {
-              console.log("تم استلام أمر رسم بنجاح:", command);
+          // إضافة 'bar' للقائمة لضمان التوافق مع مخرجات المساعد
+          const validTypes = ['lineChart', 'barChart', 'stackedBar', 'bar'];
+          
+          if (command && command.type && validTypes.includes(command.type)) {
+              console.log("نجح الالتقاط: سيتم تنفيذ الرسم من نوع", command.type);
               handleAICommand(command);
+          } else if (command && command.type) {
+              console.warn("نوع الرسم غير مدعوم:", command.type);
           }
       }
   } catch (e) {
-      console.log("الرد نصي فقط أو هناك خطأ في تنسيق الـ JSON:", e.message);
+      // الـ catch ده بيحمي الصفحة من التوقف لو المساعد بعت نص عادي
+      console.log("الرد نصي فقط أو خطأ في تنسيق الـ JSON:", e.message);
   }
 
-  // التأكد من أن هذه الأسطر موجودة خارج الـ try-catch
-  if (typeof onChunk === 'function') {
-      onChunk(text);
-  }
+  // ------------------------------------
+
+  if(onChunk) onChunk(text);
   return text;
+}
 
 /* Full-page AI Analysis */
 async function runFullAIAnalysis(){

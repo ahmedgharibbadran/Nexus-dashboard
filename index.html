@@ -920,15 +920,6 @@ async function callClaude(systemPrompt,messages,onChunk){
   if(onChunk)onChunk(text);
   return text;
 }
-  if(!resp.ok){
-    const err=await resp.json().catch(()=>({}));
-    throw new Error(err.error?.message||`API error ${resp.status}`);
-  }
-  const data=await resp.json();
-  const text=(data.content||[]).map(b=>b.type==='text'?b.text:'').join('');
-  if(onChunk)onChunk(text);
-  return text;
-}
 
 /* Full-page AI Analysis */
 async function runFullAIAnalysis(){

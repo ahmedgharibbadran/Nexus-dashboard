@@ -1750,27 +1750,33 @@ function stackedBar(id,labels,datasets){
 
 // AI Command Handler - المُحرك الجديد لاستقبال الأوامر
 function handleAICommand(command) {
-    // استخراج الأساس (يدعم chart أو المباشر)
-    const base = command.chart || command;
-    const type = base.type || base.chartType || 'bar';
-    const id = base.id || 'chart_1';
+    // 1. تحديد قاعدة البيانات (يدعم أي مستوى)
+    const base = command.chart || command.chart_1 || command;
     
-    // استخراج الـ Labels (يدعم categories أو xAxis أو labels)
-    const labels = base.categories || base.labels || (base.xAxis ? base.xAxis.labels : []);
+    // 2. محاولة استخراج الـ Series (العمود الفقري للرسم)
+    let series = base.series || [];
     
-    // استخراج الـ Datasets (يدعم series)
-    const datasets = (base.series || []).map(s => ({
-        label: s.name,
-        data: s.data,
-        backgroundColor: s.color || '#3B82F6'
+    // لو المساعد بعت البيانات بشكل تاني، نحاول نعدلها
+    if (!series.length && base.data) {
+        series = [{ name: 'Data', data: base.data, color: '#3B82F6' }];
+    }
+
+    // 3. استخراج الـ Labels (من أول عنصر في البيانات)
+    const labels = series[0]?.data.map(item => item.region || item.label || Object.values(item)[0]) || [];
+
+    // 4. استخراج الـ Datasets
+    const datasets = series.map(s => ({
+        label: s.name || 'القيمة',
+        data: s.data.map(item => item.value || item.profit || item.revenue || Object.values(item)[1]),
+        backgroundColor: s.color || '#10B981'
     }));
 
-    // التنفيذ
-    const ctx = document.getElementById(id)?.getContext('2d');
-    if (!ctx) return;
+    // 5. التنفيذ الآمن
+    const ctx = document.getElementById('chart_1')?.getContext('2d');
+    if (!ctx) return console.error("ID 'chart_1' غير موجود في الصفحة");
 
     new Chart(ctx, {
-        type: type.toLowerCase().replace('chart', ''), // يحول BarChart لـ bar
+        type: base.type || 'bar',
         data: { labels, datasets },
         options: { responsive: true }
     });

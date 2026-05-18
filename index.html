@@ -900,7 +900,7 @@ function buildDataContext(){
 }
 
 /* Core Claude API call — streaming-aware, handles auth errors gracefully */
-async function callClaude(systemPrompt,messages,onChunk){
+async function callClaude(systemPrompt, messages, onChunk) {
   const resp = await fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -911,13 +911,37 @@ async function callClaude(systemPrompt,messages,onChunk){
         messages
     })
   });
+  
   if(!resp.ok){
     const err=await resp.json().catch(()=>({}));
     throw new Error(err.error?.message||`API error ${resp.status}`);
   }
-  const data=await resp.json();
-  const text=(data.content||[]).map(b=>b.type==='text'?b.text:'').join('');
-  if(onChunk)onChunk(text);
+
+  const data = await resp.json();
+  const text = (data.content||[]).map(b=>b.type==='text'?b.text:'').join('');
+  
+  // --- التعديل هنا: محاولة كشف الأوامر ---
+    // --- التعديل هنا: محاولة كشف الأوامر بدقة ---
+  try {
+      // استخراج الـ JSON فقط من النص
+      const start = text.indexOf('{');
+      const end = text.lastIndexOf('}');
+      if (start !== -1 && end !== -1) {
+          const jsonString = text.substring(start, end + 1);
+          const command = JSON.parse(jsonString);
+          
+          // التأكد أن الأمر يحتوي على type ونوع صالح
+          if (command && command.type && ['lineChart', 'barChart', 'stackedBar'].includes(command.type)) {
+              handleAICommand(command);
+          }
+      }
+  } catch (e) {
+      console.log("الرد نصي فقط (لا توجد أوامر برمجية).");
+  }
+
+  // ------------------------------------
+
+  if(onChunk) onChunk(text);
   return text;
 }
 
@@ -1707,6 +1731,25 @@ function stackedBar(id,labels,datasets){
   const ctx=document.getElementById(id);if(!ctx)return;const{text,grid}=getC();
   const chart=new Chart(ctx,{type:'bar',data:{labels,datasets:datasets.map((ds,i)=>({...ds,backgroundColor:PAL[i],borderSkipped:false}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{color:text,font:{size:8,family:'Sora'},boxWidth:7,padding:7}}},scales:{x:{stacked:true,grid:{color:grid},ticks:{color:text,font:{size:8},maxRotation:35}},y:{stacked:true,grid:{color:grid},ticks:{color:text,font:{size:8},callback:v=>fmt(v)}}}}});CHARTS.push(chart);
 }
+
+// AI Command Handler - المُحرك الجديد لاستقبال الأوامر
+function handleAICommand(command) {
+    // command: { type: "lineChart" | "barChart" | "stackedBar", id: "...", labels: [...], datasets: [...] }
+    switch(command.type) {
+        case 'lineChart':
+            lineChart(command.id, command.labels, command.datasets);
+            break;
+        case 'barChart':
+            multiBar(command.id, command.labels, command.datasets);
+            break;
+        case 'stackedBar':
+            stackedBar(command.id, command.labels, command.datasets);
+            break;
+        default:
+            console.warn("AI Command Type Unknown:", command.type);
+    }
+}
+
 
 /* ── SALES CHARTS ── */
 function buildSalesCharts(grid,pi,data){

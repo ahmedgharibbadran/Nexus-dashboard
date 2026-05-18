@@ -1844,17 +1844,6 @@ function stackedBar(id,labels,datasets){
 }
 
 // AI Command Handler - المُحرك الجديد لاستقبال الأوامر
-function handleAICommand(command) {
-    // 1. تحديد قاعدة البيانات (يدعم أي مستوى)
-    const base = command.chart || command.chart_1 || command;
-    
-    // 2. محاولة استخراج الـ Series (العمود الفقري للرسم)
-    let series = base.series || [];
-    
-    // لو المساعد بعت البيانات بشكل تاني، نحاول نعدلها
-    if (!series.length && base.data) {
-        series = [{ name: 'Data', data: base.data, color: '#3B82F6' }];
-    }
 
     // 3. استخراج الـ Labels (من أول عنصر في البيانات)
     const labels = series[0]?.data.map(item => item.region || item.label || Object.values(item)[0]) || [];
@@ -1875,22 +1864,6 @@ function handleAICommand(command) {
         data: { labels, datasets },
         options: { responsive: true }
     });
-}
-
-    // 3. التعامل مع التنسيق القديم (للرجوع للخلف إذا لزم الأمر)
-    else {
-        const labels = command.labels || (command.data ? command.data.labels : []);
-        const datasets = command.datasets || (command.data ? command.data.datasets : []);
-        
-        switch(command.type) {
-            case 'lineChart': lineChart(command.id, labels, datasets); break;
-            case 'barChart': case 'bar': multiBar(command.id, labels, datasets); break;
-            case 'stackedBar': stackedBar(command.id, labels, datasets); break;
-            default: console.warn("AI Command Type Unknown:", command.type);
-        }
-    }
-}
-
 
 /* ── SALES CHARTS ── */
 function buildSalesCharts(grid,pi,data){

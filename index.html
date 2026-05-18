@@ -904,16 +904,17 @@ async function callClaude(systemPrompt,messages,onChunk){
   if(!CLAUDE_KEY||CLAUDE_KEY==='PASTE_YOUR_KEY_HERE'){
     throw new Error('Claude API key not set. Please edit the CLAUDE_KEY variable at the top of the script.');
   }
-  const resp=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01'},
-    body:JSON.stringify({
-      model:CLAUDE_MODEL,
-      max_tokens:1024,
-      system:systemPrompt,
-      messages
+  const resp = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        model: CLAUDE_MODEL,
+        max_tokens: 1024,
+        system: systemPrompt,
+        messages
     })
-  });
+});
+
   if(!resp.ok){
     const err=await resp.json().catch(()=>({}));
     throw new Error(err.error?.message||`API error ${resp.status}`);

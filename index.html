@@ -169,12 +169,12 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 
 /* ═══════════════════════ AI CHAT SIDEBAR ═══════════════════════ */
 #ai-chat-sidebar{
-  position:fixed;right:-var(--chat-w);right:calc(-1 * var(--chat-w));top:var(--hdr-h);
+  position:fixed;right:0;top:var(--hdr-h);
   width:var(--chat-w);height:calc(100vh - var(--hdr-h));
   background:var(--surface);border-left:1px solid var(--border2);
   display:flex;flex-direction:column;z-index:9999;
   transition:transform .35s cubic-bezier(.4,0,.2,1);
-  transform:translateX(var(--chat-w));
+  transform:translateX(100%);
   box-shadow:-8px 0 40px rgba(0,0,0,0.4);
 }
 #ai-chat-sidebar.open{transform:translateX(0)}

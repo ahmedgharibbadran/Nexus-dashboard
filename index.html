@@ -1038,6 +1038,21 @@ async function sendMessageCore(userText){
 You have access to the user's current dataset. Answer questions about it accurately using actual numbers.
 Be concise and practical. Use bullet points for lists. If asked for recommendations, give specific, data-backed ones.
 Respond in ${LANG==='ar'?'Arabic':'English'}.
+
+COMMAND SYSTEM — you can control the dashboard:
+When the user asks to draw, chart, visualize, add a card, remove a chart, or change chart type — output a JSON command at the END of your reply:
+
+Commands:
+- Draw new chart: ##CMD{"cmd":"addChart","type":"bar|line|doughnut","title":"...","groupBy":"columnName","valueCol":"numericColumn|count"}##
+- Add KPI card: ##CMD{"cmd":"addKPI","label":"...","col":"columnName","agg":"sum|avg|count","color":"green|red|amber|blue|purple"}##
+- Remove chart: ##CMD{"cmd":"removeChart","chartId":"chartCanvasId"}##
+- Change chart type: ##CMD{"cmd":"updateChart","chartId":"chartCanvasId","newType":"bar|line|doughnut"}##
+
+Rules:
+- Only output ##CMD...## when user explicitly asks for a visual action
+- Always explain in text first, then put the command at the very end
+- Use ONLY column names that exist in the dataset headers
+
 Dataset context: ${buildDataContext()}`;
 
   // Build messages array from history (last 6 turns for context)
@@ -1155,7 +1170,7 @@ function replaceLastTypingMsg(text){
     if(last){
       const bubble=last.querySelector('.msg-bubble');
       const now=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-      if(bubble)bubble.innerHTML=formatAIText(text);
+      if(bubble)bubble.innerHTML=formatAIText(parseAndExecuteAICommands(text));
       const existing=last.querySelector('.msg-time');
       if(!existing){const t=document.createElement('div');t.className='msg-time';t.textContent=now;last.querySelector('.msg-bubble').after(t);}
       msgs.scrollTop=msgs.scrollHeight;
@@ -1169,7 +1184,7 @@ function replaceTypingMsg(id,text){
   if(el){
     const bubble=el.querySelector('.msg-bubble');
     const now=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-    if(bubble)bubble.innerHTML=formatAIText(text);
+    if(bubble)bubble.innerHTML=formatAIText(parseAndExecuteAICommands(text));
     const existing=el.querySelector('.msg-time');
     if(!existing){const t=document.createElement('div');t.className='msg-time';t.textContent=now;el.querySelector('.msg-bubble').after(t);}
     document.getElementById('chat-messages').scrollTop=document.getElementById('chat-messages').scrollHeight;
@@ -1184,6 +1199,86 @@ function formatAIText(text){
     .replace(/^[-•]\s+(.+)$/gm,'<div class="ai-bullet">$1</div>')
     .replace(/\n{2,}/g,'<br><br>')
     .replace(/\n/g,'<br>');
+}
+function parseAndExecuteAICommands(text){
+  const regex=/##CMD(\{.*?\})##/g;
+  let match;
+  let cleanText=text;
+  while((match=regex.exec(text))!==null){
+    try{
+      const cmd=JSON.parse(match[1]);
+      executeAICommand(cmd);
+      cleanText=cleanText.replace(match[0],`<span style="font-size:8px;color:var(--ai2);background:var(--ai3);padding:2px 6px;border-radius:4px;display:inline-block;margin-top:4px;">✓ ${cmd.cmd} executed</span>`);
+    }catch(e){console.warn('CMD parse error:',e);}
+  }
+  return cleanText;
+}
+function executeAICommand(cmd){
+  switch(cmd.cmd){
+    case 'addChart':    aiAddChart(cmd);    break;
+    case 'addKPI':      aiAddKPI(cmd);      break;
+    case 'removeChart': aiRemoveChart(cmd); break;
+    case 'updateChart': aiUpdateChart(cmd); break;
+  }
+}
+function aiAddChart(cmd){
+  const activePg=document.querySelector('.page.on');
+  const grid=activePg?.querySelector('.cg');
+  if(!grid)return showToast('No active dashboard page','red');
+  const id=makeCard(grid,cmd.title||'AI Chart','AI ◈','c6',165);
+  const data=ALL;
+  const groupCol=cmd.groupBy;
+  const valCol=cmd.valueCol;
+  if(!groupCol||!HDR.includes(groupCol))return showToast('Column not found: '+groupCol,'red');
+  let labels,values;
+  if(!valCol||valCol==='count'){
+    const e=countBy(data,groupCol,10);
+    labels=e.map(x=>x[0]);values=e.map(x=>x[1]);
+  }else{
+    const e=groupBy(data,groupCol,valCol,10);
+    labels=e.map(x=>x[0]);values=e.map(x=>Math.round(x[1]));
+  }
+  renderChart(id,labels,values,cmd.title||valCol,PAL.slice(0,labels.length),groupCol);
+  showToast('◈ Chart added: '+cmd.title,'green');
+}
+function aiAddKPI(cmd){
+  const activePg=document.querySelector('.page.on');
+  const kgrid=activePg?.querySelector('.kgrid');
+  if(!kgrid)return showToast('No active page','red');
+  const data=ALL;
+  const col=cmd.col;
+  if(!col||!HDR.includes(col))return showToast('Column not found: '+col,'red');
+  let val;
+  switch(cmd.agg){
+    case 'avg':   val=Math.round(avg(data,col)*10)/10; break;
+    case 'count': val=[...new Set(data.map(r=>r[col]))].filter(Boolean).length; break;
+    default:      val=sum(data,col);
+  }
+  const colorMap={green:'var(--green)',red:'var(--red)',amber:'var(--amber)',blue:'var(--blue)',purple:'var(--purple)'};
+  const color=colorMap[cmd.color]||'var(--a2)';
+  const disp=typeof val==='number'&&val>999?fmt(val):val;
+  const kpiEl=document.createElement('div');
+  kpiEl.className='kpi';
+  kpiEl.style.setProperty('--kc',color);
+  kpiEl.innerHTML=`<div class="kpi-top"><div class="kpi-ico">◈</div><span class="kbadge nt">AI</span></div><div class="klbl">${cmd.label||col}</div><div class="kval">${disp}</div><div class="kdesc">${cmd.agg||'sum'} of ${col}</div><button class="dl-kpi-btn" onclick="this.closest('.kpi').remove();showToast('KPI removed','amber')">✕</button>`;
+  kgrid.appendChild(kpiEl);
+  showToast('◈ KPI added: '+(cmd.label||col),'green');
+}
+function aiRemoveChart(cmd){
+  const canvas=document.getElementById(cmd.chartId);
+  if(!canvas)return showToast('Chart ID not found: '+cmd.chartId,'red');
+  const chart=CHARTS.find(c=>c.canvas?.id===cmd.chartId);
+  if(chart){chart.destroy();CHARTS=CHARTS.filter(c=>c!==chart);}
+  canvas.closest('.cc')?.remove();
+  showToast('Chart removed ✓','amber');
+}
+function aiUpdateChart(cmd){
+  const chart=CHARTS.find(c=>c.canvas?.id===cmd.chartId);
+  if(!chart)return showToast('Chart not found: '+cmd.chartId,'red');
+  const typeMap={bar:'bar',line:'line',doughnut:'doughnut',pie:'doughnut'};
+  chart.config.type=typeMap[cmd.newType]||cmd.newType;
+  chart.update();
+  showToast('Chart type updated ✓','green');
 }
 function autoResizeInput(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,90)+'px';}
 function setAIStatus(on,txt=''){

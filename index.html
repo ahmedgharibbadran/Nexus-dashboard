@@ -1750,34 +1750,43 @@ function stackedBar(id,labels,datasets){
 
 // AI Command Handler - المُحرك الجديد لاستقبال الأوامر
 function handleAICommand(command) {
-    // 1. التعامل مع التنسيق الجديد (الذي يرسله المساعد الآن)
-    if (command.chart_1) {
-        command = command.chart_1;
-        command.id = 'chart_1'; 
+    // 1. محاولة استخراج البيانات بغض النظر عن اسم المفتاح (chart, chart_1, أو مباشر)
+    const base = command.chart || command.chart_1 || command;
+    
+    // 2. استخراج المكونات الأساسية بمرونة
+    const type = base.type || 'bar';
+    const id = base.id || 'chart_1';
+    const data = base.data || [];
+    
+    // 3. استخراج الـ Labels والـ Datasets بمرونة
+    // بيحاول يلاقي أي مفتاح للمحور الأفقي (xAxis.key, or default to first column)
+    const xKey = (base.xAxis && base.xAxis.key) ? base.xAxis.key : Object.keys(data[0] || {})[0];
+    const labels = data.map(item => item[xKey]);
+    
+    // بيحاول يلاقي أي تعريف للـ Series
+    const series = base.series || [];
+    const datasets = series.map(s => ({
+        label: s.name || 'Value',
+        data: data.map(item => item[s.key || s.dataKey]), // بيقبل key أو dataKey
+        backgroundColor: s.color || '#3B82F6'
+    }));
+
+    // 4. التنفيذ
+    switch(type) {
+        case 'line': case 'lineChart':
+            lineChart(id, labels, datasets);
+            break;
+        case 'bar': case 'barChart':
+            multiBar(id, labels, datasets);
+            break;
+        case 'stackedBar':
+            stackedBar(id, labels, datasets);
+            break;
+        default:
+            console.warn("Unknown Chart Type:", type);
     }
+}
 
-    // 2. التحقق مما إذا كانت البيانات بالتنسيق الجديد (Series & Keys)
-    if (command.series && command.data && command.xAxis) {
-        const labels = command.data.map(item => item[command.xAxis.key]);
-        const datasets = command.series.map(s => ({
-            label: s.name,
-            data: command.data.map(item => item[s.key]),
-            backgroundColor: s.color
-        }));
-
-        // توجيه البيانات للدالة المناسبة حسب النوع
-        switch(command.type) {
-            case 'line': case 'lineChart':
-                lineChart(command.id, labels, datasets);
-                break;
-            case 'bar': case 'barChart':
-                multiBar(command.id, labels, datasets);
-                break;
-            case 'stackedBar':
-                stackedBar(command.id, labels, datasets);
-                break;
-        }
-    } 
     // 3. التعامل مع التنسيق القديم (للرجوع للخلف إذا لزم الأمر)
     else {
         const labels = command.labels || (command.data ? command.data.labels : []);

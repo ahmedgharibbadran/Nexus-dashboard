@@ -901,9 +901,6 @@ function buildDataContext(){
 
 /* Core Claude API call — streaming-aware, handles auth errors gracefully */
 async function callClaude(systemPrompt,messages,onChunk){
-  if(!CLAUDE_KEY||CLAUDE_KEY==='PASTE_YOUR_KEY_HERE'){
-    throw new Error('Claude API key not set. Please edit the CLAUDE_KEY variable at the top of the script.');
-  }
   const resp = await fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -913,8 +910,16 @@ async function callClaude(systemPrompt,messages,onChunk){
         system: systemPrompt,
         messages
     })
-});
-
+  });
+  if(!resp.ok){
+    const err=await resp.json().catch(()=>({}));
+    throw new Error(err.error?.message||`API error ${resp.status}`);
+  }
+  const data=await resp.json();
+  const text=(data.content||[]).map(b=>b.type==='text'?b.text:'').join('');
+  if(onChunk)onChunk(text);
+  return text;
+}
   if(!resp.ok){
     const err=await resp.json().catch(()=>({}));
     throw new Error(err.error?.message||`API error ${resp.status}`);

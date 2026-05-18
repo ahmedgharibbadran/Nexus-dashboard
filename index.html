@@ -1750,20 +1750,19 @@ function stackedBar(id,labels,datasets){
 
 // AI Command Handler - المُحرك الجديد لاستقبال الأوامر
 function handleAICommand(command) {
-    // 1. استخراج الأساس (يدعم chart أو المباشر)
+    // 1. استخراج الأساس بمرونة تامة
     const base = command.chart || command;
     const type = base.type || 'bar';
     const id = base.id || 'chart_1';
-    const series = base.series || [];
-
-    // 2. استخراج البيانات (سواء كانت في سلسلة أو مباشرة)
-    // الكود الآن يبحث عن البيانات داخل الـ series أو في مصفوفة data رئيسية
-    const labels = series[0]?.data.map(item => item.region) || [];
-    const datasets = series.map(s => ({
+    
+    // 2. استخراج الـ Labels والـ Data (بتغطي التنسيق القديم والجديد)
+    const labels = base.categories || []; 
+    const datasets = base.series ? base.series.map(s => ({
         label: s.name,
-        data: s.data.map(item => item.value),
-        backgroundColor: s.color
-    }));
+        // لو الـ data مصفوفة قيم مباشرة أو مصفوفة أوبجكتس، الكود هيفهمها
+        data: Array.isArray(s.data) ? s.data : [s.data], 
+        backgroundColor: s.color || '#3B82F6'
+    })) : [];
 
     // 3. التنفيذ
     switch(type) {
@@ -1773,6 +1772,7 @@ function handleAICommand(command) {
         default: console.warn("Unknown Chart Type:", type);
     }
 }
+
 
     // 3. التعامل مع التنسيق القديم (للرجوع للخلف إذا لزم الأمر)
     else {

@@ -789,8 +789,82 @@ let DYNAMIC={primaryEntityCol:null,primaryEntityLabel:'Record',primaryEntityLabe
 let CURRENT_FILENAME='';
 let CHAT_OPEN=false;
 let AI_BUSY=false;
-let CHAT_HISTORY=[]; // {role:'user'|'assistant', content:string}
+let CHAT_HISTORY=[];
+let DRAG_MODE=false;
+let DRAG_EL=null;
+let DRAG_OVER_EL=null;
 
+function toggleEditLayout(){
+  DRAG_MODE=!DRAG_MODE;
+  const btn=document.getElementById('edit-layout-btn');
+  if(btn){
+    btn.textContent=DRAG_MODE?'✓ Done':'⠿ Edit Layout';
+    btn.classList.toggle('active',DRAG_MODE);
+  }
+  document.querySelectorAll('.cg,.pbi-kpi-row').forEach(grid=>{
+    grid.classList.toggle('drag-mode',DRAG_MODE);
+  });
+  if(DRAG_MODE){
+    enableDrag();
+    showToast('Drag cards to reorder · Click Done when finished','amber');
+  }else{
+    showToast('Layout saved ✓','green');
+  }
+}
+
+function enableDrag(){
+  document.querySelectorAll('.cc').forEach(el=>{
+    el.draggable=true;
+    el.addEventListener('dragstart',onDragStart);
+    el.addEventListener('dragover',onDragOver);
+    el.addEventListener('dragleave',onDragLeave);
+    el.addEventListener('drop',onDrop);
+    el.addEventListener('dragend',onDragEnd);
+  });
+  document.querySelectorAll('.kpi').forEach(el=>{
+    el.draggable=true;
+    el.addEventListener('dragstart',onDragStart);
+    el.addEventListener('dragover',onDragOver);
+    el.addEventListener('dragleave',onDragLeave);
+    el.addEventListener('drop',onDrop);
+    el.addEventListener('dragend',onDragEnd);
+  });
+}
+
+function onDragStart(e){
+  if(!DRAG_MODE)return;
+  DRAG_EL=this;
+  this.classList.add('dragging');
+  e.dataTransfer.effectAllowed='move';
+}
+function onDragOver(e){
+  if(!DRAG_MODE||!DRAG_EL||DRAG_EL===this)return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect='move';
+  if(DRAG_OVER_EL&&DRAG_OVER_EL!==this)DRAG_OVER_EL.classList.remove('drag-over');
+  DRAG_OVER_EL=this;
+  this.classList.add('drag-over');
+}
+function onDragLeave(){
+  this.classList.remove('drag-over');
+}
+function onDrop(e){
+  if(!DRAG_MODE||!DRAG_EL||DRAG_EL===this)return;
+  e.preventDefault();
+  const grid=this.parentNode;
+  const els=[...grid.children];
+  const fromIdx=els.indexOf(DRAG_EL);
+  const toIdx=els.indexOf(this);
+  if(fromIdx<toIdx)grid.insertBefore(DRAG_EL,this.nextSibling);
+  else grid.insertBefore(DRAG_EL,this);
+  this.classList.remove('drag-over');
+  setTimeout(()=>CHARTS.forEach(c=>{try{c.resize();}catch(e){}}),50);
+}
+function onDragEnd(){
+  this.classList.remove('dragging');
+  document.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over'));
+  DRAG_EL=null;DRAG_OVER_EL=null;
+}
 /* ── SESSION ── */
 function saveSession(){try{sessionStorage.setItem(SS_DATA,JSON.stringify({RAW,HDR,DOMAIN,DYNAMIC,CURRENT_FILENAME}));}catch(e){}}
 function loadSession(){

@@ -1619,7 +1619,17 @@ function switchPage(i){ACTIVE=i;document.querySelectorAll('.page').forEach((p,j)
 function buildPage(container,pi){
   const d=DOMAINS[DOMAIN];
   const hasKey=CLAUDE_KEY&&CLAUDE_KEY!=='PASTE_YOUR_KEY_HERE';
-  const aiInsightBlock=hasKey?`
+ const aiInsightBlock=hasKey?`
+    <div class="ai-insights-card">
+      <div class="ai-insights-tag">Claude AI Insight</div>
+      <div class="ai-insights-body" id="ai-ins-body-${pi}">
+        <div class="ai-insights-loading"><div class="mini-dots"><span></span><span></span><span></span></div><span>Waiting to analyze…</span></div>
+      </div>
+    </div>`:`
+    <div class="ai-insights-card" style="opacity:.5">
+      <div class="ai-insights-tag">Claude AI Insight</div>
+      <div class="ai-insights-body" style="font-size:9px;color:var(--muted)">Add your Claude API key to enable live AI insights.</div>
+    </div>`;
   container.innerHTML=`
     <div class="pbi-header">
       <div class="pbi-title-row"><div><div class="dh"><span>${d[LANG].pages[pi]}</span></div><div class="dsub">${RAW.length.toLocaleString()} ${t('records')} · ${HDR.length} cols · ${d[LANG].label}</div></div></div>

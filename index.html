@@ -1832,11 +1832,6 @@ function stackedBar(id,labels,datasets){
   const ctx=document.getElementById(id);if(!ctx)return;const{text,grid}=getC();
   const chart=new Chart(ctx,{type:'bar',data:{labels,datasets:datasets.map((ds,i)=>({...ds,backgroundColor:PAL[i],borderSkipped:false}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{color:text,font:{size:8,family:'Sora'},boxWidth:7,padding:7}}},scales:{x:{stacked:true,grid:{color:grid},ticks:{color:text,font:{size:8},maxRotation:35}},y:{stacked:true,grid:{color:grid},ticks:{color:text,font:{size:8},callback:v=>fmt(v)}}}}});CHARTS.push(chart);
 }
-
-// AI Command Handler - المُحرك الجديد لاستقبال الأوامر
-
-    // 3. استخراج الـ Labels (من أول عنصر في البيانات)
-  
 /* ── SALES CHARTS ── */
 function buildSalesCharts(grid,pi,data){
   const nc=numCols(),cc=catCols(),sc=statusCols();

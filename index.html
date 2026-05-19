@@ -56,7 +56,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 @keyframes splashbar{to{width:100%}}
 
 /* ═══════════════════════ LOGIN ═══════════════════════ */
-#login-screen{position:fixed;inset:0;z-index:8888;display:none;align-items:center;justify-content:center;background:#F0F2F8;overflow:hidden}
+#login-screen{position:fixed;inset:0;z-index:8888;display:none;align-items:center;justify-content:center;background:linear-gradient(145deg,#EEF0FA 0%,#F5F6FF 50%,#EBF0FF 100%);overflow:hidden}
 #login-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(91,110,245,0.08),transparent 60%);pointer-events:none}
 #login-screen::after{display:none}
 .login-layout{position:relative;z-index:2;width:100%;max-width:420px;padding:20px;animation:loginIn .5s cubic-bezier(.34,1.56,.64,1) both}
@@ -84,8 +84,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .fp-btn.fp-err{background:rgba(240,62,94,0.12);border-color:var(--red)}
 .fp-btn.fp-ok .fp-svg path{stroke:#0FBA7E}
 .fp-btn.fp-err .fp-svg path{stroke:#F03E5E}
-.login-btn{width:100%;padding:14px;background:#5B6EF5;color:#fff;border:none;border-radius:10px;font-family:var(--font);font-weight:700;font-size:13px;cursor:pointer;transition:all .25s;letter-spacing:.3px;box-shadow:0 4px 16px rgba(91,110,245,0.3);margin-bottom:10px;margin-top:4px}
-.login-btn:hover{background:#4A5DE4;transform:translateY(-1px);box-shadow:0 8px 24px rgba(91,110,245,0.4)}
+.login-btn{width:100%;padding:14px;background:linear-gradient(135deg,#4F63F0,#6B7FF5);color:#fff;border:none;border-radius:10px;font-family:var(--font);font-weight:700;font-size:13px;cursor:pointer;transition:all .25s;letter-spacing:.3px;box-shadow:0 4px 20px rgba(79,99,240,0.35),0 1px 0 rgba(255,255,255,0.2) inset;margin-bottom:10px;margin-top:4px}
+.login-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(79,99,240,0.5),0 1px 0 rgba(255,255,255,0.2) inset}
 .login-err{font-size:10px;font-weight:600;color:var(--red);opacity:0;transition:opacity .3s;min-height:14px;display:flex;align-items:center;gap:6px}
 .login-err.show{opacity:1}
 .login-footer{margin-top:20px;padding-top:14px;border-top:1px solid #F0F2F8;display:flex;align-items:center;justify-content:space-between}

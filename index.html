@@ -496,65 +496,49 @@ tr:hover td{background:rgba(91,110,245,0.03)}
   <div class="splash-wordmark">Analytics · AI Edition</div>
   <div class="splash-bar"><div class="splash-bar-fill"></div></div>
 </div>
-
 <!-- ══════════ LOGIN ══════════ -->
 <div id="login-screen">
   <div class="login-layout">
-    <div class="login-visual" style="display:flex;">
-      <div class="lv-grid"></div>
-      <div class="lv-content">
-        <div class="lv-logo">AGB</div>
-        <div class="lv-tagline">Intelligence Platform · v6.0</div>
-        <div class="lv-stats">
-          <div class="lv-stat"><div class="lv-stat-ico">◈</div><div><div class="lv-stat-val">Claude</div><div class="lv-stat-lbl">AI-Powered Insights</div></div></div>
-          <div class="lv-stat"><div class="lv-stat-ico">⚡</div><div><div class="lv-stat-val">Live</div><div class="lv-stat-lbl">Real-time Analysis</div></div></div>
-          <div class="lv-stat"><div class="lv-stat-ico">🔒</div><div><div class="lv-stat-val">100%</div><div class="lv-stat-lbl">Secure & Private</div></div></div>
-        </div>
+    <div class="login-card">
+      <div class="login-brand">
+        <div class="login-brand-logo">AGB</div>
+        <div class="login-brand-dot"></div>
+        <div class="login-brand-ver">v6.0.0 · AI</div>
       </div>
-    </div>
-    <div class="login-form-panel">
-      <div class="login-card">
-        <div class="login-brand">
-          <div class="login-brand-logo">AGB</div>
-          <div class="login-brand-dot"></div>
-          <div class="login-brand-ver">v6.0.0 · AI</div>
-        </div>
-        <div class="login-avatar">
-          <svg width="36" height="36" viewBox="0 0 44 44" fill="none">
-            <circle cx="22" cy="22" r="22" fill="rgba(91,110,245,0.15)"/>
-            <path d="M22 10C15.373 10 10 15.373 10 22" stroke="var(--a1)" stroke-width="1.4" stroke-linecap="round"/>
-            <path d="M22 13C16.925 13 12.8 17.125 12.8 22.2" stroke="var(--a2)" stroke-width="1.4" stroke-linecap="round"/>
-            <path d="M22 16C18.134 16 15 19.134 15 23C15 24.9 15.6 26.7 16.8 28" stroke="var(--a1)" stroke-width="1.4" stroke-linecap="round"/>
-            <path d="M22 19.5C19.791 19.5 18 21.291 18 23.5" stroke="var(--cyan)" stroke-width="1.4" stroke-linecap="round"/>
-            <path d="M22 10C28.627 10 34 15.373 34 22" stroke="var(--a2)" stroke-width="1.4" stroke-linecap="round"/>
-            <path d="M22 16C25.866 16 29 19.134 29 23C29 26.5 27 30 22 33" stroke="var(--a2)" stroke-width="1.4" stroke-linecap="round"/>
-            <circle cx="22" cy="22" r="2.5" fill="var(--a1)"/>
+      <div class="login-avatar">
+        <svg width="36" height="36" viewBox="0 0 44 44" fill="none">
+          <circle cx="22" cy="22" r="22" fill="rgba(91,110,245,0.15)"/>
+          <path d="M22 10C15.373 10 10 15.373 10 22" stroke="var(--a1)" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M22 13C16.925 13 12.8 17.125 12.8 22.2" stroke="var(--a2)" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M22 16C18.134 16 15 19.134 15 23C15 24.9 15.6 26.7 16.8 28" stroke="var(--a1)" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M22 19.5C19.791 19.5 18 21.291 18 23.5" stroke="var(--cyan)" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M22 10C28.627 10 34 15.373 34 22" stroke="var(--a2)" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M22 16C25.866 16 29 19.134 29 23C29 26.5 27 30 22 33" stroke="var(--a2)" stroke-width="1.4" stroke-linecap="round"/>
+          <circle cx="22" cy="22" r="2.5" fill="var(--a1)"/>
+        </svg>
+      </div>
+      <div class="login-name">Ahmed Tarek</div>
+      <div class="login-role" id="login-role">Analytics Director</div>
+      <div class="login-label" id="login-label">Access Code</div>
+      <div class="login-field-wrap">
+        <input type="password" id="pw" class="login-input" placeholder="Enter access code" oninput="onPwInput()" onkeydown="if(event.key==='Enter')doLogin()">
+        <div class="fp-btn" id="fp-btn" onclick="doLogin()">
+          <svg class="fp-svg" width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2C9.5 2 7.2 3.1 5.6 4.9" stroke="var(--a2)" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M18.4 4.9C16.8 3.1 14.5 2 12 2" stroke="var(--a2)" stroke-width="1.4" stroke-linecap="round"/>
+            <circle cx="12" cy="12" r="1.8" fill="var(--a1)"/>
           </svg>
         </div>
-        <div class="login-name">Ahmed Tarek</div>
-        <div class="login-role" id="login-role">Analytics Director</div>
-        <div class="login-label" id="login-label">Access Code</div>
-        <div class="login-field-wrap">
-          <input type="password" id="pw" class="login-input" placeholder="Enter access code" oninput="onPwInput()" onkeydown="if(event.key==='Enter')doLogin()">
-          <div class="fp-btn" id="fp-btn" onclick="doLogin()">
-            <svg class="fp-svg" width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2C9.5 2 7.2 3.1 5.6 4.9" stroke="var(--a2)" stroke-width="1.4" stroke-linecap="round"/>
-              <path d="M18.4 4.9C16.8 3.1 14.5 2 12 2" stroke="var(--a2)" stroke-width="1.4" stroke-linecap="round"/>
-              <circle cx="12" cy="12" r="1.8" fill="var(--a1)"/>
-            </svg>
-          </div>
-        </div>
-        <button class="login-btn" onclick="doLogin()" id="login-btn-txt">Authenticate →</button>
-        <div class="login-err" id="lerr">⚠ Unauthorized access detected</div>
-        <div class="login-footer">
-          <div class="login-footer-lbl">AGB Analytics · AI Edition</div>
-          <div class="login-secure">🔒 Encrypted</div>
-        </div>
+      </div>
+      <button class="login-btn" onclick="doLogin()" id="login-btn-txt">Authenticate →</button>
+      <div class="login-err" id="lerr">⚠ Unauthorized access detected</div>
+      <div class="login-footer">
+        <div class="login-footer-lbl">AGB Analytics · AI Edition</div>
+        <div class="login-secure">🔒 Encrypted</div>
       </div>
     </div>
   </div>
 </div>
-
 <!-- ══════════ HEADER ══════════ -->
 <div id="hdr">
   <div class="hdr-left">

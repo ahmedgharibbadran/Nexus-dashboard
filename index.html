@@ -316,7 +316,14 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   border:1px solid rgba(124,58,237,0.2);border-left:3px solid var(--ai1);
   border-radius:0 8px 8px 0;padding:10px 12px;margin-bottom:8px;
   position:relative;overflow:hidden;
+  max-height:220px;
 }
+.ai-insights-card .ai-insights-body{
+  max-height:160px;overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:rgba(124,58,237,0.3) transparent;
+}
+.ai-insights-card .ai-insights-body::-webkit-scrollbar{width:3px}
+.ai-insights-card .ai-insights-body::-webkit-scrollbar-thumb{background:rgba(124,58,237,0.3);border-radius:2px}
 .ai-insights-card::before{
   content:'✦ CLAUDE AI';position:absolute;top:8px;right:10px;
   font-size:7px;font-weight:800;letter-spacing:2px;color:var(--ai1);opacity:.5;

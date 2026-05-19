@@ -1669,7 +1669,7 @@ function buildDash(fileName){
   document.getElementById('dash').style.display='block';
   document.getElementById('page-nav-bar').style.display='block';
   document.getElementById('snap-btn').style.display='flex';
-  ['export-btn','newfile-btn'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='flex';});
+  ['export-btn','newfile-btn','edit-layout-btn'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='flex';});
   CHARTS.forEach(c=>{try{c.destroy();}catch(e){}});CHARTS=[];
   const container=document.getElementById('pages');container.innerHTML='';
   const d=DOMAINS[DOMAIN];

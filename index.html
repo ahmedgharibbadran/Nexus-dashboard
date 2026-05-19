@@ -175,6 +175,18 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .filter-active-badge.show{display:inline-flex;align-items:center;gap:3px}
 .btn-s{padding:4px 9px;background:transparent;border:1px solid var(--border2);color:var(--text2);border-radius:var(--radius-sm);font-size:9px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:3px;font-family:var(--font);transition:all .2s;white-space:nowrap}
 .btn-s:hover{border-color:var(--a1);color:var(--a2)}
+  /* DRAG & DROP */
+.drag-mode .cc{cursor:grab;border:1.5px dashed rgba(91,110,245,0.35)!important;transition:all .2s}
+.drag-mode .cc:hover{border-color:var(--a1)!important;box-shadow:0 0 0 3px rgba(91,110,245,0.15)!important}
+.cc.dragging{opacity:.4;cursor:grabbing!important;transform:scale(0.97)}
+.cc.drag-over{border-color:var(--cyan)!important;box-shadow:0 0 0 3px rgba(0,194,209,0.2)!important;transform:scale(1.02)}
+.drag-mode .kpi{cursor:grab;border:1.5px dashed rgba(91,110,245,0.35)!important}
+.kpi.dragging{opacity:.4;cursor:grabbing!important}
+.kpi.drag-over{border-color:var(--cyan)!important;box-shadow:0 0 0 3px rgba(0,194,209,0.2)!important}
+.edit-layout-btn{border-color:rgba(91,110,245,0.4)!important;color:var(--a2)!important}
+.edit-layout-btn.active{background:rgba(91,110,245,0.15)!important;border-color:var(--a1)!important;box-shadow:0 0 12px rgba(91,110,245,0.2)}
+.drag-hint{display:none;font-size:8px;color:var(--a2);letter-spacing:.5px;padding:2px 8px;background:var(--a3);border-radius:4px;border:1px solid rgba(91,110,245,0.2)}
+.drag-mode .drag-hint{display:inline-flex;align-items:center;gap:4px}
 
 /* ═══════════════════════ APP LAYOUT WITH CHAT SIDEBAR ═══════════════════════ */
 #app{position:relative;z-index:1;display:none}

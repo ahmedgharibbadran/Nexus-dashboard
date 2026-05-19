@@ -1846,25 +1846,6 @@ function stackedBar(id,labels,datasets){
 // AI Command Handler - المُحرك الجديد لاستقبال الأوامر
 
     // 3. استخراج الـ Labels (من أول عنصر في البيانات)
-    const labels = series[0]?.data.map(item => item.region || item.label || Object.values(item)[0]) || [];
-
-    // 4. استخراج الـ Datasets
-    const datasets = series.map(s => ({
-        label: s.name || 'القيمة',
-        data: s.data.map(item => item.value || item.profit || item.revenue || Object.values(item)[1]),
-        backgroundColor: s.color || '#10B981'
-    }));
-
-    // 5. التنفيذ الآمن
-    const ctx = document.getElementById('chart_1')?.getContext('2d');
-    if (!ctx) return console.error("ID 'chart_1' غير موجود في الصفحة");
-
-    new Chart(ctx, {
-        type: base.type || 'bar',
-        data: { labels, datasets },
-        options: { responsive: true }
-    });
-}
   
 /* ── SALES CHARTS ── */
 function buildSalesCharts(grid,pi,data){

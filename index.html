@@ -619,6 +619,8 @@ tr:hover td{background:rgba(91,110,245,0.03)}
     <div class="pnav-right">
       <span class="filter-active-badge" id="filter-badge">⚡ Filtered</span>
       <div id="chart-type-switcher" style="display:flex;gap:3px;"></div>
+      <span class="drag-hint">⠿ Drag to reorder</span>
+      <button class="btn-s edit-layout-btn" id="edit-layout-btn" onclick="toggleEditLayout()" style="display:none;">⠿ Edit Layout</button>
       <button class="btn-s" onclick="exportCSV()" id="export-btn" style="display:none;">⬇ <span id="export-lbl">Export</span></button>
       <button class="btn-s" onclick="resetAll()" id="newfile-btn" style="display:none;">↺ <span id="newfile-lbl">New</span></button>
     </div>
